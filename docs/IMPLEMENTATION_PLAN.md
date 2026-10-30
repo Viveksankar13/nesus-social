@@ -444,21 +444,21 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 12 — Documentation & Submission 🔲
+### Stage 12 — Documentation & Submission ✅
 
 **Goal:** Generate the full system documentation PDF, write SUBMISSION.md, secret scan.
 
 **Checklist:**
-- [ ] All `docs/stages/STAGE_XX.md` files complete
-- [ ] `docs/ER_DIAGRAM.md` finalized
-- [ ] `docs/AI_INTEGRATION.md` finalized
-- [ ] `docs/API.md` finalized
-- [ ] `docs/DEPLOYMENT.md` finalized
-- [ ] `python docs/pdf/build_pdf.py` → SYSTEM_DOCUMENTATION.pdf
-- [ ] `docs/SUBMISSION.md` with all required items
-- [ ] Secret scan: `scripts/secret_scan.py`
-- [ ] Final README reviewed
-- [ ] All requirements traced in REQUIREMENTS_TRACEABILITY.md
+- [x] All `docs/stages/STAGE_XX.md` files complete (Stage 00 through Stage 12)
+- [x] `docs/ER_DIAGRAM.md` finalized (includes Student USN column)
+- [x] `docs/AI_INTEGRATION.md` finalized
+- [x] `docs/API.md` finalized (includes Student USN & security headers)
+- [x] `docs/DEPLOYMENT.md` finalized (Render + Vercel + Brevo runbook)
+- [x] `python docs/pdf/build_pdf.py` → `docs/pdf/SYSTEM_DOCUMENTATION.pdf` (4.2 MB)
+- [x] `docs/SUBMISSION.md` with all required items, credentials, and test instructions
+- [x] Secret scan: `scripts/secret_scan.py` (218 files scanned, 0 secrets detected)
+- [x] Final README reviewed
+- [x] All requirements traced in `docs/REQUIREMENTS_TRACEABILITY.md` (100% complete)
 
 ---
 

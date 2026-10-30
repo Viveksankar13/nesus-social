@@ -61,15 +61,15 @@ Or for validation errors (422):
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| POST | `/api/v1/auth/register` | None | Register new user |
-| POST | `/api/v1/auth/verify-email` | None | Verify email token |
+| POST | `/api/v1/auth/register` | None | Register new user (accepts optional/required Student USN) |
+| POST | `/api/v1/auth/verify-email` | None | Verify email token via Brevo SMTP link |
 | POST | `/api/v1/auth/resend-verification` | None | Resend verification email |
-| POST | `/api/v1/auth/login` | None | Login → tokens |
+| POST | `/api/v1/auth/login` | None | Login via Email, Username, or Student USN → tokens |
 | POST | `/api/v1/auth/refresh` | Cookie | Rotate refresh token |
 | POST | `/api/v1/auth/logout` | Cookie | Revoke refresh token |
-| POST | `/api/v1/auth/forgot-password` | None | Request password reset |
-| POST | `/api/v1/auth/reset-password` | None | Reset password |
-| GET | `/api/v1/auth/me` | Bearer | Get current user |
+| POST | `/api/v1/auth/forgot-password` | None | Request password reset via Email or Student USN |
+| POST | `/api/v1/auth/reset-password` | None | Reset password with token |
+| GET | `/api/v1/auth/me` | Bearer | Get current user profile & USN |
 
 *Detailed request/response schemas in `docs/stages/STAGE_02.md`*
 

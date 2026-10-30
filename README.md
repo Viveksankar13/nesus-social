@@ -7,17 +7,18 @@
 
 ## ✨ Features
 
-- **Authentication** — Register/login with email verification, JWT + httpOnly refresh tokens, Argon2id hashing, password reset
-- **Social Feed** — Create/edit/delete posts, infinite scroll, likes, threaded comments
-- **Real-time Notifications** — Server-Sent Events with polling fallback, admin login alerts
-- **AI Features** (Gemini 2.5 Flash):
-  - Post generation & improvement (3 tone variants)
-  - Post/comment summarization with sentiment
-  - Conversational AI assistant (streaming, persisted sessions)
-  - Automated content moderation (background, structured JSON)
-  - Smart reply suggestions
-- **Admin Console** — Dashboard with charts, user management, moderation queue, activity audit log
-- **Security** — RBAC, rate limiting, security headers, CORS, input validation, no stack traces to clients
+- **Authentication & University Identity** — Register and login using Email, Username, or **Student USN (University Seat Number / College ID)**, Argon2id hashing, 15-min memory JWTs, rotating httpOnly refresh tokens with reuse family revocation.
+- **Brevo SMTP Support** — Automated port 587 STARTTLS / port 465 SSL email delivery for email verification, password reset, and welcome notifications.
+- **Social Feed** — Cursor-paginated infinite scroll, posts (≤1000 chars) with image attachments, unique likes with optimistic UI, and threaded one-level comment replies.
+- **Real-time Notifications** — Server-Sent Events (SSE) with 60-second single-use stream tokens, live notification bell, and real-time admin login alerts.
+- **AI Features** (Google Gemini 2.5 Flash):
+  - Post generation & refinement (3 tone variants: Casual, Professional, Funny, Inspirational)
+  - Thread summarization with sentiment analysis (triggers on ≥3 comments)
+  - Conversational AI assistant (streaming widget, persisted sessions)
+  - Automated background content moderation (structured JSON classification)
+  - Contextual smart reply suggestions (3 quick-reply pills)
+- **Admin Console** — Executive analytics dashboard, Recharts 30-day time-series charts, user management (search, role update, suspend, delete), content moderation queue, and immutable activity audit logs.
+- **Security & Hardening** — Full OWASP defensive headers (CSP, HSTS, X-Content-Type, X-Frame-Options), strict CORS allowlist, rate limiting (`slowapi`), non-root Docker container (`appuser:1001`), and comprehensive secret scanning.
 
 ## 🏗️ Architecture
 

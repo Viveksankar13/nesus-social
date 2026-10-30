@@ -13,6 +13,7 @@ erDiagram
         uuid id PK "Primary Key (UUID v4)"
         string email UK "Unique, Index"
         string username UK "Unique, Index"
+        string usn UK "Unique, Index (Student USN / College ID)"
         string display_name "Display Name"
         string hashed_password "Argon2id Hash"
         string role "user | admin"
