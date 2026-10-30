@@ -70,7 +70,10 @@ class RefreshToken(Base, UUIDMixin):
 
     def is_expired(self) -> bool:
         """Check if the token has expired."""
-        return datetime.now(UTC) > self.expires_at
+        exp = self.expires_at
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=UTC)
+        return datetime.now(UTC) > exp
 
     def __repr__(self) -> str:
         return f"<RefreshToken id={self.id} user_id={self.user_id} revoked={self.revoked}>"
@@ -119,7 +122,12 @@ class EmailToken(Base, UUIDMixin):
 
     def is_valid(self) -> bool:
         """Check if token is neither expired nor previously used."""
-        return self.used_at is None and datetime.now(UTC) <= self.expires_at
+        if self.used_at is not None:
+            return False
+        exp = self.expires_at
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=UTC)
+        return datetime.now(UTC) <= exp
 
     def __repr__(self) -> str:
         return f"<EmailToken type={self.token_type} user_id={self.user_id}>"

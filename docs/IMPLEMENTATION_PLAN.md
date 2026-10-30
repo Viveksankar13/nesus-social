@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 0
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 2
 
 ---
 
@@ -18,7 +18,7 @@
 |-------|------|--------|--------|
 | **0** | Planning & Scaffold | ✅ **Done** | `stage-00-complete` |
 | **1** | Database Layer | ✅ **Done** | `stage-01-complete` |
-| **2** | Authentication Backend | 🔲 Not started | — |
+| **2** | Authentication Backend | ✅ **Done** | `stage-02-complete` |
 | **3** | Core Social Backend | 🔲 Not started | — |
 | **4** | Notifications & Real-time | 🔲 Not started | — |
 | **5** | Admin Backend | 🔲 Not started | — |
@@ -242,24 +242,24 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 2 — Authentication Backend 🔲
+### Stage 2 — Authentication Backend ✅
 
 **Goal:** Full auth flow: register → verify email → login → refresh → logout → forgot/reset password. All with security hardening.
 
 **Checklist:**
-- [ ] `app/core/security.py` — Argon2id hash/verify, password policy validator
-- [ ] `app/core/tokens.py` — JWT access token, opaque refresh token, stream tokens
-- [ ] `app/services/email_service.py` — aiosmtplib + Jinja2 templates
-- [ ] `app/templates/emails/` — verification.html, reset_password.html, welcome.html
-- [ ] `app/services/auth_service.py` — all auth business logic
-- [ ] `app/schemas/auth.py` — RegisterRequest, LoginRequest, TokenResponse, etc.
-- [ ] `app/api/v1/auth.py` — all auth endpoints
-- [ ] `app/api/deps.py` — `require_user`, `require_admin`, `get_current_user`
-- [ ] Rate limiting on all auth endpoints (slowapi)
-- [ ] Global exception handler (no stack traces to clients)
-- [ ] Request ID middleware
-- [ ] `tests/test_auth.py` — full coverage per QUAL-01
-- [ ] `docs/stages/STAGE_02.md`
+- [x] `app/core/security.py` — Argon2id hash/verify, password policy validator
+- [x] `app/core/tokens.py` — JWT access token, opaque refresh token, stream tokens
+- [x] `app/services/email_service.py` — aiosmtplib + Jinja2 templates
+- [x] `app/templates/emails/` — verification.html, reset_password.html, welcome.html
+- [x] `app/services/auth_service.py` — all auth business logic
+- [x] `app/schemas/auth.py` — RegisterRequest, LoginRequest, TokenResponse, etc.
+- [x] `app/api/v1/auth.py` — all auth endpoints
+- [x] `app/api/deps.py` — `require_user`, `require_admin`, `get_current_user`
+- [x] Rate limiting on all auth endpoints (slowapi)
+- [x] Global exception handler (no stack traces to clients)
+- [x] Request ID middleware
+- [x] `tests/test_auth.py` — full coverage per QUAL-01
+- [x] `docs/stages/STAGE_02.md` written
 
 **Endpoints:**
 | Method | Path | Auth | Description |
