@@ -29,12 +29,12 @@
 | **NOTIF-02** | SSE stream with stream tokens | 4 | ✅ Done | `GET /api/v1/notifications/stream`, test `test_stream_token_generation_and_stream` |
 | **NOTIF-03** | Admin: real-time login alert | 4 | ✅ Done | test `test_admin_login_notification_and_debouncing` |
 | **NOTIF-04** | Polling fallback every 30s | 4/7 | ✅ Done | `/api/v1/notifications/unread-count`, `/api/v1/notifications` endpoints |
-| **ADMIN-01** | Dashboard stat cards | 5 | 🔲 Not started | `GET /api/v1/admin/stats` |
-| **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5 | 🔲 Not started | `GET /api/v1/admin/charts` |
-| **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5 | 🔲 Not started | `GET/PUT/DELETE /api/v1/admin/users` |
-| **ADMIN-04** | Post/comment management | 5 | 🔲 Not started | `GET/PUT/DELETE /api/v1/admin/posts` |
-| **ADMIN-05** | Moderation queue | 5 | 🔲 Not started | `GET /api/v1/admin/moderation` |
-| **ADMIN-06** | Activity audit log | 5 | 🔲 Not started | `activity_logs` table |
+| **ADMIN-01** | Dashboard stat cards | 5 | ✅ Done | `GET /api/v1/admin/stats`, test `test_admin_stats_and_charts` |
+| **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5 | ✅ Done | `GET /api/v1/admin/charts`, test `test_admin_stats_and_charts` |
+| **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5 | ✅ Done | `GET/PATCH/DELETE /api/v1/admin/users/*`, test `test_admin_user_management` |
+| **ADMIN-04** | Post/comment management | 5 | ✅ Done | `/api/v1/admin/{posts,comments}/*`, test `test_admin_content_and_bulk_actions` |
+| **ADMIN-05** | Moderation queue | 5 | ✅ Done | `GET/POST /api/v1/admin/moderation/*`, test `test_admin_moderation_queue` |
+| **ADMIN-06** | Activity audit log | 5 | ✅ Done | `activity_logs` table, test `test_admin_activity_audit_logs` |
 | **AI-01** | Post generation/improvement — 3 variants + tone | 6 | 🔲 Not started | `POST /api/v1/ai/generate-post` |
 | **AI-02** | Post summarization with sentiment | 6 | 🔲 Not started | `POST /api/v1/ai/summarize` |
 | **AI-03** | Conversational assistant, streaming, persisted | 6 | 🔲 Not started | `POST /api/v1/ai/chat` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 4 complete*
+*Last updated: Stage 5 complete*

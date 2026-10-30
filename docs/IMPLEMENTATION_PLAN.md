@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 4
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 5
 
 ---
 
@@ -21,7 +21,7 @@
 | **2** | Authentication Backend | ✅ **Done** | `stage-02-complete` |
 | **3** | Core Social Backend | ✅ **Done** | `stage-03-complete` |
 | **4** | Notifications & Real-time | ✅ **Done** | `stage-04-complete` |
-| **5** | Admin Backend | 🔲 Not started | — |
+| **5** | Admin Backend | ✅ **Done** | `stage-05-complete` |
 | **6** | Gemini AI Service | 🔲 Not started | — |
 | **7** | Frontend Foundation | 🔲 Not started | — |
 | **8** | User App UI | 🔲 Not started | — |
@@ -316,17 +316,20 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 5 — Admin Backend 🔲
+### Stage 5 — Admin Backend ✅
 
 **Goal:** All admin management endpoints, stats, charts, moderation queue, audit log.
 
 **Checklist:**
-- [ ] `app/api/v1/admin/` — stats, users, posts, comments, moderation, activity
-- [ ] Stats: total users, verified, new 7d, posts, comments, likes, flagged
-- [ ] Charts: signups/day, posts/day (last 30 days)
-- [ ] Every admin action written to `activity_logs`
-- [ ] Bulk actions (hide/delete multiple posts/comments)
-- [ ] `tests/test_admin.py`
+- [x] `app/services/admin_service.py` — stats, charts, user management, content management, moderation queue, audit logging
+- [x] `app/schemas/admin.py` — AdminStatsResponse, ChartDataResponse, AdminUserResponse, UserRoleUpdate, UserSuspendUpdate, ModerationItemResponse, ModerationActionRequest, BulkActionRequest, ActivityLogResponse
+- [x] `app/api/v1/admin.py` — stats, users, posts, comments, moderation queue, activity logs
+- [x] Stats: total users, verified, new 7d, posts, comments, likes, flagged items
+- [x] Charts: signups/day, posts/day (last 30 days) dual-dialect
+- [x] Every admin action written to `activity_logs`
+- [x] Bulk actions (hide/restore/delete multiple posts/comments)
+- [x] `tests/test_admin.py` (5 tests passing)
+- [x] `docs/stages/STAGE_05.md` written
 
 ---
 
