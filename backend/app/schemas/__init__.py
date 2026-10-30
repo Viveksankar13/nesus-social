@@ -12,6 +12,12 @@ from app.schemas.auth import (
     VerifyEmailRequest,
 )
 from app.schemas.comment import CommentCreate, CommentResponse, CommentUpdate
+from app.schemas.notification import (
+    NotificationListResponse,
+    NotificationResponse,
+    StreamTokenResponse,
+    UnreadCountResponse,
+)
 from app.schemas.post import FeedResponse, LikeResponse, PostCreate, PostResponse, PostUpdate
 from app.schemas.user import AuthorSummary, UserProfileResponse, UserResponse, UserUpdate
 
@@ -37,4 +43,8 @@ __all__ = [
     "CommentCreate",
     "CommentUpdate",
     "CommentResponse",
+    "NotificationResponse",
+    "NotificationListResponse",
+    "StreamTokenResponse",
+    "UnreadCountResponse",
 ]

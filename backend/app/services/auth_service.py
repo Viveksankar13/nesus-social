@@ -28,6 +28,7 @@ from app.models.token import EmailToken, RefreshToken
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest
 from app.services.email_service import email_service
+from app.services.notification_service import notification_service
 
 logger = get_logger(__name__)
 
@@ -215,6 +216,17 @@ class AuthService:
         )
         session.add(refresh_token)
         await session.commit()
+
+        # Notify administrators of login in real time (debounced 60s)
+        try:
+            await notification_service.notify_admins_of_login(
+                db=session,
+                user=user,
+                ip_address=ip_address,
+                user_agent=user_agent,
+            )
+        except Exception as e:
+            logger.warning("Failed to dispatch admin login notification", extra={"error": str(e)})
 
         logger.info(
             "User logged in successfully",

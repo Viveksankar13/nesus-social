@@ -13,11 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.comment import Comment
-from app.models.notification import Notification
 from app.models.post import Post
 from app.models.user import User
 from app.schemas.comment import CommentCreate, CommentResponse, CommentUpdate
 from app.schemas.user import AuthorSummary
+from app.services.notification_service import notification_service
 
 
 class CommentService:
@@ -74,11 +74,13 @@ class CommentService:
             content=data.content,
         )
         db.add(comment)
-        await db.flush()  # assign UUID
+        await db.commit()
+        await db.refresh(comment)
 
         # Notification for post author
         if post.author_id != author.id:
-            notif = Notification(
+            await notification_service.create_and_push_notification(
+                db=db,
                 user_id=post.author_id,
                 type="comment",
                 payload={
@@ -89,7 +91,6 @@ class CommentService:
                     "author_name": author.display_name,
                 },
             )
-            db.add(notif)
 
         # Notification for parent comment author if reply
         if (
@@ -98,7 +99,8 @@ class CommentService:
             and parent_comment.author_id != author.id
             and parent_comment.author_id != post.author_id
         ):
-            notif = Notification(
+            await notification_service.create_and_push_notification(
+                db=db,
                 user_id=parent_comment.author_id,
                 type="reply",
                 payload={
@@ -110,10 +112,6 @@ class CommentService:
                     "author_name": author.display_name,
                 },
             )
-            db.add(notif)
-
-        await db.commit()
-        await db.refresh(comment)
 
         author_summary = AuthorSummary(
             id=author.id,

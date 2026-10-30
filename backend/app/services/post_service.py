@@ -5,41 +5,21 @@ Handles post creation, retrieval, updates, deletions, keyset-paginated feeds,
 and like toggling.
 """
 
-import base64
 import uuid
-from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.pagination import decode_cursor, encode_cursor
 from app.models.comment import Comment
 from app.models.like import Like
-from app.models.notification import Notification
 from app.models.post import Post
 from app.models.user import User
 from app.schemas.post import FeedResponse, PostCreate, PostResponse, PostUpdate
 from app.schemas.user import AuthorSummary
-
-
-def encode_cursor(created_at: datetime, item_id: uuid.UUID) -> str:
-    """Encode created_at datetime and item UUID into an opaque base64 cursor."""
-    raw = f"{created_at.isoformat()}|{item_id}"
-    return base64.urlsafe_b64encode(raw.encode("utf-8")).decode("utf-8")
-
-
-def decode_cursor(cursor_str: str) -> tuple[datetime, uuid.UUID] | None:
-    """Decode base64 cursor into created_at datetime and item UUID."""
-    try:
-        raw = base64.urlsafe_b64decode(cursor_str.encode("utf-8")).decode("utf-8")
-        dt_str, id_str = raw.split("|", 1)
-        dt = datetime.fromisoformat(dt_str)
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=UTC)
-        return dt, uuid.UUID(id_str)
-    except Exception:
-        return None
+from app.services.notification_service import notification_service
 
 
 class PostService:
@@ -337,11 +317,13 @@ class PostService:
         else:
             new_like = Like(user_id=user.id, post_id=post_id)
             db.add(new_like)
+            await db.commit()
             liked = True
 
             # Trigger notification if liker is not the author
             if post.author_id != user.id:
-                notif = Notification(
+                await notification_service.create_and_push_notification(
+                    db=db,
                     user_id=post.author_id,
                     type="like",
                     payload={
@@ -351,7 +333,6 @@ class PostService:
                         "liker_name": user.display_name,
                     },
                 )
-                db.add(notif)
 
         await db.commit()
 

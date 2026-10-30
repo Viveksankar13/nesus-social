@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 3
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 4
 
 ---
 
@@ -20,7 +20,7 @@
 | **1** | Database Layer | ✅ **Done** | `stage-01-complete` |
 | **2** | Authentication Backend | ✅ **Done** | `stage-02-complete` |
 | **3** | Core Social Backend | ✅ **Done** | `stage-03-complete` |
-| **4** | Notifications & Real-time | 🔲 Not started | — |
+| **4** | Notifications & Real-time | ✅ **Done** | `stage-04-complete` |
 | **5** | Admin Backend | 🔲 Not started | — |
 | **6** | Gemini AI Service | 🔲 Not started | — |
 | **7** | Frontend Foundation | 🔲 Not started | — |
@@ -300,18 +300,19 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 4 — Notifications & Real-time 🔲
+### Stage 4 — Notifications & Real-time ✅
 
 **Goal:** SSE stream with stream tokens, persistence, admin login alerts, polling fallback.
 
 **Checklist:**
-- [ ] `app/services/notification_service.py` — create, mark read, list
-- [ ] `app/services/pubsub.py` — in-process pub/sub interface + implementation
-- [ ] `app/api/v1/notifications.py` — list, mark read, stream, stream-token
-- [ ] Admin login notification trigger in auth_service
-- [ ] Stream token: 60-second single-purpose JWT
-- [ ] SSE: heartbeat every 20s, CORS for `NEXT_PUBLIC_BACKEND_URL`
-- [ ] `tests/test_notifications.py`
+- [x] `app/services/notification_service.py` — create, mark read, list
+- [x] `app/services/pubsub.py` — in-process pub/sub interface + implementation
+- [x] `app/api/v1/notifications.py` — list, mark read, stream, stream-token
+- [x] Admin login notification trigger in auth_service (debounced within 60s)
+- [x] Stream token: 60-second single-purpose JWT
+- [x] SSE: heartbeat every 20s, CORS for `NEXT_PUBLIC_BACKEND_URL`
+- [x] `tests/test_notifications.py` (5 tests passing)
+- [x] `docs/stages/STAGE_04.md` written
 
 ---
 

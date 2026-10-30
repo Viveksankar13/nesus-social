@@ -25,10 +25,10 @@
 | **SOCIAL-04** | Feed: cursor infinite scroll | 3 | ✅ Done | `GET /api/v1/posts?cursor=`, test `test_cursor_feed_pagination_and_filtering` |
 | **SOCIAL-05** | Like toggle (unique per user/post) | 3 | ✅ Done | `POST /api/v1/posts/{id}/like`, test `test_like_toggle_and_notifications` |
 | **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3 | ✅ Done | `POST/GET /api/v1/posts/{id}/comments`, test `test_comments_and_one_level_replies` |
-| **NOTIF-01** | Notification persistence | 4 | 🔲 Not started | `notifications` table |
-| **NOTIF-02** | SSE stream with stream tokens | 4 | 🔲 Not started | `GET /api/v1/notifications/stream` |
-| **NOTIF-03** | Admin: real-time login alert | 4 | 🔲 Not started | test `test_admin_login_notification` |
-| **NOTIF-04** | Polling fallback every 30s | 4/7 | 🔲 Not started | frontend `useNotifications` hook |
+| **NOTIF-01** | Notification persistence | 4 | ✅ Done | `notifications` table, `app/services/notification_service.py` |
+| **NOTIF-02** | SSE stream with stream tokens | 4 | ✅ Done | `GET /api/v1/notifications/stream`, test `test_stream_token_generation_and_stream` |
+| **NOTIF-03** | Admin: real-time login alert | 4 | ✅ Done | test `test_admin_login_notification_and_debouncing` |
+| **NOTIF-04** | Polling fallback every 30s | 4/7 | ✅ Done | `/api/v1/notifications/unread-count`, `/api/v1/notifications` endpoints |
 | **ADMIN-01** | Dashboard stat cards | 5 | 🔲 Not started | `GET /api/v1/admin/stats` |
 | **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5 | 🔲 Not started | `GET /api/v1/admin/charts` |
 | **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5 | 🔲 Not started | `GET/PUT/DELETE /api/v1/admin/users` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 3 complete*
+*Last updated: Stage 4 complete*
