@@ -29,11 +29,12 @@ from app.services.auth_service import auth_service
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 REFRESH_COOKIE_NAME = "refresh_token"
-REFRESH_COOKIE_PATH = "/api/v1/auth"
+REFRESH_COOKIE_PATH = "/"
+USER_ROLE_COOKIE_NAME = "user_role"
 
 
-def set_refresh_cookie(response: Response, raw_token: str) -> None:
-    """Helper to attach rotating httpOnly refresh token cookie to HTTP response."""
+def set_refresh_cookie(response: Response, raw_token: str, role: str = "user") -> None:
+    """Helper to attach rotating httpOnly refresh token cookie and companion role cookie to HTTP response."""
     max_age = settings.REFRESH_TOKEN_DAYS * 24 * 3600
     is_secure = settings.ENVIRONMENT == "production"
     response.set_cookie(
@@ -43,6 +44,17 @@ def set_refresh_cookie(response: Response, raw_token: str) -> None:
         expires=max_age,
         path=REFRESH_COOKIE_PATH,
         httponly=True,
+        secure=is_secure,
+        samesite="lax",
+    )
+    # Companion cookie for edge route guards & client layout
+    response.set_cookie(
+        key=USER_ROLE_COOKIE_NAME,
+        value=role,
+        max_age=max_age,
+        expires=max_age,
+        path=REFRESH_COOKIE_PATH,
+        httponly=False,
         secure=is_secure,
         samesite="lax",
     )
@@ -119,14 +131,15 @@ async def login(
     Returns 15-min JWT access token in JSON body; sets rotating refresh token in httpOnly cookie.
     """
     client_ip = request.client.host if request.client else None
-    access_token, raw_refresh, _ = await auth_service.login(
+    access_token, raw_refresh, user = await auth_service.login(
         db, req, user_agent=user_agent, ip_address=client_ip
     )
-    set_refresh_cookie(response, raw_refresh)
+    set_refresh_cookie(response, raw_refresh, role=user.role)
     return TokenResponse(
         access_token=access_token,
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
+        user=user,
     )
 
 
@@ -152,14 +165,15 @@ async def refresh_token(
             detail="Refresh token cookie missing.",
         )
     client_ip = request.client.host if request.client else None
-    new_access, new_refresh, _ = await auth_service.refresh(
+    new_access, new_refresh, user = await auth_service.refresh(
         db, refresh_token, user_agent=user_agent, ip_address=client_ip
     )
-    set_refresh_cookie(response, new_refresh)
+    set_refresh_cookie(response, new_refresh, role=user.role)
     return TokenResponse(
         access_token=new_access,
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
+        user=user,
     )
 
 
@@ -177,6 +191,10 @@ async def logout(
     await auth_service.logout(db, refresh_token)
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
+        path=REFRESH_COOKIE_PATH,
+    )
+    response.delete_cookie(
+        key=USER_ROLE_COOKIE_NAME,
         path=REFRESH_COOKIE_PATH,
     )
     return MessageResponse(message="Successfully logged out.")

@@ -7,11 +7,12 @@ Pydantic v2 schemas for all auth workflows:
 """
 
 import re
-from typing import Annotated
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 from app.core.security import validate_password_strength
+from app.schemas.user import UserResponse
 
 UsernameStr = Annotated[
     str,
@@ -72,6 +73,14 @@ class LoginRequest(BaseModel):
         description="Email address, username, or Student USN",
     )
     password: str = Field(min_length=1, max_length=128)
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_email_or_username(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "email_or_username" not in data and "username_or_email" in data:
+                data["email_or_username"] = data["username_or_email"]
+        return data
 
 
 class VerifyEmailRequest(BaseModel):
@@ -136,6 +145,9 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int = 900  # 15 minutes in seconds
+    user: UserResponse | None = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MessageResponse(BaseModel):

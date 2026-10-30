@@ -17,6 +17,11 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 # Ensure backend root is on sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

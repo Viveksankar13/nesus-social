@@ -40,10 +40,11 @@ All student accounts are pre-verified and ready for instant login using **Email,
 
 | Student Name | Username | Student USN (College ID) | Email Address | Password |
 | :--- | :--- | :--- | :--- | :--- |
-| **Aarav Sharma** | `aarav_sharma` | `1MS21CS001` | `aarav.sharma@college.edu` | `Password@123` |
-| **Priya Patel** | `priya_patel` | `1RV20EC045` | `priya.patel@college.edu` | `Password@123` |
-| **Rohan Verma** | `rohan_verma` | `1BMS22IS089` | `rohan.verma@college.edu` | `Password@123` |
-| **Ananya Iyer** | `ananya_iyer` | `1PES21ME032` | `ananya.iyer@college.edu` | `Password@123` |
+| **Dr. Sarah Chen** | `sarah_chen` | `1MS21CS001` | `sarah.chen@example.com` | `DemoPassword123!` |
+| **Marcus Vance** | `marcus_v` | `1RV20EC045` | `marcus.vance@example.com` | `DemoPassword123!` |
+| **Elena Rostova** | `elena_designs` | `4NI21IS020` | `elena.rostova@example.com` | `DemoPassword123!` |
+| **Devon Miles** | `devon_codes` | `1PE19CS088` | `devon.miles@example.com` | `DemoPassword123!` |
+| **Aiko Tanaka** | `aiko_t` | `1BM22AI012` | `aiko.tanaka@example.com` | `DemoPassword123!` |
 
 ---
 

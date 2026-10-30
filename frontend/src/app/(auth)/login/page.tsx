@@ -62,11 +62,17 @@ function LoginForm() {
         variant: "default",
       });
 
-      if (user.role === "admin" && redirectUrl === "/feed") {
-        router.push("/admin");
+      if (user.role === "admin") {
+        const dest =
+          redirectUrl && redirectUrl !== "/feed" && redirectUrl.startsWith("/admin")
+            ? redirectUrl
+            : "/admin";
+        router.push(dest);
       } else {
-        router.push(redirectUrl);
+        const dest = redirectUrl.startsWith("/admin") ? "/feed" : redirectUrl;
+        router.push(dest);
       }
+      router.refresh();
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to sign in. Please verify your credentials.";

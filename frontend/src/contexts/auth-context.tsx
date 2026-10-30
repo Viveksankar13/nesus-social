@@ -13,7 +13,8 @@ import { apiClient, setAccessToken } from "@/lib/api-client";
 import type { User } from "@/types";
 
 interface LoginCredentials {
-  username_or_email: string;
+  username_or_email?: string;
+  email_or_username?: string;
   password: string;
 }
 
@@ -69,7 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (refreshRes.ok) {
           const data = await refreshRes.json();
           setAccessToken(data.access_token);
-          const userData = await apiClient.get<User>("/users/me");
+          let userData: User | null = (data.user as User) ?? null;
+          if (!userData) {
+            userData = await apiClient.get<User>("/users/me");
+          }
           if (isMounted) {
             setUser(userData);
           }
@@ -100,12 +104,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<User> => {
-      const res = await apiClient.post<{ access_token: string }>(
+      const identifier =
+        credentials.email_or_username || credentials.username_or_email || "";
+      const res = await apiClient.post<{ access_token: string; user?: User }>(
         "/auth/login",
-        credentials
+        {
+          email_or_username: identifier,
+          username_or_email: identifier,
+          password: credentials.password,
+        }
       );
       setAccessToken(res.access_token);
-      const userData = await apiClient.get<User>("/users/me");
+      let userData: User | null = res.user ?? null;
+      if (!userData) {
+        userData = await apiClient.get<User>("/users/me");
+      }
       setUser(userData);
       return userData;
     },

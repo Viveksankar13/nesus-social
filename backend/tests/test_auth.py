@@ -157,6 +157,14 @@ async def test_register_and_verify_email_flow(
     assert data["token_type"] == "bearer"
     assert "refresh_token" in login_resp.cookies
 
+    # 5. Login using username_or_email payload key should also succeed
+    login_resp_alt = await auth_client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": "sarah@example.com", "password": "Password123!"},
+    )
+    assert login_resp_alt.status_code == 200
+    assert "access_token" in login_resp_alt.json()
+
 
 @pytest.mark.asyncio
 async def test_register_duplicate_email_fails(auth_client: AsyncClient) -> None:

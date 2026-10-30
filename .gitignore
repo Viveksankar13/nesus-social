@@ -2,6 +2,12 @@
 # AI Social Media Platform – .gitignore
 # ===========================
 
+# ── Database Local Files ──────────────────
+*.db
+*.sqlite
+*.sqlite3
+backend/nexus_dev.db
+
 # ── Environment & Secrets ──────────────────
 .env
 .env.local

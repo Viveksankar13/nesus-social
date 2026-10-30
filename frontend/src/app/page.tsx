@@ -1,43 +1,94 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowRight,
   Bot,
+  LayoutDashboard,
+  LogOut,
   MessageSquare,
+  Rss,
+  Shield,
   ShieldAlert,
   Sparkles,
   Zap,
 } from "lucide-react";
+
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/utils";
 
 export default function LandingPage() {
+  const { user, isAdmin, logout } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-muted/20 to-background">
       {/* Navigation Bar */}
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
+          <Link href={user ? (isAdmin ? "/admin" : "/feed") : "/"} className="flex items-center space-x-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
               <Sparkles className="h-5 w-5" />
             </div>
             <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
-              Nexus Social
+              JAIN Social
             </span>
-          </div>
+          </Link>
 
           <div className="flex items-center space-x-3">
             <ThemeToggle />
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="shadow-sm">
-                Get Started
-                <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
-            </Link>
+
+            {user ? (
+              <div className="flex items-center space-x-2">
+                {isAdmin ? (
+                  <Link href="/admin">
+                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm gap-1.5">
+                      <Shield className="h-4 w-4" />
+                      <span>Admin Console</span>
+                    </Button>
+                  </Link>
+                ) : null}
+
+                <Link href="/feed">
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Rss className="h-4 w-4" />
+                    <span>Feed</span>
+                  </Button>
+                </Link>
+
+                <div className="hidden sm:flex items-center gap-2 pl-2 border-l">
+                  <Avatar className="h-8 w-8">
+                    {user.avatar_url && <AvatarImage src={user.avatar_url} alt={user.display_name} />}
+                    <AvatarFallback>{getInitials(user.display_name)}</AvatarFallback>
+                  </Avatar>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => logout()}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    title="Sign Out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm" className="shadow-sm">
+                    Get Started
+                    <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -62,17 +113,54 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/register" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto px-8 shadow-md">
-              Create Free Account
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/login" className="w-full sm:w-auto">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
-              Sign In to Your Feed
-            </Button>
-          </Link>
+          {user ? (
+            isAdmin ? (
+              <>
+                <Link href="/admin" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto px-8 shadow-md bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                    <LayoutDashboard className="h-5 w-5" />
+                    Enter Admin Console
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/feed" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 gap-2">
+                    <Rss className="h-5 w-5" />
+                    View Community Feed
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/feed" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto px-8 shadow-md gap-2">
+                    <Rss className="h-5 w-5" />
+                    Go to Your Feed
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href={`/profile/${user.username}`} className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
+                    View Your Profile
+                  </Button>
+                </Link>
+              </>
+            )
+          ) : (
+            <>
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto px-8 shadow-md">
+                  Create Free Account
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/login" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
+                  Sign In to Your Feed
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Feature Grid */}
