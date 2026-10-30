@@ -32,6 +32,7 @@ from app.core.logging import (
     get_logger,
     request_id_var,
 )
+from app.core.security_headers import SecurityHeadersMiddleware
 from app.db.session import engine
 
 configure_logging()
@@ -59,6 +60,19 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: startup and shutdown hooks."""
+    if settings.SENTRY_DSN:
+        try:
+            import sentry_sdk
+
+            sentry_sdk.init(
+                dsn=settings.SENTRY_DSN,
+                environment=settings.ENVIRONMENT,
+                traces_sample_rate=0.2 if settings.ENVIRONMENT == "production" else 1.0,
+            )
+            logger.info("Sentry monitoring initialized successfully")
+        except ImportError:
+            logger.warning("SENTRY_DSN configured but sentry-sdk package is not installed")
+
     logger.info(
         "Starting Nexus Social API",
         extra={"environment": settings.ENVIRONMENT, "version": "1.0.0"},
@@ -84,6 +98,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # ── Middleware Stack (LIFO execution order) ─────────────────────
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,

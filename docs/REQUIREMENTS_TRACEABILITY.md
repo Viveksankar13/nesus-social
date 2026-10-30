@@ -55,9 +55,9 @@
 | **UI-05** | Silent token refresh interceptor | 7 | ✅ Done | `src/lib/api-client.ts`, deduplicated silent 401 refresh |
 | **QUAL-01** | Backend pytest: all auth flows | 2 | ✅ Done | `backend/tests/test_auth.py` (6 tests passing) |
 | **QUAL-02** | Backend pytest: authorization | 3 | ✅ Done | `backend/tests/test_social.py` (ownership tests) |
-| **QUAL-03** | Playwright E2E smoke test | 10 | 🔲 Not started | `frontend/tests/e2e/smoke.spec.ts` |
+| **QUAL-03** | Playwright E2E smoke test | 10 | ✅ Done | `frontend/tests/e2e/smoke.spec.ts` covering landing, USN registration, login, forgot password, theme, guards |
 | **QUAL-04** | GitHub Actions CI | 0 | ✅ Done | `.github/workflows/ci.yml` |
-| **QUAL-05** | Structured JSON logging + request IDs | 10 | 🔲 Not started | `app/core/logging.py` |
+| **QUAL-05** | Structured JSON logging + request IDs | 10 | ✅ Done | `backend/app/core/logging.py`, `RequestIdMiddleware` in `main.py` |
 | **QUAL-06** | Ruff + ESLint + tsc clean | 0-12 | ✅ Done | Ruff, ESLint, tsc --noEmit all 0 errors |
 | **DEPLOY-01** | Backend Dockerfile (multi-stage, non-root) | 11 | 🔲 Not started | `backend/Dockerfile` |
 | **DEPLOY-02** | render.yaml blueprint | 0 | ✅ Done | `render.yaml` |
@@ -66,7 +66,7 @@
 | **DOC-01** | System Documentation PDF | 12 | 🔲 Not started | `docs/pdf/SYSTEM_DOCUMENTATION.pdf` |
 | **DOC-02** | SUBMISSION.md with all required items | 12 | 🔲 Not started | `docs/SUBMISSION.md` |
 | **SEC-01** | No secrets in repo (secret scan) | 12 | 🔲 Not started | `scripts/secret_scan.py` output |
-| **SEC-02** | Security headers | 10 | 🔲 Not started | `app/core/security_headers.py` |
+| **SEC-02** | Security headers | 10 | ✅ Done | `backend/app/core/security_headers.py` (CSP, HSTS, X-Content-Type, X-Frame) + Next.js headers |
 | **SEC-03** | Strict CORS allowlist | 2 | ✅ Done | `backend/app/main.py` CORS middleware |
 | **SEC-04** | Parameterized queries only | 1-6 | ✅ Done | SQLAlchemy 2.0 ORM only |
 | **SEC-05** | No stack traces to clients | 2 | ✅ Done | `backend/app/main.py` global exception handlers |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 9 complete*
+*Last updated: Stage 10 complete (including Brevo SMTP & Student USN University Identity Integration)*

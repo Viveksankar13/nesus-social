@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
     username: str
+    usn: str | None = None
     display_name: str
     bio: str | None = None
     location: str | None = None
@@ -46,6 +47,7 @@ class UserProfileResponse(BaseModel):
 
     id: uuid.UUID
     username: str
+    usn: str | None = None
     display_name: str
     bio: str | None = None
     location: str | None = None
@@ -63,6 +65,7 @@ class UserUpdate(BaseModel):
     """Payload for updating own profile."""
 
     display_name: str | None = Field(default=None, min_length=1, max_length=100)
+    usn: str | None = Field(default=None, max_length=50, description="Student USN")
     bio: str | None = Field(default=None, max_length=500)
     location: str | None = Field(default=None, max_length=100)
     website: str | None = Field(default=None, max_length=255)

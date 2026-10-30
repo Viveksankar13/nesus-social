@@ -53,6 +53,7 @@ class AdminUserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
     username: str
+    usn: str | None = None
     display_name: str
     role: str
     is_verified: bool

@@ -127,6 +127,11 @@ export default function ProfilePage() {
                     Admin
                   </Badge>
                 )}
+                {profile.usn && (
+                  <Badge variant="outline" className="text-[11px] h-5 px-2 font-mono font-semibold border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    USN: {profile.usn}
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">@{profile.username}</p>
             </div>

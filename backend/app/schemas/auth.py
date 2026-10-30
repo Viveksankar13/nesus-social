@@ -26,6 +26,11 @@ class RegisterRequest(BaseModel):
     username: UsernameStr
     display_name: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=8, max_length=128)
+    usn: str | None = Field(
+        default=None,
+        max_length=50,
+        description="University Seat Number (USN) / Student College ID Number",
+    )
 
     @field_validator("username")
     @classmethod
@@ -34,6 +39,20 @@ class RegisterRequest(BaseModel):
         if not re.match(r"^[a-zA-Z0-9_]+$", clean_v):
             raise ValueError("Username may only contain letters, numbers, and underscores.")
         return clean_v
+
+    @field_validator("usn")
+    @classmethod
+    def validate_usn(cls, v: str | None) -> str | None:
+        if v is not None:
+            clean = v.strip().upper()
+            if not clean:
+                return None
+            if len(clean) < 3:
+                raise ValueError("Student USN must be at least 3 characters.")
+            if not re.match(r"^[A-Z0-9_-]+$", clean):
+                raise ValueError("Student USN may only contain letters, numbers, hyphens, and underscores.")
+            return clean
+        return None
 
     @field_validator("password")
     @classmethod
@@ -47,7 +66,11 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     """Payload for user authentication."""
 
-    email_or_username: str = Field(min_length=3, max_length=255)
+    email_or_username: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Email address, username, or Student USN",
+    )
     password: str = Field(min_length=1, max_length=128)
 
 
@@ -60,13 +83,21 @@ class VerifyEmailRequest(BaseModel):
 class ResendVerificationRequest(BaseModel):
     """Payload to request a new verification email."""
 
-    email: EmailStr
+    email: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Registered email address or Student USN",
+    )
 
 
 class ForgotPasswordRequest(BaseModel):
     """Payload to initiate password reset."""
 
-    email: EmailStr
+    email: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Registered email address or Student USN",
+    )
 
 
 class ResetPasswordRequest(BaseModel):

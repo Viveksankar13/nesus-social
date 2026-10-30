@@ -164,6 +164,7 @@ class AdminService:
                     User.username.ilike(pattern),
                     User.email.ilike(pattern),
                     User.display_name.ilike(pattern),
+                    User.usn.ilike(pattern),
                 )
             )
         if role:
@@ -216,6 +217,7 @@ class AdminService:
                 id=u.id,
                 email=u.email,
                 username=u.username,
+                usn=u.usn,
                 display_name=u.display_name,
                 role=u.role,
                 is_verified=u.is_verified,

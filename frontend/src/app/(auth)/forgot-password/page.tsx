@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/card";
 
 const forgotSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().min(3, "Please enter your registered email address or Student USN"),
 });
 
 type ForgotFormValues = z.infer<typeof forgotSchema>;
@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
     try {
       await apiClient.post("/auth/forgot-password", { email: data.email });
     } catch {
-      // Intentionally suppress errors to prevent email enumeration attacks
+      // Intentionally suppress errors to prevent enumeration attacks
     } finally {
       setSubmittedEmail(data.email);
     }
@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
           <CardDescription className="text-base text-muted-foreground">
             If an account is associated with{" "}
             <span className="font-semibold text-foreground">{submittedEmail}</span>,
-            we have sent password reset instructions.
+            we have sent password reset instructions to the registered email address.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
@@ -89,18 +89,18 @@ export default function ForgotPasswordPage() {
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">Forgot Password?</CardTitle>
         <CardDescription>
-          Enter your registered email address and we will send you a reset link
+          Enter your registered email address or Student USN (College ID) and we will send you a reset link
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email Address or Student USN</Label>
             <Input
               id="email"
-              type="email"
-              placeholder="jane@example.com"
-              autoComplete="email"
+              type="text"
+              placeholder="student@college.edu or 1MS21CS001"
+              autoComplete="username"
               disabled={isSubmitting}
               {...register("email")}
             />

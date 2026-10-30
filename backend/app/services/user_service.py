@@ -36,7 +36,10 @@ class UserService:
         if user_uuid:
             query = select(User).where(User.id == user_uuid)
         else:
-            query = select(User).where(func.lower(User.username) == identifier.lower())
+            query = select(User).where(
+                (func.lower(User.username) == identifier.lower())
+                | (User.usn == identifier.upper())
+            )
 
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -74,6 +77,7 @@ class UserService:
         return UserProfileResponse(
             id=user.id,
             username=user.username,
+            usn=user.usn,
             display_name=user.display_name,
             bio=user.bio,
             location=user.location,
@@ -90,6 +94,18 @@ class UserService:
         """Update profile fields for the authenticated user."""
         if data.display_name is not None:
             user.display_name = data.display_name
+        if data.usn is not None:
+            clean_usn = data.usn.strip().upper() if data.usn else None
+            if clean_usn and clean_usn != user.usn:
+                existing = await db.execute(
+                    select(User).where(User.usn == clean_usn, User.id != user.id)
+                )
+                if existing.scalar_one_or_none():
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Student USN is already assigned to another account.",
+                    )
+            user.usn = clean_usn
         if data.bio is not None:
             user.bio = data.bio
         if data.location is not None:

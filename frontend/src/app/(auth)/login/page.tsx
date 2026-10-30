@@ -79,7 +79,7 @@ function LoginForm() {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold tracking-tight">Sign In</CardTitle>
         <CardDescription>
-          Enter your email or username to access your Nexus account
+          Enter your email, username, or Student USN to access your Nexus account
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -91,11 +91,11 @@ function LoginForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="username_or_email">Email or Username</Label>
+            <Label htmlFor="username_or_email">Email, Username, or Student USN</Label>
             <Input
               id="username_or_email"
               type="text"
-              placeholder="user@example.com or username"
+              placeholder="user@example.com, username, or 1MS21CS001"
               autoComplete="username"
               disabled={isSubmitting}
               {...register("username_or_email")}

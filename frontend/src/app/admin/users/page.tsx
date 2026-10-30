@@ -290,7 +290,14 @@ export default function AdminUsersPage() {
                           <p className="font-medium text-foreground leading-none">
                             {u.display_name}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">@{u.username}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs text-muted-foreground">@{u.username}</span>
+                            {u.usn && (
+                              <span className="text-[10px] font-mono font-semibold px-1 py-0 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                                {u.usn}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </TableCell>

@@ -12,7 +12,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -44,20 +44,25 @@ class AuthService:
         """Register a new user account and dispatch verification email."""
         clean_email = req.email.strip().lower()
         clean_username = req.username.strip().lower()
+        clean_usn = req.usn.strip().upper() if req.usn else None
 
-        # Check uniqueness
-        stmt = select(User).where((User.email == clean_email) | (User.username == clean_username))
+        # Check uniqueness of email, username, or Student USN
+        conditions = [User.email == clean_email, User.username == clean_username]
+        if clean_usn:
+            conditions.append(User.usn == clean_usn)
+        stmt = select(User).where(or_(*conditions))
         res = await session.execute(stmt)
         if res.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email or username already in use.",
+                detail="Email, username, or Student USN already in use.",
             )
 
         user = User(
             id=uuid.uuid4(),
             email=clean_email,
             username=clean_username,
+            usn=clean_usn,
             display_name=req.display_name.strip(),
             hashed_password=hash_password(req.password),
             role="user",
@@ -84,6 +89,7 @@ class AuthService:
             to_email=user.email,
             username=user.username,
             token=raw_token,
+            usn=user.usn,
         )
         logger.info(
             "User registered successfully", extra={"user_id": str(user.id), "email": user.email}
@@ -115,21 +121,26 @@ class AuthService:
         if user:
             user.is_verified = True
             await session.commit()
-            await email_service.send_welcome_email(user.email, user.username)
+            await email_service.send_welcome_email(user.email, user.username, usn=user.usn)
             logger.info("Email verified successfully", extra={"user_id": str(user.id)})
 
         return {"message": "Email successfully verified. You may now log in."}
 
     async def resend_verification(self, session: AsyncSession, email: str) -> dict[str, str]:
         """Resend email verification link if account is unverified (rate limited)."""
-        clean_email = email.strip().lower()
-        stmt = select(User).where(User.email == clean_email)
+        clean_id = email.strip()
+        conditions = [
+            User.email == clean_id.lower(),
+            User.username == clean_id.lower(),
+            User.usn == clean_id.upper(),
+        ]
+        stmt = select(User).where(or_(*conditions))
         res = await session.execute(stmt)
         user = res.scalar_one_or_none()
 
         # Return identical response to prevent email enumeration
         generic_msg = (
-            "If an unverified account exists with that email address, "
+            "If an unverified account exists with that identifier, "
             "a verification link has been sent."
         )
 
@@ -156,7 +167,7 @@ class AuthService:
         session.add(new_token)
         await session.commit()
 
-        await email_service.send_verification_email(user.email, user.username, raw_token)
+        await email_service.send_verification_email(user.email, user.username, raw_token, usn=user.usn)
         return {"message": generic_msg}
 
     async def login(
@@ -167,12 +178,17 @@ class AuthService:
         ip_address: str | None = None,
     ) -> tuple[str, str, User]:
         """
-        Authenticate user credentials.
+        Authenticate user credentials by email, username, or Student USN.
         Returns:
             (access_token, raw_refresh_token, user)
         """
-        identifier = req.email_or_username.strip().lower()
-        stmt = select(User).where((User.email == identifier) | (User.username == identifier))
+        identifier = req.email_or_username.strip()
+        conditions = [
+            User.email == identifier.lower(),
+            User.username == identifier.lower(),
+            User.usn == identifier.upper(),
+        ]
+        stmt = select(User).where(or_(*conditions))
         res = await session.execute(stmt)
         user = res.scalar_one_or_none()
 
@@ -328,15 +344,23 @@ class AuthService:
         )
         await session.commit()
 
-    async def forgot_password(self, session: AsyncSession, email: str) -> dict[str, str]:
-        """Initiate password reset flow with generic response to prevent enumeration."""
-        clean_email = email.strip().lower()
-        stmt = select(User).where(User.email == clean_email)
+    async def forgot_password(self, session: AsyncSession, identifier: str) -> dict[str, str]:
+        """
+        Initiate password reset flow using registered email address, username, or Student USN.
+        Sends single-use reset token link via Brevo/SMTP to the user's verified email.
+        """
+        clean_id = identifier.strip()
+        conditions = [
+            User.email == clean_id.lower(),
+            User.username == clean_id.lower(),
+            User.usn == clean_id.upper(),
+        ]
+        stmt = select(User).where(or_(*conditions))
         res = await session.execute(stmt)
         user = res.scalar_one_or_none()
 
         generic_response = {
-            "message": "If an account with that email exists, a password reset link has been sent."
+            "message": "If an account matching that identifier exists, a password reset link has been sent."
         }
 
         if not user or user.is_suspended:
@@ -362,7 +386,9 @@ class AuthService:
         session.add(reset_token)
         await session.commit()
 
-        await email_service.send_password_reset_email(user.email, user.username, raw_token)
+        await email_service.send_password_reset_email(
+            user.email, user.username, raw_token, usn=user.usn
+        )
         return generic_response
 
     async def reset_password(

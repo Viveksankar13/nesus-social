@@ -22,8 +22,8 @@
       <h1>Nexus Social</h1>
     </div>
     <div class="content">
-      <p>Hello <strong>{{ username }}</strong>,</p>
-      <p>Welcome to Nexus Social! Please confirm your email address to activate your account and start connecting with the community.</p>
+      <p>Hello <strong>{{ username }}</strong>{% if usn %} (Student USN / College ID: <strong>{{ usn }}</strong>){% endif %},</p>
+      <p>Welcome to Nexus Social! Please confirm your email address to activate your student account and start connecting with the community.</p>
       <div class="button-wrap">
         <a href="{{ verification_url }}" class="btn" target="_blank">Verify Email Address</a>
       </div>

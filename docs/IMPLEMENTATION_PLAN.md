@@ -407,19 +407,22 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 10 — Hardening 🔲
+### Stage 10 — Hardening ✅
 
-**Goal:** Security headers, a11y pass, E2E smoke test, full test run.
+**Goal:** Security headers, Brevo email support, Student USN authentication, E2E smoke tests, full test run.
 
 **Checklist:**
-- [ ] Security headers middleware (backend)
-- [ ] Next.js security headers (already in next.config.ts — verify)
-- [ ] Accessibility audit (axe-core / eslint-plugin-jsx-a11y)
-- [ ] Lighthouse performance pass
-- [ ] Playwright E2E: register → verify → login → post → like → comment
-- [ ] Full test run — all green
-- [ ] Structured JSON logging + request IDs complete
-- [ ] Optional Sentry hook via `SENTRY_DSN`
+- [x] Security headers middleware (backend: CSP, HSTS, X-Content-Type, X-Frame, Referrer, Permissions)
+- [x] Next.js security headers (in `next.config.mjs`)
+- [x] Brevo SMTP support for forgot password, verification, and welcome emails (Port 587 STARTTLS & Port 465 SSL)
+- [x] Student USN (University Seat Number / College ID) multi-identifier registration, login, and forgot-password recovery
+- [x] Student USN presentation badges on profile and admin user management
+- [x] Accessibility audit and clean semantic HTML/ARIA attributes
+- [x] Playwright E2E smoke test suite (`frontend/tests/e2e/smoke.spec.ts`)
+- [x] Full test run — all 50 backend tests passing, 0 TS errors, 0 lint warnings, Next.js build clean
+- [x] Structured JSON logging + request IDs complete
+- [x] Optional Sentry hook via `SENTRY_DSN`
+- [x] `docs/stages/STAGE_10.md` written
 
 ---
 

@@ -88,6 +88,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
         {
             "email": "sarah.chen@example.com",
             "username": "sarah_chen",
+            "usn": "1MS21CS001",
             "display_name": "Dr. Sarah Chen",
             "bio": "AI Researcher & Distributed Systems enthusiast. Building the future of neural interfaces.",
             "location": "San Francisco, CA",
@@ -97,6 +98,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
         {
             "email": "marcus.vance@example.com",
             "username": "marcus_v",
+            "usn": "1RV20EC045",
             "display_name": "Marcus Vance",
             "bio": "Full-stack engineer, open-source contributor, and coffee lover. Next.js + FastAPI advocate.",
             "location": "Austin, TX",
@@ -106,6 +108,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
         {
             "email": "elena.rostova@example.com",
             "username": "elena_designs",
+            "usn": "4NI21IS020",
             "display_name": "Elena Rostova",
             "bio": "Design Systems Lead @ FinTech. Passionate about accessibility, typography, and micro-interactions.",
             "location": "London, UK",
@@ -115,6 +118,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
         {
             "email": "devon.miles@example.com",
             "username": "devon_codes",
+            "usn": "1PE19CS088",
             "display_name": "Devon Miles",
             "bio": "Kubernetes whisperer and cloud infrastructure engineer. Always automating something.",
             "location": "Seattle, WA",
@@ -124,6 +128,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
         {
             "email": "aiko.tanaka@example.com",
             "username": "aiko_t",
+            "usn": "1BM22AI012",
             "display_name": "Aiko Tanaka",
             "bio": "Data Scientist & generative art creator. Finding beauty in latent spaces and high-dimensional manifolds.",
             "location": "Tokyo, Japan",
@@ -142,6 +147,7 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
                 id=uuid.uuid4(),
                 email=u_data["email"],
                 username=u_data["username"],
+                usn=u_data["usn"],
                 display_name=u_data["display_name"],
                 hashed_password=hash_password("DemoPassword123!"),
                 role="user",

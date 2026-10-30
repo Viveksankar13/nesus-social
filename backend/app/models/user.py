@@ -37,6 +37,12 @@ class User(Base, UUIDMixin, TimestampMixin):
         index=True,
         nullable=False,
     )
+    usn: Mapped[str | None] = mapped_column(
+        String(50),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
     display_name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,

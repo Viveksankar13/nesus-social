@@ -32,6 +32,7 @@ export function EditProfileDialog({ user }: EditProfileDialogProps) {
 
   const [open, setOpen] = React.useState(false);
   const [displayName, setDisplayName] = React.useState(user.display_name);
+  const [usn, setUsn] = React.useState(user.usn || "");
   const [bio, setBio] = React.useState(user.bio || "");
   const [location, setLocation] = React.useState(user.location || "");
   const [website, setWebsite] = React.useState(user.website || "");
@@ -62,6 +63,7 @@ export function EditProfileDialog({ user }: EditProfileDialogProps) {
     e.preventDefault();
     updateMutation.mutate({
       display_name: displayName.trim(),
+      usn: usn.trim().toUpperCase() || null,
       bio: bio.trim() || null,
       location: location.trim() || null,
       website: website.trim() || null,
@@ -92,6 +94,19 @@ export function EditProfileDialog({ user }: EditProfileDialogProps) {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="usn">Student USN / College ID</Label>
+              <span className="text-[10px] text-muted-foreground">e.g. 1MS21CS001</span>
+            </div>
+            <Input
+              id="usn"
+              placeholder="e.g. 1MS21CS001"
+              value={usn}
+              onChange={(e) => setUsn(e.target.value.toUpperCase())}
             />
           </div>
 

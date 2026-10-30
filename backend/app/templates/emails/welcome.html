@@ -21,8 +21,8 @@
       <h1>Nexus Social</h1>
     </div>
     <div class="content">
-      <p>Hello <strong>{{ username }}</strong>,</p>
-      <p>Your email has been verified and your account is active! You can now join conversations, publish posts, engage with AI features, and connect with people across the network.</p>
+      <p>Hello <strong>{{ username }}</strong>{% if usn %} (Student USN / College ID: <strong>{{ usn }}</strong>){% endif %},</p>
+      <p>Your student email has been verified and your account is active! You can now join conversations, publish posts, engage with AI features, and connect with peers across the college network.</p>
       <div class="button-wrap">
         <a href="{{ feed_url }}" class="btn" target="_blank">Go to Feed</a>
       </div>

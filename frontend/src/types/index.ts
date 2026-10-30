@@ -16,6 +16,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  usn?: string | null;
   display_name: string;
   bio: string | null;
   location: string | null;
@@ -31,6 +32,7 @@ export interface User {
 export interface UserProfile {
   id: string;
   username: string;
+  usn?: string | null;
   display_name: string;
   bio: string | null;
   location: string | null;
@@ -44,6 +46,7 @@ export interface UserProfile {
 
 export interface UserUpdateData {
   display_name?: string;
+  usn?: string | null;
   bio?: string | null;
   location?: string | null;
   website?: string | null;
@@ -206,6 +209,7 @@ export interface AdminUserResponse {
   id: string;
   email: string;
   username: string;
+  usn?: string | null;
   display_name: string;
   role: "user" | "admin";
   is_verified: boolean;

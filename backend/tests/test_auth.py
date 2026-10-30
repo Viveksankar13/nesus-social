@@ -313,7 +313,7 @@ async def test_forgot_and_reset_password_flow(
         json={"email": "reset_me@example.com"},
     )
     assert forgot_resp.status_code == 200
-    assert "If an account with that email exists" in forgot_resp.json()["message"]
+    assert "If an account matching that identifier exists" in forgot_resp.json()["message"]
 
     # Also test non-existent email returns same message
     forgot_fake = await auth_client.post(
@@ -321,4 +321,88 @@ async def test_forgot_and_reset_password_flow(
         json={"email": "nonexistent@example.com"},
     )
     assert forgot_fake.status_code == 200
-    assert "If an account with that email exists" in forgot_fake.json()["message"]
+    assert "If an account matching that identifier exists" in forgot_fake.json()["message"]
+
+
+# ── Student USN & Security Headers Tests ────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_student_usn_lifecycle(
+    auth_client: AsyncClient,
+    test_db_session: AsyncSession,
+) -> None:
+    """Verify Student USN registration, uniqueness, and login via USN."""
+    # 1. Register student with USN
+    reg_resp = await auth_client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "student1@college.edu",
+            "username": "student_one",
+            "display_name": "Student One",
+            "usn": "1MS21CS001",
+            "password": "ValidPass123!",
+        },
+    )
+    assert reg_resp.status_code == 201
+
+    # Verify duplicate USN rejected
+    dup_resp = await auth_client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "student2@college.edu",
+            "username": "student_two",
+            "display_name": "Student Two",
+            "usn": "1ms21cs001",  # Case-insensitive duplicate
+            "password": "ValidPass123!",
+        },
+    )
+    assert dup_resp.status_code == 400
+    assert "already in use" in dup_resp.json()["detail"].lower()
+
+    # Manually activate user for login test
+    user = (
+        await test_db_session.execute(
+            select(User).where(User.email == "student1@college.edu")
+        )
+    ).scalar_one()
+    user.is_verified = True
+    await test_db_session.commit()
+
+    # 2. Login using Student USN instead of email/username
+    login_usn_resp = await auth_client.post(
+        "/api/v1/auth/login",
+        json={
+            "email_or_username": "1ms21cs001",
+            "password": "ValidPass123!",
+        },
+    )
+    assert login_usn_resp.status_code == 200
+    assert "access_token" in login_usn_resp.json()
+
+    # 3. Forgot password lookup using Student USN
+    forgot_usn_resp = await auth_client.post(
+        "/api/v1/auth/forgot-password",
+        json={"email": "1MS21CS001"},
+    )
+    assert forgot_usn_resp.status_code == 200
+    assert "If an account matching that identifier exists" in forgot_usn_resp.json()["message"]
+
+
+@pytest.mark.asyncio
+async def test_security_headers_middleware(
+    auth_client: AsyncClient,
+) -> None:
+    """Verify essential OWASP security headers attached to responses."""
+    resp = await auth_client.get("/health")
+    assert resp.status_code == 200
+    headers = resp.headers
+
+    assert "content-security-policy" in headers
+    assert "x-content-type-options" in headers
+    assert headers["x-content-type-options"] == "nosniff"
+    assert "x-frame-options" in headers
+    assert headers["x-frame-options"] == "DENY"
+    assert "referrer-policy" in headers
+    assert "permissions-policy" in headers
+

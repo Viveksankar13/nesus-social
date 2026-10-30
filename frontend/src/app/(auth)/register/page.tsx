@@ -35,6 +35,11 @@ const registerSchema = z
       .string()
       .min(1, "Display name is required")
       .max(50, "Display name must be under 50 characters"),
+    usn: z
+      .string()
+      .max(50, "Student USN must be under 50 characters")
+      .optional()
+      .or(z.literal("")),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -73,6 +78,7 @@ export default function RegisterPage() {
       username: "",
       email: "",
       display_name: "",
+      usn: "",
       password: "",
       confirm_password: "",
     },
@@ -98,6 +104,7 @@ export default function RegisterPage() {
         username: data.username.toLowerCase(),
         email: data.email,
         display_name: data.display_name,
+        usn: data.usn?.trim() || undefined,
         password: data.password,
       });
       setRegisteredEmail(data.email);
@@ -183,6 +190,23 @@ export default function RegisterPage() {
                 <p className="text-xs text-destructive">{errors.username.message}</p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="usn">Student USN / College ID</Label>
+              <span className="text-[11px] text-muted-foreground">University Seat Number</span>
+            </div>
+            <Input
+              id="usn"
+              placeholder="e.g. 1MS21CS001"
+              autoCapitalize="characters"
+              disabled={isSubmitting}
+              {...register("usn")}
+            />
+            {errors.usn && (
+              <p className="text-xs text-destructive">{errors.usn.message}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
