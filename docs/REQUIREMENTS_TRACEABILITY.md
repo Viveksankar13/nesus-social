@@ -59,10 +59,10 @@
 | **QUAL-04** | GitHub Actions CI | 0 | ✅ Done | `.github/workflows/ci.yml` |
 | **QUAL-05** | Structured JSON logging + request IDs | 10 | ✅ Done | `backend/app/core/logging.py`, `RequestIdMiddleware` in `main.py` |
 | **QUAL-06** | Ruff + ESLint + tsc clean | 0-12 | ✅ Done | Ruff, ESLint, tsc --noEmit all 0 errors |
-| **DEPLOY-01** | Backend Dockerfile (multi-stage, non-root) | 11 | 🔲 Not started | `backend/Dockerfile` |
-| **DEPLOY-02** | render.yaml blueprint | 0 | ✅ Done | `render.yaml` |
-| **DEPLOY-03** | Vercel config + rewrites | 7/11 | 🔲 Not started | `frontend/vercel.json` |
-| **DEPLOY-04** | DEPLOYMENT.md step-by-step | 11 | 🔲 Not started | `docs/DEPLOYMENT.md` |
+| **DEPLOY-01** | Backend Dockerfile (multi-stage, non-root) | 11 | ✅ Done | `backend/Dockerfile`, non-root user `appuser:1001`, healthcheck, `entrypoint.sh` |
+| **DEPLOY-02** | render.yaml blueprint | 11 | ✅ Done | `render.yaml` with managed PostgreSQL + Docker Web Service + pre-deploy migrations |
+| **DEPLOY-03** | Vercel config + rewrites | 7/11 | ✅ Done | `frontend/vercel.json`, `next.config.mjs` API rewrites |
+| **DEPLOY-04** | DEPLOYMENT.md step-by-step | 11 | ✅ Done | `docs/DEPLOYMENT.md` comprehensive production deployment guide |
 | **DOC-01** | System Documentation PDF | 12 | 🔲 Not started | `docs/pdf/SYSTEM_DOCUMENTATION.pdf` |
 | **DOC-02** | SUBMISSION.md with all required items | 12 | 🔲 Not started | `docs/SUBMISSION.md` |
 | **SEC-01** | No secrets in repo (secret scan) | 12 | 🔲 Not started | `scripts/secret_scan.py` output |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 10 complete (including Brevo SMTP & Student USN University Identity Integration)*
+*Last updated: Stage 11 complete*

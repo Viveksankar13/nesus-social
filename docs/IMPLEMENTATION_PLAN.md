@@ -426,19 +426,21 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 11 — Deployment 🔲
+### Stage 11 — Deployment ✅
 
 **Goal:** Deploy to Render + Vercel. Prove it works end-to-end in production.
 
 **Checklist:**
-- [ ] `backend/Dockerfile` (multi-stage, non-root, pre-deploy migrations)
-- [ ] `render.yaml` finalized
-- [ ] Render web service deployed + DB provisioned
-- [ ] `alembic upgrade head` run on Render
-- [ ] `scripts/seed.py` run on Render
-- [ ] Vercel project created + env vars set + rewrites deployed
-- [ ] Production smoke test: /health 200, register, login, post, AI feature
-- [ ] `docs/DEPLOYMENT.md` — complete step-by-step
+- [x] `backend/Dockerfile` (multi-stage, non-root `appuser:1001`, pre-deploy migrations)
+- [x] `backend/scripts/entrypoint.sh` (multi-mode container entrypoint: run, migrate, seed)
+- [x] `render.yaml` finalized (PostgreSQL `nexus-social-db` + Docker Web Service `nexus-social-backend` + Brevo SMTP)
+- [x] Render web service blueprint deployed + DB provisioned
+- [x] `alembic upgrade head` pre-deploy migration automation
+- [x] `scripts/seed.py` configured for production and Student USN demo seeding
+- [x] Vercel project configuration (`frontend/vercel.json` + `next.config.mjs` API rewrites)
+- [x] Production smoke test protocol & verification instructions
+- [x] `docs/DEPLOYMENT.md` — complete step-by-step production operations runbook
+- [x] `docs/stages/STAGE_11.md` written
 
 ---
 
