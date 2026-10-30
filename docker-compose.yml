@@ -1,0 +1,86 @@
+# ===========================
+# AI Social Media Platform – Local Dev Stack
+# Services: PostgreSQL + Mailpit + FastAPI Backend
+# ===========================
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: socialmedia_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-socialmedia}
+      POSTGRES_USER: ${POSTGRES_USER:-socialmedia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-socialmedia} -d ${POSTGRES_DB:-socialmedia}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: socialmedia_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    volumes:
+      - mailpit_data:/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: socialmedia_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-socialmedia}:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/${POSTGRES_DB:-socialmedia}
+      - JWT_SECRET=${JWT_SECRET:-0123456789abcdef0123456789abcdef}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_MINUTES=15
+      - REFRESH_TOKEN_DAYS=7
+      - FRONTEND_URL=http://localhost:3000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - SMTP_FROM_EMAIL=noreply@nexussocial.dev
+      - SMTP_FROM_NAME=Nexus Social
+      - SMTP_USE_TLS=false
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-dummy_gemini_key_stage_0}
+      - GEMINI_MODEL=gemini-2.5-flash
+      - AI_DAILY_QUOTA=100
+      - MODERATION_FAIL_MODE=open
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@nexussocial.dev}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-AdminPassword123!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app:ro
+
+volumes:
+  postgres_data:
+    driver: local
+  mailpit_data:
+    driver: local
+
+networks:
+  default:
+    name: socialmedia_dev

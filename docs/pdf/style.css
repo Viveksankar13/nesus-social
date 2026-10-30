@@ -1,0 +1,286 @@
+/* ===========================
+   Nexus Social – System Documentation PDF Styles
+   Used by build_pdf.py via WeasyPrint
+   =========================== */
+
+/* ── Fonts & Base ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --accent: #6366f1;         /* Indigo */
+  --accent-dark: #4f46e5;
+  --accent-light: #e0e7ff;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #ffffff;
+  --bg-code: #f8fafc;
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Page Layout ──────────────────────────────── */
+@page {
+  size: A4;
+  margin: 25mm 20mm 25mm 20mm;
+
+  @top-center {
+    content: "Nexus Social – System Documentation";
+    font-size: 8pt;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 8pt;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+
+  @bottom-left {
+    content: "Confidential – Internal Use";
+    font-size: 8pt;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@page :first {
+  @top-center { content: ""; }
+  @bottom-right { content: ""; }
+  @bottom-left { content: ""; }
+}
+
+/* ── Cover Page ───────────────────────────────── */
+.cover {
+  page-break-after: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 270mm;
+  text-align: center;
+  padding: 40px;
+}
+
+.cover-logo {
+  font-size: 72pt;
+  margin-bottom: 20px;
+}
+
+.cover h1 {
+  font-size: 28pt;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.cover .subtitle {
+  font-size: 14pt;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+}
+
+.cover .meta {
+  font-size: 9pt;
+  color: var(--text-muted);
+  margin-top: 60px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  width: 100%;
+}
+
+/* ── Table of Contents ────────────────────────── */
+.toc {
+  page-break-after: always;
+}
+
+.toc h2 {
+  font-size: 18pt;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 8px;
+}
+
+.toc a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.toc ul { list-style: none; padding-left: 0; }
+.toc ul ul { padding-left: 1.5em; }
+.toc li { padding: 3px 0; }
+
+/* ── Headings ─────────────────────────────────── */
+h1 {
+  font-size: 22pt;
+  font-weight: 700;
+  color: var(--accent);
+  page-break-before: always;
+  margin-top: 0;
+  padding-top: 16px;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 8px;
+}
+
+h1:first-child { page-break-before: avoid; }
+
+h2 {
+  font-size: 15pt;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-top: 2em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+h3 {
+  font-size: 12pt;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 1.5em;
+}
+
+h4 {
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 1.2em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Code ─────────────────────────────────────── */
+code, kbd {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 9pt;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+pre {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  margin: 1em 0;
+}
+
+pre code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5pt;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* ── Tables ───────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 9.5pt;
+  page-break-inside: avoid;
+}
+
+thead {
+  background: var(--accent-light);
+}
+
+thead th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent-dark);
+  border-bottom: 2px solid var(--accent);
+}
+
+tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+tbody td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+/* ── Blockquotes / Callouts ───────────────────── */
+blockquote {
+  border-left: 4px solid var(--accent);
+  background: var(--accent-light);
+  margin: 1em 0;
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  font-style: normal;
+}
+
+blockquote p { margin: 0; }
+
+/* ── Images / Diagrams ────────────────────────── */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+figure {
+  margin: 1.5em 0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+figcaption {
+  font-size: 8.5pt;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ── Dividers ─────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2em 0;
+}
+
+/* ── Links ────────────────────────────────────── */
+a { color: var(--accent); }
+
+/* ── Utility ──────────────────────────────────── */
+.page-break { page-break-after: always; }
+.no-break { page-break-inside: avoid; }
+.text-muted { color: var(--text-muted); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 8pt;
+  font-weight: 600;
+}
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-blue { background: var(--accent-light); color: var(--accent-dark); }

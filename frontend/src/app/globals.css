@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================
+   Nexus Social — Design Tokens
+   CSS custom properties for light/dark mode theming
+   =========================== */
+
+@layer base {
+  :root {
+    /* ── Surface colors ─────────────────────────────────── */
+    --surface: 0 0% 100%;
+    --surface-elevated: 0 0% 98%;
+    --surface-border: 220 13% 91%;
+    
+    /* ── Text colors ────────────────────────────────────── */
+    --text-primary: 222 47% 11%;
+    --text-secondary: 215 16% 47%;
+    --text-muted: 215 14% 60%;
+
+    /* ── Brand (Indigo) ─────────────────────────────────── */
+    --brand: 239 84% 67%;
+    --brand-foreground: 0 0% 100%;
+
+    /* ── Destructive ────────────────────────────────────── */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ── shadcn/ui compatible tokens ────────────────────── */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 239 84% 67%;
+    --radius: 0.625rem;
+
+    /* ── Sidebar (Admin console) ────────────────────────── */
+    --sidebar-bg: 222 47% 11%;
+    --sidebar-text: 0 0% 98%;
+    --sidebar-muted: 215 16% 60%;
+    --sidebar-active: 239 84% 67%;
+    --sidebar-border: 215 28% 17%;
+  }
+
+  .dark {
+    --surface: 222 47% 6%;
+    --surface-elevated: 222 47% 9%;
+    --surface-border: 215 28% 17%;
+
+    --text-primary: 210 40% 96%;
+    --text-secondary: 215 16% 65%;
+    --text-muted: 215 14% 45%;
+
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 215 28% 17%;
+    --accent-foreground: 210 40% 96%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 239 84% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* Brand gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+  }
+
+  /* Subtle mesh background for hero sections */
+  .bg-mesh {
+    background-image:
+      radial-gradient(at 40% 20%, hsla(228, 90%, 67%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(271, 80%, 65%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(355, 90%, 65%, 0.08) 0px, transparent 50%);
+  }
+
+  /* Glassmorphism card */
+  .glass {
+    @apply backdrop-blur-md bg-white/80 dark:bg-black/40 border border-white/20 dark:border-white/10;
+  }
+}
