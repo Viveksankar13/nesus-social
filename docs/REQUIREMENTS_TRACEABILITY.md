@@ -35,15 +35,15 @@
 | **ADMIN-04** | Post/comment management | 5 | ✅ Done | `/api/v1/admin/{posts,comments}/*`, test `test_admin_content_and_bulk_actions` |
 | **ADMIN-05** | Moderation queue | 5 | ✅ Done | `GET/POST /api/v1/admin/moderation/*`, test `test_admin_moderation_queue` |
 | **ADMIN-06** | Activity audit log | 5 | ✅ Done | `activity_logs` table, test `test_admin_activity_audit_logs` |
-| **AI-01** | Post generation/improvement — 3 variants + tone | 6 | 🔲 Not started | `POST /api/v1/ai/generate-post` |
-| **AI-02** | Post summarization with sentiment | 6 | 🔲 Not started | `POST /api/v1/ai/summarize` |
-| **AI-03** | Conversational assistant, streaming, persisted | 6 | 🔲 Not started | `POST /api/v1/ai/chat` |
-| **AI-04** | Content moderation — background, structured JSON | 6 | 🔲 Not started | `app/services/ai/moderation.py` |
-| **AI-05** | Smart reply suggestions | 6 | 🔲 Not started | `POST /api/v1/ai/smart-replies` |
-| **AI-06** | Provider-agnostic ai_service interface | 6 | 🔲 Not started | `app/services/ai/base.py` |
-| **AI-07** | Prompt injection defense | 6 | 🔲 Not started | `app/services/ai/prompts.py` |
-| **AI-08** | Per-user rate limits + daily quota | 6 | 🔲 Not started | `ai_usage_logs` table |
-| **AI-09** | Usage logging (user, feature, latency, tokens) | 6 | 🔲 Not started | `ai_usage_logs` table |
+| **AI-01** | Post generation/improvement — 3 variants + tone | 6 | ✅ Done | `POST /api/v1/ai/generate-post`, test `test_post_generation` |
+| **AI-02** | Post summarization with sentiment (≥3 comments) | 6 | ✅ Done | `POST /api/v1/ai/summarize`, test `test_post_summarization_threshold` |
+| **AI-03** | Conversational assistant, streaming, persisted | 6 | ✅ Done | `POST /api/v1/ai/chat/*`, tests `test_ai_chat_session_lifecycle`, `test_ai_chat_streaming` |
+| **AI-04** | Content moderation — background, structured JSON | 6 | ✅ Done | `app/services/ai/moderation.py`, test `test_background_content_moderation_auto_hide` |
+| **AI-05** | Smart reply suggestions | 6 | ✅ Done | `POST /api/v1/ai/smart-replies`, test `test_smart_replies` |
+| **AI-06** | Provider-agnostic ai_service interface | 6 | ✅ Done | `app/services/ai/base.py`, `gemini_service.py`, `mock_service.py` |
+| **AI-07** | Prompt injection defense | 6 | ✅ Done | `app/services/ai/prompts.py`, test `test_prompt_injection_sanitization` |
+| **AI-08** | Per-user rate limits + daily quota | 6 | ✅ Done | `ai_usage_logs` table, test `test_daily_quota_limit_exceeded` |
+| **AI-09** | Usage logging (user, feature, latency, tokens) | 6 | ✅ Done | `ai_usage_logs` table, tests in `test_ai.py` |
 | **DB-01** | All 11 tables with UUID PKs, FKs, constraints | 1 | ✅ Done | Alembic migration `0001_initial_schema.py`, `tests/test_models.py` |
 | **DB-02** | Feed indexes | 1 | ✅ Done | `posts` index on `created_at DESC` & `(author_id, created_at DESC)` |
 | **DB-03** | ER diagram (Mermaid + PNG/SVG) | 1 | ✅ Done | `docs/ER_DIAGRAM.md`, `docs/diagrams/er_diagram.mmd` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 5 complete*
+*Last updated: Stage 6 complete*

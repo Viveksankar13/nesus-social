@@ -333,27 +333,28 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 6 — Gemini AI Service 🔲
+### Stage 6 — Gemini AI Service ✅
 
 **Goal:** All five AI features behind a provider-agnostic interface. Mocked tests.
 
 **Pre-coding:** Check current google-genai SDK docs for model names and API changes.
 
 **Checklist:**
-- [ ] `app/services/ai/base.py` — abstract AIService interface
-- [ ] `app/services/ai/gemini_service.py` — Gemini implementation
-- [ ] `app/services/ai/mock_service.py` — mock for tests
-- [ ] `app/services/ai/prompts.py` — all versioned prompts
-- [ ] Post generation: 3 variants + tone
-- [ ] Summarization: summary + key points + sentiment
-- [ ] Conversational assistant: streaming + session persistence
-- [ ] Content moderation: background task, JSON output, block/flag/allow
-- [ ] Smart replies: 3 short suggestions
-- [ ] `app/api/v1/ai.py` — all AI endpoints
-- [ ] Usage logging in `ai_usage_logs`
-- [ ] Per-user rate limits + daily quota
-- [ ] `docs/AI_INTEGRATION.md`
-- [ ] `tests/test_ai.py` (mocked Gemini)
+- [x] `app/services/ai/base.py` — abstract AIService interface
+- [x] `app/services/ai/gemini_service.py` — Gemini implementation
+- [x] `app/services/ai/mock_service.py` — mock for tests
+- [x] `app/services/ai/prompts.py` — all versioned prompts
+- [x] Post generation: 3 variants + tone
+- [x] Summarization: summary + key points + sentiment
+- [x] Conversational assistant: streaming + session persistence
+- [x] Content moderation: background task, JSON output, block/flag/allow
+- [x] Smart replies: 3 short suggestions
+- [x] `app/api/v1/ai.py` — all AI endpoints
+- [x] Usage logging in `ai_usage_logs`
+- [x] Per-user rate limits + daily quota
+- [x] `docs/AI_INTEGRATION.md`
+- [x] `tests/test_ai.py` (9 tests passing)
+- [x] `docs/stages/STAGE_06.md` written
 
 ---
 

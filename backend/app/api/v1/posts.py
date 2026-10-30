@@ -8,13 +8,14 @@ toggling likes, and adding comments.
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, get_optional_current_user, require_user
 from app.models.user import User
 from app.schemas.comment import CommentCreate, CommentResponse
 from app.schemas.post import FeedResponse, LikeResponse, PostCreate, PostResponse, PostUpdate
+from app.services.ai.moderation import moderate_content_task
 from app.services.comment_service import comment_service
 from app.services.post_service import post_service
 
@@ -48,9 +49,18 @@ async def create_post(
     data: PostCreate,
     current_user: Annotated[User, Depends(require_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    background_tasks: BackgroundTasks,
 ) -> PostResponse:
     """Create a new post (max 1000 characters with optional image URL)."""
-    return await post_service.create_post(db=db, author=current_user, data=data)
+    post_res = await post_service.create_post(db=db, author=current_user, data=data)
+    background_tasks.add_task(
+        moderate_content_task,
+        content_type="post",
+        content_id=post_res.id,
+        text=data.content,
+        user_id=current_user.id,
+    )
+    return post_res
 
 
 @router.get("/{post_id}", response_model=PostResponse)
@@ -69,9 +79,19 @@ async def update_post(
     data: PostUpdate,
     current_user: Annotated[User, Depends(require_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    background_tasks: BackgroundTasks,
 ) -> PostResponse:
     """Edit an existing post. Only the author or an admin may perform edits."""
-    return await post_service.update_post(db=db, post_id=post_id, user=current_user, data=data)
+    post_res = await post_service.update_post(db=db, post_id=post_id, user=current_user, data=data)
+    if data.content:
+        background_tasks.add_task(
+            moderate_content_task,
+            content_type="post",
+            content_id=post_res.id,
+            text=data.content,
+            user_id=current_user.id,
+        )
+    return post_res
 
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -114,11 +134,20 @@ async def create_comment(
     data: CommentCreate,
     current_user: Annotated[User, Depends(require_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    background_tasks: BackgroundTasks,
 ) -> CommentResponse:
     """Add a top-level comment or reply to an existing comment (1-level maximum)."""
-    return await comment_service.create_comment(
+    comment_res = await comment_service.create_comment(
         db=db,
         post_id=post_id,
         author=current_user,
         data=data,
     )
+    background_tasks.add_task(
+        moderate_content_task,
+        content_type="comment",
+        content_id=comment_res.id,
+        text=data.content,
+        user_id=current_user.id,
+    )
+    return comment_res

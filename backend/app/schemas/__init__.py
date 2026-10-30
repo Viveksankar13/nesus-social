@@ -1,5 +1,20 @@
 """Pydantic schemas package."""
 
+from app.schemas.ai import (
+    AIChatMessageRequest,
+    AIChatMessageResponse,
+    AIChatSessionCreate,
+    AIChatSessionDetailResponse,
+    AIChatSessionResponse,
+    AIQuotaStatus,
+    ModerationCheckResult,
+    PostGenerateRequest,
+    PostGenerateResponse,
+    PostSummarizeRequest,
+    PostSummarizeResponse,
+    SmartRepliesRequest,
+    SmartRepliesResponse,
+)
 from app.schemas.auth import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -47,4 +62,17 @@ __all__ = [
     "NotificationListResponse",
     "StreamTokenResponse",
     "UnreadCountResponse",
+    "PostGenerateRequest",
+    "PostGenerateResponse",
+    "PostSummarizeRequest",
+    "PostSummarizeResponse",
+    "AIChatSessionCreate",
+    "AIChatSessionResponse",
+    "AIChatSessionDetailResponse",
+    "AIChatMessageRequest",
+    "AIChatMessageResponse",
+    "SmartRepliesRequest",
+    "SmartRepliesResponse",
+    "ModerationCheckResult",
+    "AIQuotaStatus",
 ]
