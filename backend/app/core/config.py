@@ -9,7 +9,7 @@ Uses pydantic-settings for type-safe, validated configuration.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, EmailStr, Field, field_validator, model_validator
+from pydantic import EmailStr, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,13 +40,15 @@ class Settings(BaseSettings):
         This validator silently converts the scheme so deployment just works.
         """
         if v.startswith("postgres://"):
-            v = "postgresql+asyncpg://" + v[len("postgres://"):]
+            v = "postgresql+asyncpg://" + v[len("postgres://") :]
         if v.startswith("postgresql://") and "+asyncpg" not in v:
-            v = "postgresql+asyncpg://" + v[len("postgresql://"):]
+            v = "postgresql+asyncpg://" + v[len("postgresql://") :]
         return v
 
     # ── JWT ──────────────────────────────────────────────────────────
-    JWT_SECRET: str = Field(..., min_length=32, description="Secret for signing JWTs (min 32 chars)")
+    JWT_SECRET: str = Field(
+        ..., min_length=32, description="Secret for signing JWTs (min 32 chars)"
+    )
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_MINUTES: int = 15
     REFRESH_TOKEN_DAYS: int = 7
@@ -83,7 +85,7 @@ class Settings(BaseSettings):
     # ── Rate Limits ──────────────────────────────────────────────────
     RATE_LIMIT_LOGIN: str = "5/minute"
     RATE_LIMIT_REGISTER: str = "3/minute"
-    RATE_LIMIT_FORGOT_PASSWORD: str = "3/minute"
+    RATE_LIMIT_FORGOT_PASSWORD: str = "3/minute"  # noqa: S105
     RATE_LIMIT_RESEND_VERIFICATION: str = "3/minute"
     RATE_LIMIT_AI: str = "20/minute"
 
@@ -94,7 +96,7 @@ class Settings(BaseSettings):
     def validate_production_settings(self) -> "Settings":
         """Extra validation for production environment."""
         if self.ENVIRONMENT == "production":
-            if self.JWT_SECRET == "CHANGE_ME_USE_OPENSSL_RAND_HEX_32":
+            if self.JWT_SECRET == "CHANGE_ME_USE_OPENSSL_RAND_HEX_32":  # noqa: S105
                 raise ValueError("JWT_SECRET must be changed from the default in production")
             if self.ADMIN_PASSWORD in ("CHANGE_ME_STRONG_PASSWORD", "password", "admin"):
                 raise ValueError("ADMIN_PASSWORD must be a strong password in production")

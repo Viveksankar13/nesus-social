@@ -27,9 +27,10 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import all models here so Alembic can detect changes (Stage 1+)
-# from app.models import *  # noqa: F401, F403
-target_metadata = None  # Will be set to Base.metadata in Stage 1
+# Import all models here so Alembic can detect changes
+from app.models import Base  # noqa: F401
+
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

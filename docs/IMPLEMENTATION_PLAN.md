@@ -17,7 +17,7 @@
 | Stage | Name | Status | Commit |
 |-------|------|--------|--------|
 | **0** | Planning & Scaffold | ✅ **Done** | `stage-00-complete` |
-| **1** | Database Layer | 🔲 Not started | — |
+| **1** | Database Layer | ✅ **Done** | `stage-01-complete` |
 | **2** | Authentication Backend | 🔲 Not started | — |
 | **3** | Core Social Backend | 🔲 Not started | — |
 | **4** | Notifications & Real-time | 🔲 Not started | — |
@@ -194,30 +194,32 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 1 — Database Layer 🔲
+### Stage 1 — Database Layer ✅
 
 **Goal:** Define all 11 database tables as SQLAlchemy models, generate Alembic migrations, add indexes and constraints, write a seed script, and produce the ER diagram.
 
 **Checklist:**
-- [ ] `app/db/base.py` — declarative Base with UUID PK mixin
-- [ ] `app/db/session.py` — async engine + session factory + `get_db` dependency
-- [ ] `app/models/user.py` — `users` table
-- [ ] `app/models/token.py` — `refresh_tokens`, `email_tokens`
-- [ ] `app/models/post.py` — `posts`
-- [ ] `app/models/comment.py` — `comments`
-- [ ] `app/models/like.py` — `likes` (UNIQUE user_id+post_id)
-- [ ] `app/models/notification.py` — `notifications` (JSONB payload)
-- [ ] `app/models/moderation.py` — `moderation_flags`
-- [ ] `app/models/ai.py` — `ai_chat_sessions`, `ai_chat_messages`, `ai_usage_logs`
-- [ ] `app/models/activity.py` — `activity_logs`
-- [ ] `alembic/env.py` updated to import all models
-- [ ] Alembic migration: `alembic revision --autogenerate -m "initial schema"`
-- [ ] Feed index: `posts(created_at DESC)`, `posts(author_id, created_at DESC)`
-- [ ] `scripts/seed.py` — full implementation with Argon2 admin user
-- [ ] `app/main.py` — /ready endpoint checks DB connectivity
-- [ ] `tests/test_models.py` — model instantiation, constraint tests
-- [ ] `docs/ER_DIAGRAM.md` — Mermaid erDiagram source
-- [ ] `docs/diagrams/er_diagram.mmd` — Mermaid source file
+- [x] `app/db/base.py` — declarative Base with UUID PK mixin
+- [x] `app/db/session.py` — async engine + session factory + `get_db` dependency
+- [x] `app/models/user.py` — `users` table
+- [x] `app/models/token.py` — `refresh_tokens`, `email_tokens`
+- [x] `app/models/post.py` — `posts`
+- [x] `app/models/comment.py` — `comments`
+- [x] `app/models/like.py` — `likes` (UNIQUE user_id+post_id)
+- [x] `app/models/notification.py` — `notifications` (JSONB payload)
+- [x] `app/models/moderation.py` — `moderation_flags`
+- [x] `app/models/ai.py` — `ai_chat_sessions`, `ai_chat_messages`, `ai_usage_logs`
+- [x] `app/models/activity.py` — `activity_logs`
+- [x] `alembic/env.py` updated to import all models
+- [x] Alembic migration: `0001_initial_schema.py` generated
+- [x] Feed index: `posts(created_at DESC)`, `posts(author_id, created_at DESC)`
+- [x] `scripts/seed.py` — full implementation with Argon2 admin user & demo data
+- [x] `app/main.py` — /ready endpoint checks DB connectivity
+- [x] `tests/test_models.py` — 9 unit tests for all 11 models
+- [x] `tests/test_db_integration.py` — 4 async DB integration tests
+- [x] `docs/ER_DIAGRAM.md` — Mermaid erDiagram source and documentation
+- [x] `docs/diagrams/er_diagram.mmd` — Mermaid source file
+- [x] `docs/stages/STAGE_01.md` written
 
 **Tables:**
 | Table | Key Columns | Constraints |

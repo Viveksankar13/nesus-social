@@ -1,0 +1,143 @@
+erDiagram
+    users {
+        uuid id PK "Primary Key (UUID v4)"
+        string email UK "Unique, Index"
+        string username UK "Unique, Index"
+        string display_name "Display Name"
+        string hashed_password "Argon2id Hash"
+        string role "user | admin"
+        bool is_verified "Email verification status"
+        bool is_suspended "Administrative suspension flag"
+        text bio "Profile bio"
+        string location "Geographic location"
+        string website "Personal website URL"
+        string avatar_url "Avatar image URL"
+        timestamp created_at "Creation timestamp (UTC)"
+        timestamp updated_at "Update timestamp (UTC)"
+    }
+
+    refresh_tokens {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        string token_hash UK "SHA-256 Hash of Token"
+        uuid family_id "Rotation family UUID"
+        string user_agent "Client user agent"
+        string ip_address "Client IP address"
+        timestamp expires_at "Expiry timestamp"
+        bool revoked "Revocation status flag"
+        timestamp created_at "Issuance timestamp"
+    }
+
+    email_tokens {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        string token_hash UK "SHA-256 Hash of Token"
+        string token_type "verify_email | reset_password"
+        timestamp expires_at "Expiry timestamp (1h / 24h)"
+        timestamp used_at "Consumed timestamp"
+        timestamp created_at "Creation timestamp"
+    }
+
+    posts {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid author_id FK "FK -> users.id (CASCADE)"
+        text content "Post body (len <= 1000)"
+        string image_url "Optional media URL"
+        bool is_hidden "Moderation / Admin hide flag"
+        bool is_edited "Edited indicator"
+        timestamp created_at "Feed index (DESC)"
+        timestamp updated_at "Update timestamp"
+    }
+
+    comments {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid post_id FK "FK -> posts.id (CASCADE)"
+        uuid author_id FK "FK -> users.id (SET NULL)"
+        uuid parent_id FK "FK -> comments.id (CASCADE)"
+        text content "Comment text (len <= 500)"
+        bool is_hidden "Moderation hide flag"
+        bool is_edited "Edited indicator"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    likes {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        uuid post_id FK "FK -> posts.id (CASCADE)"
+        timestamp created_at "Like timestamp"
+    }
+
+    notifications {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        string type "like | comment | reply | moderation | admin_login"
+        jsonb payload "Structured metadata"
+        bool is_read "Read status flag (Index)"
+        timestamp created_at "Notification timestamp"
+    }
+
+    moderation_flags {
+        uuid id PK "Primary Key (UUID v4)"
+        string content_type "post | comment"
+        uuid content_id "Post or Comment UUID"
+        string category "hate | harassment | sexual | violence | spam"
+        string severity "low | medium | high | critical"
+        float score "Confidence / severity score"
+        string action "allow | flag | block"
+        text reason "AI / report explanation"
+        bool reviewed "Admin review status flag"
+        timestamp created_at "Flag timestamp"
+    }
+
+    ai_chat_sessions {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        string title "Session title"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Update timestamp"
+    }
+
+    ai_chat_messages {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid session_id FK "FK -> ai_chat_sessions.id (CASCADE)"
+        string role "user | model | system"
+        text content "Message content"
+        timestamp created_at "Timestamp"
+    }
+
+    ai_usage_logs {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid user_id FK "FK -> users.id (CASCADE)"
+        string feature "post_generate | summarize | chat | moderation"
+        int latency_ms "Execution latency in ms"
+        int tokens_used "Tokens consumed"
+        string status "success | error | rate_limited"
+        text error "Error message if failed"
+        timestamp created_at "Usage timestamp (Quota Index)"
+    }
+
+    activity_logs {
+        uuid id PK "Primary Key (UUID v4)"
+        uuid admin_id FK "FK -> users.id (SET NULL)"
+        string action "suspend_user | hide_post | delete | etc"
+        string resource_type "user | post | comment | moderation_flag"
+        uuid resource_id "Affected resource UUID"
+        jsonb details "Contextual audit metadata"
+        string ip_address "Admin IP address"
+        timestamp created_at "Action timestamp"
+    }
+
+    users ||--o{ refresh_tokens : "has sessions"
+    users ||--o{ email_tokens : "receives"
+    users ||--o{ posts : "authors"
+    users ||--o{ comments : "authors"
+    users ||--o{ likes : "places"
+    users ||--o{ notifications : "receives"
+    users ||--o{ ai_chat_sessions : "starts"
+    users ||--o{ ai_usage_logs : "records usage"
+    users ||--o{ activity_logs : "performs (if admin)"
+    posts ||--o{ comments : "receives"
+    posts ||--o{ likes : "receives"
+    comments ||--o{ comments : "threaded reply to"
+    ai_chat_sessions ||--o{ ai_chat_messages : "contains"

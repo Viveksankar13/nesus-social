@@ -5,15 +5,17 @@ This module creates and configures the FastAPI application instance.
 All routers, middleware, and startup/shutdown hooks are registered here.
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.logging import configure_logging, get_logger
+from app.db.session import engine
 
 configure_logging()
 logger = get_logger(__name__)
@@ -62,8 +64,23 @@ def create_app() -> FastAPI:
 
     @app.get("/ready", tags=["Health"], include_in_schema=False)
     async def ready() -> JSONResponse:
-        """Readiness probe — returns 200 when DB is connected (Stage 1+)."""
-        return JSONResponse({"status": "ready", "service": "nexus-social-api"})
+        """Readiness probe — verifies database connectivity."""
+        try:
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            return JSONResponse(
+                {"status": "ready", "database": "connected", "service": "nexus-social-api"}
+            )
+        except Exception as e:
+            logger.error("Readiness check failed", extra={"error": str(e)})
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "status": "not_ready",
+                    "database": "disconnected",
+                    "error": "Database unreachable",
+                },
+            )
 
     return app
 

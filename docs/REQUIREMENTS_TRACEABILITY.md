@@ -44,10 +44,10 @@
 | **AI-07** | Prompt injection defense | 6 | 🔲 Not started | `app/services/ai/prompts.py` |
 | **AI-08** | Per-user rate limits + daily quota | 6 | 🔲 Not started | `ai_usage_logs` table |
 | **AI-09** | Usage logging (user, feature, latency, tokens) | 6 | 🔲 Not started | `ai_usage_logs` table |
-| **DB-01** | All 11 tables with UUID PKs, FKs, constraints | 1 | 🔲 Not started | Alembic migrations |
-| **DB-02** | Feed indexes | 1 | 🔲 Not started | `posts` index on `created_at DESC` |
-| **DB-03** | ER diagram (Mermaid + PNG/SVG) | 1 | 🔲 Not started | `docs/ER_DIAGRAM.md` |
-| **DB-04** | Seed script (admin + --demo) | 1 | 🔲 Not started | `backend/scripts/seed.py` |
+| **DB-01** | All 11 tables with UUID PKs, FKs, constraints | 1 | ✅ Done | Alembic migration `0001_initial_schema.py`, `tests/test_models.py` |
+| **DB-02** | Feed indexes | 1 | ✅ Done | `posts` index on `created_at DESC` & `(author_id, created_at DESC)` |
+| **DB-03** | ER diagram (Mermaid + PNG/SVG) | 1 | ✅ Done | `docs/ER_DIAGRAM.md`, `docs/diagrams/er_diagram.mmd` |
+| **DB-04** | Seed script (admin + --demo) | 1 | ✅ Done | `backend/scripts/seed.py` |
 | **UI-01** | Responsive, mobile-first, accessible | 7-9 | 🔲 Not started | Tailwind, ARIA, axe audit |
 | **UI-02** | Light/dark mode | 7 | 🔲 Not started | next-themes |
 | **UI-03** | Original brand identity: Nexus Social | 7 | 🔲 Not started | Design system, palette |
@@ -58,7 +58,7 @@
 | **QUAL-03** | Playwright E2E smoke test | 10 | 🔲 Not started | `frontend/tests/e2e/smoke.spec.ts` |
 | **QUAL-04** | GitHub Actions CI | 0 | ✅ Done | `.github/workflows/ci.yml` |
 | **QUAL-05** | Structured JSON logging + request IDs | 10 | 🔲 Not started | `app/core/logging.py` |
-| **QUAL-06** | Ruff + ESLint + tsc clean | 0 | 🔲 Not started | CI enforced from Stage 0 |
+| **QUAL-06** | Ruff + ESLint + tsc clean | 0-12 | ✅ Done | Ruff check clean, ESLint clean, tsc clean in Stage 1 |
 | **DEPLOY-01** | Backend Dockerfile (multi-stage, non-root) | 11 | 🔲 Not started | `backend/Dockerfile` |
 | **DEPLOY-02** | render.yaml blueprint | 0 | ✅ Done | `render.yaml` |
 | **DEPLOY-03** | Vercel config + rewrites | 7/11 | 🔲 Not started | `frontend/vercel.json` |
