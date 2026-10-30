@@ -179,3 +179,152 @@ export interface AIQuotaStatus {
   daily_quota: number;
   remaining_today: number;
 }
+
+// ── Admin Schemas ────────────────────────────────────────────────────
+
+export interface AdminStatsResponse {
+  total_users: number;
+  verified_users: number;
+  new_users_7d: number;
+  total_posts: number;
+  total_comments: number;
+  total_likes: number;
+  flagged_items: number;
+}
+
+export interface DailyMetricPoint {
+  date: string;
+  count: number;
+}
+
+export interface ChartDataResponse {
+  signups_by_day: DailyMetricPoint[];
+  posts_by_day: DailyMetricPoint[];
+}
+
+export interface AdminUserResponse {
+  id: string;
+  email: string;
+  username: string;
+  display_name: string;
+  role: "user" | "admin";
+  is_verified: boolean;
+  is_suspended: boolean;
+  created_at: string;
+  posts_count: number;
+  comments_count: number;
+}
+
+export interface AdminUserListResponse {
+  items: AdminUserResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface UserRoleUpdate {
+  role: "user" | "admin";
+}
+
+export interface UserSuspendUpdate {
+  is_suspended: boolean;
+  reason?: string | null;
+}
+
+export interface AdminPostResponse {
+  id: string;
+  author_id: string;
+  author_username: string;
+  content: string;
+  image_url: string | null;
+  is_hidden: boolean;
+  is_edited: boolean;
+  created_at: string;
+  likes_count: number;
+  comments_count: number;
+}
+
+export interface AdminPostListResponse {
+  items: AdminPostResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface AdminCommentResponse {
+  id: string;
+  post_id: string;
+  author_id: string | null;
+  author_username: string | null;
+  content: string;
+  parent_id: string | null;
+  is_hidden: boolean;
+  created_at: string;
+}
+
+export interface AdminCommentListResponse {
+  items: AdminCommentResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface BulkActionRequest {
+  ids: string[];
+  action: "hide" | "restore" | "delete";
+}
+
+export interface ToggleHideRequest {
+  is_hidden: boolean;
+}
+
+export interface ModerationItemResponse {
+  id: string;
+  content_type: "post" | "comment";
+  content_id: string;
+  category: string;
+  severity: string;
+  score: number;
+  action: string;
+  reason: string;
+  reviewed: boolean;
+  created_at: string;
+  content_snippet: string | null;
+}
+
+export interface ModerationQueueResponse {
+  items: ModerationItemResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface ModerationActionRequest {
+  action: "approve" | "hide" | "delete";
+  notes?: string | null;
+}
+
+export interface ActivityLogResponse {
+  id: string;
+  admin_id: string | null;
+  admin_username: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  details: Record<string, unknown>;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export interface ActivityLogListResponse {
+  items: ActivityLogResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+

@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 8 complete
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 9 complete
 
 ---
 
@@ -25,7 +25,7 @@
 | **6** | Gemini AI Service | ✅ **Done** | `stage-06-complete` |
 | **7** | Frontend Foundation | ✅ **Done** | `stage-07-complete` |
 | **8** | User App UI | ✅ **Done** | `stage-08-complete` |
-| **9** | Admin Console UI | 🔲 Not started | — |
+| **9** | Admin Console UI | ✅ **Done** | `stage-09-complete` |
 | **10** | Hardening | 🔲 Not started | — |
 | **11** | Deployment | 🔲 Not started | — |
 | **12** | Documentation & Submission | 🔲 Not started | — |
@@ -391,18 +391,19 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 9 — Admin Console UI 🔲
+### Stage 9 — Admin Console UI ✅
 
 **Goal:** Admin layout with sidebar, dashboard charts, user/content tables, moderation queue.
 
 **Checklist:**
-- [ ] Admin layout: dark sidebar, dense tables
-- [ ] Dashboard: 6 stat cards + 2 Recharts line charts
-- [ ] Users table: search, paginate, actions (suspend, role, delete)
-- [ ] Posts/comments table: hide, restore, delete, bulk
-- [ ] Moderation queue: flagged items with scores, approve/hide/delete
-- [ ] Live login alert feed (SSE)
-- [ ] Activity log table
+- [x] Admin layout: dark sidebar, dense tables
+- [x] Dashboard: 6 stat cards + 2 Recharts line charts
+- [x] Users table: search, paginate, actions (suspend, role, delete)
+- [x] Posts/comments table: hide, restore, delete, bulk
+- [x] Moderation queue: flagged items with scores, approve/hide/delete
+- [x] Live login alert feed (SSE)
+- [x] Activity log table
+- [x] `docs/stages/STAGE_09.md` written
 
 ---
 

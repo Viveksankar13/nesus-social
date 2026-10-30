@@ -27,14 +27,14 @@
 | **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3/8 | ✅ Done | `POST/GET /api/v1/posts/{id}/comments`, `src/app/(app)/posts/[id]/page.tsx` 1-level replies |
 | **NOTIF-01** | Notification persistence | 4/8 | ✅ Done | `notifications` table, `src/app/(app)/notifications/page.tsx` list and mark-read |
 | **NOTIF-02** | SSE stream with stream tokens | 4/8 | ✅ Done | `GET /api/v1/notifications/stream`, `NotificationBell` live SSE connection |
-| **NOTIF-03** | Admin: real-time login alert | 4 | ✅ Done | test `test_admin_login_notification_and_debouncing` |
+| **NOTIF-03** | Admin: real-time login alert | 4/9 | ✅ Done | `test_admin_login_notification_and_debouncing`, `AdminLayout` live SSE `admin_alert` stream |
 | **NOTIF-04** | Polling fallback every 30s | 4/8 | ✅ Done | `NotificationBell` 30s background refetch fallback |
-| **ADMIN-01** | Dashboard stat cards | 5 | ✅ Done | `GET /api/v1/admin/stats`, test `test_admin_stats_and_charts` |
-| **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5 | ✅ Done | `GET /api/v1/admin/charts`, test `test_admin_stats_and_charts` |
-| **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5 | ✅ Done | `GET/PATCH/DELETE /api/v1/admin/users/*`, test `test_admin_user_management` |
-| **ADMIN-04** | Post/comment management | 5 | ✅ Done | `/api/v1/admin/{posts,comments}/*`, test `test_admin_content_and_bulk_actions` |
-| **ADMIN-05** | Moderation queue | 5 | ✅ Done | `GET/POST /api/v1/admin/moderation/*`, test `test_admin_moderation_queue` |
-| **ADMIN-06** | Activity audit log | 5 | ✅ Done | `activity_logs` table, test `test_admin_activity_audit_logs` |
+| **ADMIN-01** | Dashboard stat cards | 5/9 | ✅ Done | `GET /api/v1/admin/stats`, `src/app/admin/page.tsx` 6 KPI stat cards |
+| **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5/9 | ✅ Done | `GET /api/v1/admin/charts`, `src/app/admin/page.tsx` Recharts 30d time-series |
+| **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5/9 | ✅ Done | `src/app/admin/users/page.tsx`, search, pagination, role & suspend dialogs |
+| **ADMIN-04** | Post/comment management | 5/9 | ✅ Done | `src/app/admin/content/page.tsx`, posts/comments tabs, bulk moderation actions |
+| **ADMIN-05** | Moderation queue | 5/9 | ✅ Done | `src/app/admin/moderation/page.tsx`, AI severity, score, approve/hide/delete |
+| **ADMIN-06** | Activity audit log | 5/9 | ✅ Done | `src/app/admin/activity/page.tsx`, audit logs table, JSON inspector |
 | **AI-01** | Post generation/improvement — 3 variants + tone | 6/8 | ✅ Done | `POST /api/v1/ai/generate-post`, `PostComposer` AI Assist modal (3 variants + 4 tones) |
 | **AI-02** | Post summarization with sentiment (≥3 comments) | 6/8 | ✅ Done | `POST /api/v1/ai/summarize`, `AISummaryCard` with takeaways & sentiment badge |
 | **AI-03** | Conversational assistant, streaming, persisted | 6/8 | ✅ Done | `POST /api/v1/ai/chat/*`, `AIChatWidget` floating streaming assistant |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 8 complete*
+*Last updated: Stage 9 complete*
