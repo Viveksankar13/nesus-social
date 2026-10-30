@@ -358,19 +358,20 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 7 — Frontend Foundation 🔲
+### Stage 7 — Frontend Foundation ✅
 
 **Goal:** Design system, auth pages, token handling, route guards, API client.
 
 **Checklist:**
-- [ ] shadcn/ui components (Button, Input, Card, Toast, Dialog, etc.)
-- [ ] `src/lib/api-client.ts` — fetch wrapper + silent refresh interceptor
-- [ ] `src/contexts/auth-context.tsx` — AuthProvider, useAuth
-- [ ] `src/middleware.ts` — route protection by role
-- [ ] Auth pages: login, register, verify-email, forgot-password, reset-password
-- [ ] `src/components/ui/` — full shadcn/ui set
-- [ ] Theme toggle (next-themes)
-- [ ] TanStack Query provider
+- [x] shadcn/ui components (Button, Input, Card, Toast, Dialog, etc.)
+- [x] `src/lib/api-client.ts` — fetch wrapper + silent refresh interceptor
+- [x] `src/contexts/auth-context.tsx` — AuthProvider, useAuth
+- [x] `src/middleware.ts` — route protection by role
+- [x] Auth pages: login, register, verify-email, forgot-password, reset-password
+- [x] `src/components/ui/` — full shadcn/ui set
+- [x] Theme toggle (next-themes)
+- [x] TanStack Query provider
+- [x] `docs/stages/STAGE_07.md` written
 
 ---
 

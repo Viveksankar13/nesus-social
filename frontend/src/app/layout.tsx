@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,8 +64,7 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        {/* Providers will be added in Stage 7 */}
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

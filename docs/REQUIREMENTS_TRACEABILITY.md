@@ -15,7 +15,7 @@
 | **AUTH-08** | 15-min JWT access token, memory only | 2 | ✅ Done | `backend/app/core/tokens.py:create_access_token` |
 | **AUTH-09** | Rotating opaque refresh token, httpOnly cookie | 2 | ✅ Done | `POST /api/v1/auth/refresh`, test `test_token_refresh_rotation` |
 | **AUTH-10** | Refresh token reuse detection — revoke family | 2 | ✅ Done | test `test_token_reuse_detection_revokes_family` |
-| **AUTH-11** | Next.js rewrites /api/* → backend | 7 | 🔲 Not started | `frontend/next.config.js` rewrites |
+| **AUTH-11** | Next.js rewrites /api/* → backend | 7 | ✅ Done | `frontend/next.config.mjs` rewrites to `${backendUrl}/api/:path*` |
 | **AUTH-12** | Rate limits: login, register, forgot, resend | 2 | ✅ Done | slowapi decorators on `auth.py` router |
 | **AUTH-13** | RBAC: require_user, require_admin | 2 | ✅ Done | `backend/app/api/deps.py` |
 | **AUTH-14** | Suspended user blocked everywhere | 2/5 | ✅ Done | `deps.py:require_user`, `auth_service.py:authenticate_user` |
@@ -48,11 +48,11 @@
 | **DB-02** | Feed indexes | 1 | ✅ Done | `posts` index on `created_at DESC` & `(author_id, created_at DESC)` |
 | **DB-03** | ER diagram (Mermaid + PNG/SVG) | 1 | ✅ Done | `docs/ER_DIAGRAM.md`, `docs/diagrams/er_diagram.mmd` |
 | **DB-04** | Seed script (admin + --demo) | 1 | ✅ Done | `backend/scripts/seed.py` |
-| **UI-01** | Responsive, mobile-first, accessible | 7-9 | 🔲 Not started | Tailwind, ARIA, axe audit |
-| **UI-02** | Light/dark mode | 7 | 🔲 Not started | next-themes |
-| **UI-03** | Original brand identity: Nexus Social | 7 | 🔲 Not started | Design system, palette |
-| **UI-04** | Route protection via Next.js middleware | 7 | 🔲 Not started | `frontend/middleware.ts` |
-| **UI-05** | Silent token refresh interceptor | 7 | 🔲 Not started | `frontend/lib/api-client.ts` |
+| **UI-01** | Responsive, mobile-first, accessible | 7-9 | ✅ Done | `src/components/ui/*`, responsive layouts, Tailwind tokens |
+| **UI-02** | Light/dark mode | 7 | ✅ Done | `next-themes`, `ThemeProvider`, `ThemeToggle` |
+| **UI-03** | Original brand identity: Nexus Social | 7 | ✅ Done | Design tokens, `globals.css`, landing page, auth layout |
+| **UI-04** | Route protection via Next.js middleware | 7 | ✅ Done | `src/middleware.ts` evaluating `refresh_token` |
+| **UI-05** | Silent token refresh interceptor | 7 | ✅ Done | `src/lib/api-client.ts`, deduplicated silent 401 refresh |
 | **QUAL-01** | Backend pytest: all auth flows | 2 | ✅ Done | `backend/tests/test_auth.py` (6 tests passing) |
 | **QUAL-02** | Backend pytest: authorization | 3 | ✅ Done | `backend/tests/test_social.py` (ownership tests) |
 | **QUAL-03** | Playwright E2E smoke test | 10 | 🔲 Not started | `frontend/tests/e2e/smoke.spec.ts` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 6 complete*
+*Last updated: Stage 7 complete*
