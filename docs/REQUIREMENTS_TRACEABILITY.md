@@ -19,27 +19,27 @@
 | **AUTH-12** | Rate limits: login, register, forgot, resend | 2 | ✅ Done | slowapi decorators on `auth.py` router |
 | **AUTH-13** | RBAC: require_user, require_admin | 2 | ✅ Done | `backend/app/api/deps.py` |
 | **AUTH-14** | Suspended user blocked everywhere | 2/5 | ✅ Done | `deps.py:require_user`, `auth_service.py:authenticate_user` |
-| **SOCIAL-01** | User profile: avatar, bio, location, website | 3 | ✅ Done | `GET/PUT /api/v1/users/*`, test `test_user_profiles_and_password_changes` |
-| **SOCIAL-02** | Create / edit / delete own posts | 3 | ✅ Done | `POST/PUT/DELETE /api/v1/posts/*`, test `test_create_post_success`, `test_update_own_post` |
-| **SOCIAL-03** | Post ≤1000 chars + optional image URL | 3 | ✅ Done | Pydantic validator, test `test_post_length_and_whitespace_validation` |
-| **SOCIAL-04** | Feed: cursor infinite scroll | 3 | ✅ Done | `GET /api/v1/posts?cursor=`, test `test_cursor_feed_pagination_and_filtering` |
-| **SOCIAL-05** | Like toggle (unique per user/post) | 3 | ✅ Done | `POST /api/v1/posts/{id}/like`, test `test_like_toggle_and_notifications` |
-| **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3 | ✅ Done | `POST/GET /api/v1/posts/{id}/comments`, test `test_comments_and_one_level_replies` |
-| **NOTIF-01** | Notification persistence | 4 | ✅ Done | `notifications` table, `app/services/notification_service.py` |
-| **NOTIF-02** | SSE stream with stream tokens | 4 | ✅ Done | `GET /api/v1/notifications/stream`, test `test_stream_token_generation_and_stream` |
+| **SOCIAL-01** | User profile: avatar, bio, location, website | 3/8 | ✅ Done | `GET/PUT /api/v1/users/*`, `src/app/(app)/profile/[username]/page.tsx`, `EditProfileDialog` |
+| **SOCIAL-02** | Create / edit / delete own posts | 3/8 | ✅ Done | `POST/PUT/DELETE /api/v1/posts/*`, `src/components/feed/post-composer.tsx`, `post-card.tsx` |
+| **SOCIAL-03** | Post ≤1000 chars + optional image URL | 3/8 | ✅ Done | Pydantic validator, `PostComposer` real-time 1000 char counter & image URL toggle |
+| **SOCIAL-04** | Feed: cursor infinite scroll | 3/8 | ✅ Done | `GET /api/v1/posts?cursor=`, `src/app/(app)/feed/page.tsx` with `useInfiniteQuery` |
+| **SOCIAL-05** | Like toggle (unique per user/post) | 3/8 | ✅ Done | `POST /api/v1/posts/{id}/like`, `PostCard` optimistic like mutation |
+| **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3/8 | ✅ Done | `POST/GET /api/v1/posts/{id}/comments`, `src/app/(app)/posts/[id]/page.tsx` 1-level replies |
+| **NOTIF-01** | Notification persistence | 4/8 | ✅ Done | `notifications` table, `src/app/(app)/notifications/page.tsx` list and mark-read |
+| **NOTIF-02** | SSE stream with stream tokens | 4/8 | ✅ Done | `GET /api/v1/notifications/stream`, `NotificationBell` live SSE connection |
 | **NOTIF-03** | Admin: real-time login alert | 4 | ✅ Done | test `test_admin_login_notification_and_debouncing` |
-| **NOTIF-04** | Polling fallback every 30s | 4/7 | ✅ Done | `/api/v1/notifications/unread-count`, `/api/v1/notifications` endpoints |
+| **NOTIF-04** | Polling fallback every 30s | 4/8 | ✅ Done | `NotificationBell` 30s background refetch fallback |
 | **ADMIN-01** | Dashboard stat cards | 5 | ✅ Done | `GET /api/v1/admin/stats`, test `test_admin_stats_and_charts` |
 | **ADMIN-02** | Chart data: signups/day, posts/day (30d) | 5 | ✅ Done | `GET /api/v1/admin/charts`, test `test_admin_stats_and_charts` |
 | **ADMIN-03** | Users: search, paginate, suspend, role, delete | 5 | ✅ Done | `GET/PATCH/DELETE /api/v1/admin/users/*`, test `test_admin_user_management` |
 | **ADMIN-04** | Post/comment management | 5 | ✅ Done | `/api/v1/admin/{posts,comments}/*`, test `test_admin_content_and_bulk_actions` |
 | **ADMIN-05** | Moderation queue | 5 | ✅ Done | `GET/POST /api/v1/admin/moderation/*`, test `test_admin_moderation_queue` |
 | **ADMIN-06** | Activity audit log | 5 | ✅ Done | `activity_logs` table, test `test_admin_activity_audit_logs` |
-| **AI-01** | Post generation/improvement — 3 variants + tone | 6 | ✅ Done | `POST /api/v1/ai/generate-post`, test `test_post_generation` |
-| **AI-02** | Post summarization with sentiment (≥3 comments) | 6 | ✅ Done | `POST /api/v1/ai/summarize`, test `test_post_summarization_threshold` |
-| **AI-03** | Conversational assistant, streaming, persisted | 6 | ✅ Done | `POST /api/v1/ai/chat/*`, tests `test_ai_chat_session_lifecycle`, `test_ai_chat_streaming` |
+| **AI-01** | Post generation/improvement — 3 variants + tone | 6/8 | ✅ Done | `POST /api/v1/ai/generate-post`, `PostComposer` AI Assist modal (3 variants + 4 tones) |
+| **AI-02** | Post summarization with sentiment (≥3 comments) | 6/8 | ✅ Done | `POST /api/v1/ai/summarize`, `AISummaryCard` with takeaways & sentiment badge |
+| **AI-03** | Conversational assistant, streaming, persisted | 6/8 | ✅ Done | `POST /api/v1/ai/chat/*`, `AIChatWidget` floating streaming assistant |
 | **AI-04** | Content moderation — background, structured JSON | 6 | ✅ Done | `app/services/ai/moderation.py`, test `test_background_content_moderation_auto_hide` |
-| **AI-05** | Smart reply suggestions | 6 | ✅ Done | `POST /api/v1/ai/smart-replies`, test `test_smart_replies` |
+| **AI-05** | Smart reply suggestions | 6/8 | ✅ Done | `POST /api/v1/ai/smart-replies`, `SmartRepliesBar` 3 suggestion pills |
 | **AI-06** | Provider-agnostic ai_service interface | 6 | ✅ Done | `app/services/ai/base.py`, `gemini_service.py`, `mock_service.py` |
 | **AI-07** | Prompt injection defense | 6 | ✅ Done | `app/services/ai/prompts.py`, test `test_prompt_injection_sanitization` |
 | **AI-08** | Per-user rate limits + daily quota | 6 | ✅ Done | `ai_usage_logs` table, test `test_daily_quota_limit_exceeded` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 7 complete*
+*Last updated: Stage 8 complete*

@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 5
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 8 complete
 
 ---
 
@@ -22,9 +22,9 @@
 | **3** | Core Social Backend | ✅ **Done** | `stage-03-complete` |
 | **4** | Notifications & Real-time | ✅ **Done** | `stage-04-complete` |
 | **5** | Admin Backend | ✅ **Done** | `stage-05-complete` |
-| **6** | Gemini AI Service | 🔲 Not started | — |
-| **7** | Frontend Foundation | 🔲 Not started | — |
-| **8** | User App UI | 🔲 Not started | — |
+| **6** | Gemini AI Service | ✅ **Done** | `stage-06-complete` |
+| **7** | Frontend Foundation | ✅ **Done** | `stage-07-complete` |
+| **8** | User App UI | ✅ **Done** | `stage-08-complete` |
 | **9** | Admin Console UI | 🔲 Not started | — |
 | **10** | Hardening | 🔲 Not started | — |
 | **11** | Deployment | 🔲 Not started | — |
@@ -375,18 +375,19 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 8 — User App UI 🔲
+### Stage 8 — User App UI ✅
 
 **Goal:** Feed, post composer with AI, post detail, profiles, notifications, AI chat widget.
 
 **Checklist:**
-- [ ] Feed page: infinite scroll, post cards, skeleton loaders
-- [ ] Post composer: textarea + AI generate button + 3 variant preview
-- [ ] Post detail: comments, smart replies, AI summary (≥3 comments)
-- [ ] Profile page: own + public; edit profile
-- [ ] Notifications page + live bell
-- [ ] Floating AI chat widget (streaming)
-- [ ] Optimistic updates for likes and comments
+- [x] Feed page: infinite scroll, post cards, skeleton loaders
+- [x] Post composer: textarea + AI generate button + 3 variant preview
+- [x] Post detail: comments, smart replies, AI summary (≥3 comments)
+- [x] Profile page: own + public; edit profile
+- [x] Notifications page + live bell
+- [x] Floating AI chat widget (streaming)
+- [x] Optimistic updates for likes and comments
+- [x] `docs/stages/STAGE_08.md` written
 
 ---
 
