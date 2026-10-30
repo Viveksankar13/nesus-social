@@ -11,7 +11,9 @@ from app.schemas.auth import (
     TokenResponse,
     VerifyEmailRequest,
 )
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.comment import CommentCreate, CommentResponse, CommentUpdate
+from app.schemas.post import FeedResponse, LikeResponse, PostCreate, PostResponse, PostUpdate
+from app.schemas.user import AuthorSummary, UserProfileResponse, UserResponse, UserUpdate
 
 __all__ = [
     "RegisterRequest",
@@ -24,5 +26,15 @@ __all__ = [
     "TokenResponse",
     "MessageResponse",
     "UserResponse",
+    "UserProfileResponse",
     "UserUpdate",
+    "AuthorSummary",
+    "PostCreate",
+    "PostUpdate",
+    "PostResponse",
+    "FeedResponse",
+    "LikeResponse",
+    "CommentCreate",
+    "CommentUpdate",
+    "CommentResponse",
 ]

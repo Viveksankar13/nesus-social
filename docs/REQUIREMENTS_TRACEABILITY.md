@@ -19,12 +19,12 @@
 | **AUTH-12** | Rate limits: login, register, forgot, resend | 2 | ✅ Done | slowapi decorators on `auth.py` router |
 | **AUTH-13** | RBAC: require_user, require_admin | 2 | ✅ Done | `backend/app/api/deps.py` |
 | **AUTH-14** | Suspended user blocked everywhere | 2/5 | ✅ Done | `deps.py:require_user`, `auth_service.py:authenticate_user` |
-| **SOCIAL-01** | User profile: avatar, bio, location, website | 3 | 🔲 Not started | `GET/PUT /api/v1/users/{id}` |
-| **SOCIAL-02** | Create / edit / delete own posts | 3 | 🔲 Not started | `POST/PUT/DELETE /api/v1/posts/{id}` |
-| **SOCIAL-03** | Post ≤1000 chars + optional image URL | 3 | 🔲 Not started | Pydantic validator |
-| **SOCIAL-04** | Feed: cursor infinite scroll | 3 | 🔲 Not started | `GET /api/v1/posts?cursor=` |
-| **SOCIAL-05** | Like toggle (unique per user/post) | 3 | 🔲 Not started | `POST /api/v1/posts/{id}/like`, DB unique constraint |
-| **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3 | 🔲 Not started | `POST /api/v1/comments` |
+| **SOCIAL-01** | User profile: avatar, bio, location, website | 3 | ✅ Done | `GET/PUT /api/v1/users/*`, test `test_user_profiles_and_password_changes` |
+| **SOCIAL-02** | Create / edit / delete own posts | 3 | ✅ Done | `POST/PUT/DELETE /api/v1/posts/*`, test `test_create_post_success`, `test_update_own_post` |
+| **SOCIAL-03** | Post ≤1000 chars + optional image URL | 3 | ✅ Done | Pydantic validator, test `test_post_length_and_whitespace_validation` |
+| **SOCIAL-04** | Feed: cursor infinite scroll | 3 | ✅ Done | `GET /api/v1/posts?cursor=`, test `test_cursor_feed_pagination_and_filtering` |
+| **SOCIAL-05** | Like toggle (unique per user/post) | 3 | ✅ Done | `POST /api/v1/posts/{id}/like`, test `test_like_toggle_and_notifications` |
+| **SOCIAL-06** | Comments: create/edit/delete own, one-level replies | 3 | ✅ Done | `POST/GET /api/v1/posts/{id}/comments`, test `test_comments_and_one_level_replies` |
 | **NOTIF-01** | Notification persistence | 4 | 🔲 Not started | `notifications` table |
 | **NOTIF-02** | SSE stream with stream tokens | 4 | 🔲 Not started | `GET /api/v1/notifications/stream` |
 | **NOTIF-03** | Admin: real-time login alert | 4 | 🔲 Not started | test `test_admin_login_notification` |
@@ -54,7 +54,7 @@
 | **UI-04** | Route protection via Next.js middleware | 7 | 🔲 Not started | `frontend/middleware.ts` |
 | **UI-05** | Silent token refresh interceptor | 7 | 🔲 Not started | `frontend/lib/api-client.ts` |
 | **QUAL-01** | Backend pytest: all auth flows | 2 | ✅ Done | `backend/tests/test_auth.py` (6 tests passing) |
-| **QUAL-02** | Backend pytest: authorization | 3 | 🔲 Not started | `tests/test_authz.py` |
+| **QUAL-02** | Backend pytest: authorization | 3 | ✅ Done | `backend/tests/test_social.py` (ownership tests) |
 | **QUAL-03** | Playwright E2E smoke test | 10 | 🔲 Not started | `frontend/tests/e2e/smoke.spec.ts` |
 | **QUAL-04** | GitHub Actions CI | 0 | ✅ Done | `.github/workflows/ci.yml` |
 | **QUAL-05** | Structured JSON logging + request IDs | 10 | 🔲 Not started | `app/core/logging.py` |
@@ -75,4 +75,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 2 complete*
+*Last updated: Stage 3 complete*

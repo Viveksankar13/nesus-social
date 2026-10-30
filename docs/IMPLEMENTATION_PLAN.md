@@ -1,6 +1,6 @@
 # 🌐 Nexus Social — Living Implementation Plan
 
-> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 2
+> **AI-Powered Social Media Platform** · Stage-gated build · Last updated: Stage 3
 
 ---
 
@@ -19,7 +19,7 @@
 | **0** | Planning & Scaffold | ✅ **Done** | `stage-00-complete` |
 | **1** | Database Layer | ✅ **Done** | `stage-01-complete` |
 | **2** | Authentication Backend | ✅ **Done** | `stage-02-complete` |
-| **3** | Core Social Backend | 🔲 Not started | — |
+| **3** | Core Social Backend | ✅ **Done** | `stage-03-complete` |
 | **4** | Notifications & Real-time | 🔲 Not started | — |
 | **5** | Admin Backend | 🔲 Not started | — |
 | **6** | Gemini AI Service | 🔲 Not started | — |
@@ -278,22 +278,23 @@ docs/stages/STAGE_00.md
 
 ---
 
-### Stage 3 — Core Social Backend 🔲
+### Stage 3 — Core Social Backend ✅
 
 **Goal:** Profiles, posts (CRUD), comments, likes, cursor-paginated feed, ownership enforcement.
 
 **Checklist:**
-- [ ] `app/services/post_service.py`
-- [ ] `app/services/comment_service.py`
-- [ ] `app/services/user_service.py`
-- [ ] `app/api/v1/users.py`
-- [ ] `app/api/v1/posts.py`
-- [ ] `app/api/v1/comments.py`
-- [ ] `app/api/v1/likes.py`
-- [ ] Cursor pagination (keyset on `created_at + id`)
-- [ ] Ownership checks (can't edit others' posts/comments)
-- [ ] `tests/test_social.py`, `tests/test_authz.py`
-- [ ] No N+1 queries (use `selectinload` / `joinedload`)
+- [x] `app/services/post_service.py`
+- [x] `app/services/comment_service.py`
+- [x] `app/services/user_service.py`
+- [x] `app/api/v1/users.py`
+- [x] `app/api/v1/posts.py`
+- [x] `app/api/v1/comments.py`
+- [x] `app/api/v1/posts.py` (like toggle route `/posts/{id}/like`)
+- [x] Cursor pagination (keyset on `created_at + id`)
+- [x] Ownership checks (can't edit/delete others' posts/comments, admins exempt)
+- [x] `tests/test_social.py` (8 tests passing, covering QUAL-02 authorization)
+- [x] No N+1 queries (batch group-by queries for metrics)
+- [x] `docs/stages/STAGE_03.md` written
 
 **Endpoints:** CRUD for users, posts, comments, likes; paginated feed
 

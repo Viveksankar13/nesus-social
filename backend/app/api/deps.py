@@ -72,6 +72,29 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    auth: Annotated[HTTPAuthorizationCredentials | None, Security(security_scheme)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User | None:
+    """Return authenticated User if valid Bearer token is supplied, otherwise None."""
+    if not auth or not auth.credentials:
+        return None
+    try:
+        payload = decode_token(auth.credentials, expected_type="access")
+        user_id_str = payload.get("sub")
+        if not user_id_str:
+            return None
+        user_id = uuid.UUID(user_id_str)
+        stmt = select(User).where(User.id == user_id)
+        res = await db.execute(stmt)
+        user = res.scalar_one_or_none()
+        if user and not user.is_suspended:
+            return user
+        return None
+    except Exception:
+        return None
+
+
 async def require_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
