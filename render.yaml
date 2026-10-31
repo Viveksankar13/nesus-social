@@ -71,6 +71,13 @@ services:
       # ── Optional Monitoring ──
       - key: SENTRY_DSN
         sync: false
+      # ── Supabase Cloud Storage (Optional permanent storage) ──
+      - key: SUPABASE_URL
+        sync: false  # e.g. https://xyz.supabase.co
+      - key: SUPABASE_KEY
+        sync: false  # Service role key or anon key with storage permissions
+      - key: SUPABASE_BUCKET
+        value: "nexus-media"
       # ── Hyper-Local Skill Swap Economy ──
       - key: CRON_SECRET
         generateValue: true
