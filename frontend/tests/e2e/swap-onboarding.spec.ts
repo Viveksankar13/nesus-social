@@ -14,8 +14,8 @@ test.describe("Skill Swap Economy — S1 Onboarding & Discovery Hub", () => {
       })
     ).toBeVisible();
 
-    // Verify canonical taxonomy section
-    await expect(page.locator("text=Canonical Skills Directory")).toBeVisible();
+    // Verify discovery actions
+    await expect(page.locator("text=Create Swap Offer").first()).toBeVisible();
   });
 
   test("Onboarding wizard page renders 4 progress steps", async ({

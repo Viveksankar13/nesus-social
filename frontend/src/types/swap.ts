@@ -100,3 +100,76 @@ export interface UserSwapProfilePublic {
   completed_swaps: number;
   badges: string[];
 }
+
+export interface SwapListing {
+  id: string;
+  user_id: string;
+  user: PublicUserMinimal;
+  title: string;
+  skill_offered: Skill;
+  skill_wanted: Skill | null;
+  description: string;
+  modes: string[];
+  area_label: string | null;
+  status: "draft" | "active" | "paused" | "closed" | "removed";
+  tags: string[];
+  distance_bucket?: string | null;
+  expires_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SwapListingCreate {
+  title: string;
+  skill_offered_id: string;
+  skill_wanted_id?: string | null;
+  description: string;
+  modes: string[];
+  area_label?: string | null;
+  tags?: string[];
+  expires_at?: string | null;
+}
+
+export interface SwapListingUpdate {
+  title?: string;
+  skill_offered_id?: string;
+  skill_wanted_id?: string | null;
+  description?: string;
+  modes?: string[];
+  area_label?: string | null;
+  tags?: string[];
+  status?: "draft" | "active" | "paused" | "closed";
+  expires_at?: string | null;
+}
+
+export interface SwapListingListResponse {
+  items: SwapListing[];
+  total: number;
+  next_cursor?: string | null;
+}
+
+export interface SwapListingShareResponse {
+  listing_id: string;
+  post_id: string;
+  message: string;
+}
+
+export interface ListingAIDraftRequest {
+  skill_offered_name: string;
+  skill_wanted_name?: string | null;
+  notes?: string | null;
+}
+
+export interface ListingAIDraftResponse {
+  title: string;
+  description: string;
+  suggested_tags: string[];
+}
+
+export interface SwapMatchResponse {
+  listing: SwapListing;
+  match_score: number;
+  explanation: string;
+  score_breakdown: Record<string, number>;
+}
+

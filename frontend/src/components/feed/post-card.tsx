@@ -33,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { SwapPostCard } from "@/components/swaps/swap-post-card";
 import { getInitials, timeAgo } from "@/lib/utils";
 import type { LikeResponse, Post } from "@/types";
 
@@ -215,9 +216,13 @@ export function PostCard({ post, showCommentsLink = true }: PostCardProps) {
         </CardHeader>
 
         <CardContent className="px-4 sm:px-5 pb-3">
-          <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap leading-relaxed">
-            {post.content}
-          </p>
+          {post.content.startsWith("🔄 Skill Swap Offer:") ? (
+            <SwapPostCard content={post.content} />
+          ) : (
+            <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap leading-relaxed">
+              {post.content}
+            </p>
+          )}
 
           {post.image_url && (
             <div className="mt-3 overflow-hidden rounded-xl border bg-muted">
