@@ -31,6 +31,9 @@ if "sqlite" not in settings.DATABASE_URL:
             "pool_recycle": 300,
         }
     )
+    # Supabase / PgBouncer transaction pooler (port 6543) requires disabling statement cache in asyncpg
+    if ":6543" in settings.DATABASE_URL:
+        engine_kwargs["connect_args"] = {"statement_cache_size": 0}
 
 engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
