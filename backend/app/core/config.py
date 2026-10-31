@@ -92,6 +92,18 @@ class Settings(BaseSettings):
     # ── Optional Observability ───────────────────────────────────────
     SENTRY_DSN: str = ""
 
+    # ── Skill Swap Economy ───────────────────────────────────────────
+    CRON_SECRET: str = "nexus-cron-secret-local-dev-key-minimum-32-chars"
+    JITSI_BASE_URL: str = "https://meet.jit.si"
+    SWAP_SESSION_MINUTES: int = 30
+    SWAP_MAX_ACTIVE_LISTINGS: int = 5
+    SWAP_MAX_PENDING_REQUESTS: int = 5
+    MATCH_WEIGHT_SKILL: float = 0.35
+    MATCH_WEIGHT_PROXIMITY: float = 0.25
+    MATCH_WEIGHT_AVAILABILITY: float = 0.20
+    MATCH_WEIGHT_TRUST: float = 0.15
+    MATCH_WEIGHT_FRESHNESS: float = 0.05
+
     @model_validator(mode="after")
     def validate_production_settings(self) -> "Settings":
         """Extra validation for production environment."""

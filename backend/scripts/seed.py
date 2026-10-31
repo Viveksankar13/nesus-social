@@ -35,6 +35,14 @@ from app.models.comment import Comment
 from app.models.like import Like
 from app.models.notification import Notification
 from app.models.post import Post
+from app.models.swap import (
+    AvailabilityWindow,
+    ReciprocityLedger,
+    Skill,
+    TrustScore,
+    UserSkill,
+    UserSwapProfile,
+)
 from app.models.user import User
 
 
@@ -332,7 +340,210 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
             print(" Sample notification created.")
 
 
-async def main(demo: bool = False) -> None:
+DEMO_SKILLS = [
+    # Technology
+    {"slug": "python-programming", "display_name": "Python Programming", "category": "Technology", "aliases": ["python", "django", "fastapi", "pandas"]},
+    {"slug": "web-development", "display_name": "Full-Stack Web Development", "category": "Technology", "aliases": ["react", "nextjs", "javascript", "typescript", "frontend", "html/css"]},
+    {"slug": "machine-learning", "display_name": "Machine Learning & AI", "category": "Technology", "aliases": ["ml", "deep learning", "pytorch", "tensorflow", "nlp"]},
+    {"slug": "data-structures", "display_name": "Data Structures & Algorithms", "category": "Technology", "aliases": ["dsa", "leetcode", "algorithms", "competitive programming"]},
+    {"slug": "git-and-github", "display_name": "Git & Version Control", "category": "Technology", "aliases": ["git", "github", "gitlab", "version control"]},
+    # Languages
+    {"slug": "conversational-spanish", "display_name": "Conversational Spanish", "category": "Languages", "aliases": ["spanish", "espanol", "hablar espanol"]},
+    {"slug": "french-language", "display_name": "French for Beginners", "category": "Languages", "aliases": ["french", "francais"]},
+    {"slug": "japanese-basics", "display_name": "Japanese Basics & Kanji", "category": "Languages", "aliases": ["japanese", "nihongo", "kanji"]},
+    {"slug": "english-public-speaking", "display_name": "English Presentation & Speaking", "category": "Languages", "aliases": ["public speaking", "toastmasters", "speech", "presentation"]},
+    {"slug": "german-grammar", "display_name": "German Conversation & Grammar", "category": "Languages", "aliases": ["german", "deutsch"]},
+    # Music & Creative Arts
+    {"slug": "acoustic-guitar", "display_name": "Acoustic Guitar Basics", "category": "Music & Creative Arts", "aliases": ["guitar", "acoustic guitar", "fingerpicking", "chords"]},
+    {"slug": "piano-keyboard", "display_name": "Piano & Keyboard Fundamentals", "category": "Music & Creative Arts", "aliases": ["piano", "keyboard", "sight reading"]},
+    {"slug": "digital-illustration", "display_name": "Digital Illustration & Procreate", "category": "Music & Creative Arts", "aliases": ["drawing", "procreate", "digital art", "illustration"]},
+    {"slug": "photo-editing", "display_name": "Photography & Lightroom", "category": "Music & Creative Arts", "aliases": ["photography", "lightroom", "photoshop", "photo editing"]},
+    {"slug": "ui-ux-design", "display_name": "UI/UX Design with Figma", "category": "Music & Creative Arts", "aliases": ["figma", "ui design", "ux design", "product design", "wireframing"]},
+    # Academics & STEM
+    {"slug": "calculus-tutoring", "display_name": "Calculus & Linear Algebra", "category": "Academics & STEM", "aliases": ["calculus", "calc 1", "calc 2", "linear algebra", "math tutoring"]},
+    {"slug": "physics-mechanics", "display_name": "College Physics & Mechanics", "category": "Academics & STEM", "aliases": ["physics", "mechanics", "electromagnetism"]},
+    {"slug": "organic-chemistry", "display_name": "Organic Chemistry", "category": "Academics & STEM", "aliases": ["ochem", "chemistry", "organic chem"]},
+    {"slug": "statistics-probability", "display_name": "Probability & Applied Statistics", "category": "Academics & STEM", "aliases": ["stats", "probability", "r programming", "biostatistics"]},
+    {"slug": "academic-writing", "display_name": "Academic Paper Proofreading", "category": "Academics & STEM", "aliases": ["essay writing", "thesis", "research paper", "proofreading"]},
+    # Fitness & Wellness
+    {"slug": "vinyasa-yoga", "display_name": "Vinyasa Yoga & Breathwork", "category": "Fitness & Wellness", "aliases": ["yoga", "pranayama", "meditation", "stretching"]},
+    {"slug": "strength-training", "display_name": "Strength Training & Gym Form", "category": "Fitness & Wellness", "aliases": ["gym", "powerlifting", "weightlifting", "calisthenics"]},
+    {"slug": "running-conditioning", "display_name": "5K/10K Running Conditioning", "category": "Fitness & Wellness", "aliases": ["running", "marathon training", "cardio"]},
+    # Business & Career
+    {"slug": "resume-review", "display_name": "Tech Resume & LinkedIn Review", "category": "Business & Career", "aliases": ["resume", "cv", "linkedin", "job search"]},
+    {"slug": "behavioral-interview", "display_name": "Behavioral & STAR Interview Prep", "category": "Business & Career", "aliases": ["interview prep", "mock interview", "star method"]},
+]
+
+
+async def seed_swaps(session: AsyncSession) -> None:
+    """Seed canonical skill taxonomy, profiles, and demo swap data."""
+    print("Seeding canonical skills taxonomy...")
+    skills_map: dict[str, Skill] = {}
+    for item in DEMO_SKILLS:
+        stmt = select(Skill).where(Skill.slug == item["slug"])
+        res = await session.execute(stmt)
+        skill = res.scalar_one_or_none()
+        if not skill:
+            skill = Skill(
+                id=uuid.uuid4(),
+                slug=item["slug"],
+                display_name=item["display_name"],
+                category=item["category"],
+                aliases=item["aliases"],
+                status="active",
+                created_at=datetime.now(UTC),
+            )
+            session.add(skill)
+        skills_map[item["slug"]] = skill
+    await session.commit()
+    print(f" {len(DEMO_SKILLS)} canonical skills verified/seeded.")
+
+    # Fetch existing users
+    user_stmt = select(User).order_by(User.created_at).limit(10)
+    users_res = await session.execute(user_stmt)
+    users = list(users_res.scalars().all())
+
+    if not users:
+        print(" No users found to seed swap profiles for.")
+        return
+
+    print("Seeding swap profiles, availability, and trust scores for users...")
+    locations = [
+        {"lat": 37.77, "lng": -122.42, "area": "Mission District, San Francisco, CA"},
+        {"lat": 37.78, "lng": -122.40, "area": "SoMa, San Francisco, CA"},
+        {"lat": 37.76, "lng": -122.45, "area": "Inner Sunset, San Francisco, CA"},
+        {"lat": 37.80, "lng": -122.41, "area": "North Beach, San Francisco, CA"},
+        {"lat": 37.79, "lng": -122.43, "area": "Pacific Heights, San Francisco, CA"},
+    ]
+
+    for idx, u in enumerate(users):
+        loc = locations[idx % len(locations)]
+        # Profile
+        prof_stmt = select(UserSwapProfile).where(UserSwapProfile.user_id == u.id)
+        if not (await session.execute(prof_stmt)).scalar_one_or_none():
+            prof = UserSwapProfile(
+                id=uuid.uuid4(),
+                user_id=u.id,
+                bio=f"Passionate about peer learning and skill sharing! Open to 30-minute swaps.",
+                coarse_lat=loc["lat"],
+                coarse_lng=loc["lng"],
+                area_label=loc["area"],
+                radius_km=10,
+                modes=["video", "in_person"],
+                languages=["English", "Spanish"] if idx % 2 == 0 else ["English"],
+                is_invisible=False,
+                accepts_newcomers=True,
+                is_18_confirmed=True,
+                created_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
+            )
+            session.add(prof)
+
+        # Trust Score
+        ts_stmt = select(TrustScore).where(TrustScore.user_id == u.id)
+        if not (await session.execute(ts_stmt)).scalar_one_or_none():
+            ts = TrustScore(
+                id=uuid.uuid4(),
+                user_id=u.id,
+                score=90 + (idx * 2) % 11,
+                completed_count=3 + idx,
+                no_show_count=0,
+                cancellation_count=0,
+                avg_rating=4.8 + (idx % 3) * 0.1,
+                badges=["Top Mentor", "Fast Responder"] if idx % 2 == 0 else ["Reliable Swapper"],
+                updated_at=datetime.now(UTC),
+            )
+            session.add(ts)
+
+        # Reciprocity Ledger
+        rl_stmt = select(ReciprocityLedger).where(ReciprocityLedger.user_id == u.id)
+        if not (await session.execute(rl_stmt)).scalar_one_or_none():
+            rl = ReciprocityLedger(
+                id=uuid.uuid4(),
+                user_id=u.id,
+                minutes_taught=90 + idx * 30,
+                minutes_learned=90,
+                net_balance_minutes=idx * 30,
+                grace_used=0,
+                updated_at=datetime.now(UTC),
+            )
+            session.add(rl)
+
+        # User Skills (teach 2, learn 2)
+        teach_keys = list(skills_map.keys())[idx % len(skills_map) : (idx % len(skills_map)) + 2]
+        learn_keys = list(skills_map.keys())[(idx + 4) % len(skills_map) : ((idx + 4) % len(skills_map)) + 2]
+
+        for s_key in teach_keys:
+            s_obj = skills_map[s_key]
+            check = await session.execute(
+                select(UserSkill).where(
+                    UserSkill.user_id == u.id,
+                    UserSkill.skill_id == s_obj.id,
+                    UserSkill.skill_type == "teach",
+                )
+            )
+            if not check.scalar_one_or_none():
+                session.add(
+                    UserSkill(
+                        id=uuid.uuid4(),
+                        user_id=u.id,
+                        skill_id=s_obj.id,
+                        skill_type="teach",
+                        level="advanced" if idx % 2 == 0 else "intermediate",
+                        years_experience=2 + idx,
+                        notes=f"Happy to help with practical {s_obj.display_name} fundamentals and tips.",
+                        created_at=datetime.now(UTC),
+                    )
+                )
+
+        for s_key in learn_keys:
+            s_obj = skills_map[s_key]
+            check = await session.execute(
+                select(UserSkill).where(
+                    UserSkill.user_id == u.id,
+                    UserSkill.skill_id == s_obj.id,
+                    UserSkill.skill_type == "learn",
+                )
+            )
+            if not check.scalar_one_or_none():
+                session.add(
+                    UserSkill(
+                        id=uuid.uuid4(),
+                        user_id=u.id,
+                        skill_id=s_obj.id,
+                        skill_type="learn",
+                        level="beginner",
+                        years_experience=0,
+                        notes=f"Looking for beginner guidance and practice in {s_obj.display_name}.",
+                        created_at=datetime.now(UTC),
+                    )
+                )
+
+        # Availability Windows (Mon, Wed, Sat)
+        for day in [0, 2, 5]:
+            aw_check = await session.execute(
+                select(AvailabilityWindow).where(
+                    AvailabilityWindow.user_id == u.id,
+                    AvailabilityWindow.day_of_week == day,
+                )
+            )
+            if not aw_check.scalar_one_or_none():
+                session.add(
+                    AvailabilityWindow(
+                        id=uuid.uuid4(),
+                        user_id=u.id,
+                        day_of_week=day,
+                        start_time_utc="09:00",
+                        end_time_utc="18:00",
+                        created_at=datetime.now(UTC),
+                    )
+                )
+
+    await session.commit()
+    print(" User swap profiles and availability successfully seeded.")
+
+
+async def main(demo: bool = False, demo_swaps: bool = False) -> None:
     """Run database seeding process."""
     print("🌱 Nexus Social — Database Seeder")
     print(f"Environment: {settings.ENVIRONMENT}")
@@ -343,6 +554,8 @@ async def main(demo: bool = False) -> None:
             admin = await seed_admin(session)
             if demo:
                 await seed_demo(session, admin)
+            if demo_swaps or demo:
+                await seed_swaps(session)
             print("✅ Database seeding complete.")
         except Exception as e:
             print(f"❌ Error during seeding: {e}")
@@ -354,5 +567,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--demo", action="store_true", help="Also seed demo users, posts, comments, and likes"
     )
+    parser.add_argument(
+        "--demo-swaps", action="store_true", help="Seed canonical skills taxonomy and swap profiles"
+    )
     args = parser.parse_args()
-    asyncio.run(main(demo=args.demo))
+    asyncio.run(main(demo=args.demo, demo_swaps=args.demo_swaps))
