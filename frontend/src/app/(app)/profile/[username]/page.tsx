@@ -6,16 +6,18 @@ import { useParams } from "next/navigation";
 import {
   BookOpen,
   Calendar,
+  Camera,
   Globe,
   GraduationCap,
   Heart,
+  Loader2,
   MapPin,
   MessageSquare,
   Repeat,
   Shield,
   Video,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api-client";
 import { swapApi } from "@/lib/swap-api";
@@ -28,14 +30,56 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PostCard } from "@/components/feed/post-card";
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog";
 import { FriendshipButton } from "@/components/friends/friendship-button";
+import { useToast } from "@/components/ui/use-toast";
 import { getInitials } from "@/lib/utils";
-import type { FeedResponse, Post, UserProfile } from "@/types";
+import type { FeedResponse, Post, User, UserProfile } from "@/types";
 import type { UserSwapProfilePublic } from "@/types/swap";
 
 export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, refreshUser } = useAuth();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [isUploadingDirectAvatar, setIsUploadingDirectAvatar] = React.useState(false);
+  const directAvatarInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleDirectAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Avatar image must be under 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingDirectAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await apiClient.post<User>("/media/avatar", formData);
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["users", "profile", username] });
+      toast({
+        title: "Profile photo updated!",
+        description: "Your new profile picture is now active.",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to upload avatar";
+      toast({
+        title: "Upload failed",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingDirectAvatar(false);
+      if (directAvatarInputRef.current) directAvatarInputRef.current.value = "";
+    }
+  };
 
   const isOwnProfile =
     currentUser?.username.toLowerCase() === username?.toLowerCase();
@@ -118,14 +162,57 @@ export default function ProfilePage() {
         <div className="h-24 bg-gradient-to-r from-primary/30 via-indigo-500/20 to-purple-500/30" />
         <CardContent className="p-6 pt-0 relative">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between -mt-12 sm:-mt-14 mb-4 gap-3">
-            <Avatar className="h-24 w-24 sm:h-28 sm:w-28 border-4 border-background shadow-md">
-              {profile.avatar_url && (
-                <AvatarImage src={profile.avatar_url} alt={profile.display_name} />
+            <div className="relative group">
+              <Avatar className="h-24 w-24 sm:h-28 sm:w-28 border-4 border-background shadow-md">
+                {profile.avatar_url && (
+                  <AvatarImage src={profile.avatar_url} alt={profile.display_name} />
+                )}
+                <AvatarFallback className="text-2xl font-bold">
+                  {getInitials(profile.display_name)}
+                </AvatarFallback>
+              </Avatar>
+
+              {isOwnProfile && (
+                <>
+                  <input
+                    ref={directAvatarInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleDirectAvatarUpload}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => directAvatarInputRef.current?.click()}
+                    disabled={isUploadingDirectAvatar}
+                    className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer backdrop-blur-[2px]"
+                    title="Change profile picture"
+                  >
+                    {isUploadingDirectAvatar ? (
+                      <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    ) : (
+                      <>
+                        <Camera className="h-6 w-6 text-white" />
+                        <span className="text-[10px] font-medium text-white mt-0.5">Edit</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => directAvatarInputRef.current?.click()}
+                    disabled={isUploadingDirectAvatar}
+                    className="sm:hidden absolute bottom-0 right-0 p-1.5 rounded-full bg-primary text-primary-foreground shadow-md border-2 border-background cursor-pointer"
+                    title="Change profile picture"
+                  >
+                    {isUploadingDirectAvatar ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Camera className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </>
               )}
-              <AvatarFallback className="text-2xl font-bold">
-                {getInitials(profile.display_name)}
-              </AvatarFallback>
-            </Avatar>
+            </div>
 
             {isOwnProfile && currentUser && (
               <EditProfileDialog user={currentUser} />

@@ -34,9 +34,17 @@ export function PostComposer() {
   const [isUploadingImage, setIsUploadingImage] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  const uploadFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image (JPG, PNG, WebP, GIF).",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast({
@@ -69,6 +77,47 @@ export function PostComposer() {
     } finally {
       setIsUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await uploadFile(file);
+    }
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          await uploadFile(file);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      await uploadFile(file);
     }
   };
 
@@ -166,7 +215,14 @@ export function PostComposer() {
   const isTooLong = charsRemaining < 0;
 
   return (
-    <Card className="border shadow-sm mb-6">
+    <Card
+      className={`border shadow-sm mb-6 transition-colors ${
+        isDragging ? "border-primary border-dashed bg-primary/5" : ""
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <CardContent className="p-4 sm:p-5">
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="flex items-start space-x-3">
@@ -181,7 +237,8 @@ export function PostComposer() {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="What's happening on Nexus?"
+                onPaste={handlePaste}
+                placeholder="What's happening on Nexus? (Type, paste or drop an image here)"
                 rows={3}
                 className="w-full resize-none bg-transparent p-1 text-sm sm:text-base outline-none placeholder:text-muted-foreground focus:ring-0"
               />
@@ -272,14 +329,14 @@ export function PostComposer() {
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploadingImage}
-                className="text-muted-foreground hover:text-foreground"
+                className="h-8 gap-1.5 text-xs font-medium text-foreground hover:bg-primary/10 border-border/80"
               >
-                <ImageIcon className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">Photo</span>
+                <ImageIcon className="h-4 w-4 text-primary" />
+                <span>Upload Image</span>
               </Button>
 
               {/* AI Assist Dialog Trigger */}
