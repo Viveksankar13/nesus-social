@@ -5,6 +5,7 @@ Handles swap profile lifecycle, skill competencies, weekly availability windows,
 blackout dates, and privacy-preserving public profile serialization.
 """
 
+import json
 import re
 import secrets
 import uuid
@@ -37,12 +38,19 @@ from app.models.swap import (
 )
 from app.models.user import User
 from app.schemas.swap import (
+    AgendaItem,
     AvailabilityBlackoutResponse,
     AvailabilityWindowResponse,
     ICSExportResponse,
+    InPersonSafetyCheck,
     PublicUserMinimal,
     SkillResponse,
+    SwapAdminStatsResponse,
+    SwapDisputeAdminResponse,
     SwapDisputeCreate,
+    SwapDisputeResolveRequest,
+    SwapFairnessAdviceResponse,
+    SwapListingAdminResponse,
     SwapListingCreate,
     SwapListingListResponse,
     SwapListingResponse,
@@ -50,6 +58,8 @@ from app.schemas.swap import (
     SwapListingUpdate,
     SwapMessageCreate,
     SwapMessageResponse,
+    SwapReportCreate,
+    SwapReportResponse,
     SwapRequestAccept,
     SwapRequestCounter,
     SwapRequestCreate,
@@ -58,13 +68,27 @@ from app.schemas.swap import (
     SwapReviewCreate,
     SwapReviewResponse,
     SwapSessionHalfResponse,
+    SwapSessionPlanRequest,
+    SwapSessionPlanResponse,
+    SwapSessionRecapRequest,
+    SwapSessionRecapResponse,
     SwapSessionResponse,
+    UserBlockResponse,
     UserSkillResponse,
     UserSwapProfilePrivateResponse,
     UserSwapProfilePublicResponse,
     UserSwapProfileUpdate,
 )
+from app.services.ai import get_ai_service
 from app.services.ai.moderation import moderate_content_task
+from app.services.ai.prompts import (
+    SWAP_FAIRNESS_ADVISOR_SYSTEM_PROMPT,
+    SWAP_SESSION_PLAN_SYSTEM_PROMPT,
+    SWAP_SESSION_RECAP_SYSTEM_PROMPT,
+    build_fairness_advisor_prompt,
+    build_session_plan_prompt,
+    build_session_recap_prompt,
+)
 from app.services.notification_service import notification_service
 from app.services.pubsub import pubsub
 from app.services.swap_geocoding import (
@@ -216,6 +240,48 @@ class SwapService:
             await db.refresh(profile)
 
         return profile
+
+    @staticmethod
+    async def get_or_create_ledger(db: AsyncSession, user_id: uuid.UUID) -> ReciprocityLedger:
+        """Ensure reciprocity ledger exists for a user and return it."""
+        stmt = select(ReciprocityLedger).where(ReciprocityLedger.user_id == user_id)
+        rl = (await db.execute(stmt)).scalar_one_or_none()
+        if not rl:
+            rl = ReciprocityLedger(
+                id=uuid.uuid4(),
+                user_id=user_id,
+                minutes_taught=0,
+                minutes_learned=0,
+                net_balance_minutes=0,
+                grace_used=0,
+                updated_at=datetime.now(UTC),
+            )
+            db.add(rl)
+            await db.commit()
+            await db.refresh(rl)
+        return rl
+
+    @staticmethod
+    async def get_or_create_trust_score(db: AsyncSession, user_id: uuid.UUID) -> TrustScore:
+        """Ensure trust score exists for a user and return it."""
+        stmt = select(TrustScore).where(TrustScore.user_id == user_id)
+        ts = (await db.execute(stmt)).scalar_one_or_none()
+        if not ts:
+            ts = TrustScore(
+                id=uuid.uuid4(),
+                user_id=user_id,
+                score=100,
+                completed_count=0,
+                no_show_count=0,
+                cancellation_count=0,
+                avg_rating=5.0,
+                badges=[],
+                updated_at=datetime.now(UTC),
+            )
+            db.add(ts)
+            await db.commit()
+            await db.refresh(ts)
+        return ts
 
     @staticmethod
     async def get_private_profile(
@@ -951,7 +1017,14 @@ class SwapService:
             owner_p = owner_profiles.get(entry.user_id)
             dist_km: float | None = None
             bucket = "remote"
-            if viewer_profile and owner_p:
+            if (
+                viewer_profile
+                and owner_p
+                and viewer_profile.coarse_lat is not None
+                and viewer_profile.coarse_lng is not None
+                and owner_p.coarse_lat is not None
+                and owner_p.coarse_lng is not None
+            ):
                 dist_km = haversine_km(
                     viewer_profile.coarse_lat,
                     viewer_profile.coarse_lng,
@@ -2214,3 +2287,684 @@ class SwapService:
             revealed_at=r.revealed_at,
             created_at=r.created_at,
         )
+
+    # ── Stage 4: AI Assistants ───────────────────────────────────────
+    @staticmethod
+    async def generate_session_plan(
+        db: AsyncSession,
+        session_id: uuid.UUID,
+        user_id: uuid.UUID,
+        req: SwapSessionPlanRequest,
+    ) -> SwapSessionPlanResponse:
+        """Generate structured 30-minute agenda with time allocations and milestones."""
+        sess = await db.get(
+            SwapSession,
+            session_id,
+            options=[
+                selectinload(SwapSession.halves).selectinload(SwapSessionHalf.skill),
+            ],
+        )
+        if not sess or (sess.user_a_id != user_id and sess.user_b_id != user_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found.")
+
+        # Identify skill to mentor/learn
+        skill_name = "Peer Skill"
+        if sess.halves:
+            skill_name = sess.halves[0].skill.display_name
+
+        ai = get_ai_service()
+        prompt = build_session_plan_prompt(
+            skill_name=skill_name,
+            mentor_notes=req.mentor_notes,
+            learner_level="Intermediate",
+            session_goals=req.goals,
+        )
+
+        try:
+            raw_text, _ = await ai.chat(
+                messages=[{"role": "user", "content": prompt}],
+                system_instruction=SWAP_SESSION_PLAN_SYSTEM_PROMPT,
+            )
+            # Clean markdown codeblocks
+            clean_text = raw_text.strip()
+            if clean_text.startswith("```json"):
+                clean_text = clean_text[7:]
+            if clean_text.startswith("```"):
+                clean_text = clean_text[3:]
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3]
+            parsed = json.loads(clean_text.strip())
+            return SwapSessionPlanResponse(
+                objective=parsed.get("objective", f"Master core concepts of {skill_name} in 30 minutes"),
+                agenda_items=[AgendaItem(**item) for item in parsed.get("agenda_items", [])],
+                suggested_questions=parsed.get("suggested_questions", []),
+                mentor_tips=parsed.get("mentor_tips", "Keep explanations practical and encourage questions."),
+            )
+        except Exception:
+            # Fallback deterministic 30m plan
+            return SwapSessionPlanResponse(
+                objective=f"Master key practical fundamentals of {skill_name} in 30 focused minutes",
+                agenda_items=[
+                    AgendaItem(minute="0-5", title="Warm-up & Goal Alignment", description="Introductions, assessing current knowledge, and agreeing on key targets."),
+                    AgendaItem(minute="5-20", title="Core Demonstration & Coaching", description=f"Hands-on walkthrough of {skill_name} concepts and live examples."),
+                    AgendaItem(minute="20-27", title="Interactive Practice & Guidance", description="Learner attempts exercises with real-time mentor feedback."),
+                    AgendaItem(minute="27-30", title="Key Takeaways & Next Steps", description="Reviewing accomplishments and identifying follow-up practice materials."),
+                ],
+                suggested_questions=[
+                    f"What is the most challenging aspect of {skill_name} you've faced?",
+                    "Can we walk through a real-world scenario together?",
+                    "What resources would help reinforce what we covered today?",
+                ],
+                mentor_tips="Focus on high-leverage concepts and pause regularly for questions.",
+            )
+
+    @staticmethod
+    async def generate_session_recap(
+        db: AsyncSession,
+        session_id: uuid.UUID,
+        user_id: uuid.UUID,
+        req: SwapSessionRecapRequest,
+    ) -> SwapSessionRecapResponse:
+        """Convert rough session notes into structured takeaways and action items."""
+        sess = await db.get(
+            SwapSession,
+            session_id,
+            options=[
+                selectinload(SwapSession.halves).selectinload(SwapSessionHalf.skill),
+            ],
+        )
+        if not sess or (sess.user_a_id != user_id and sess.user_b_id != user_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found.")
+
+        skill_name = sess.halves[0].skill.display_name if sess.halves else "Skill"
+        ai = get_ai_service()
+        prompt = build_session_recap_prompt(skill_name=skill_name, rough_notes=req.rough_notes)
+
+        try:
+            raw_text, _ = await ai.chat(
+                messages=[{"role": "user", "content": prompt}],
+                system_instruction=SWAP_SESSION_RECAP_SYSTEM_PROMPT,
+            )
+            clean_text = raw_text.strip()
+            if clean_text.startswith("```json"):
+                clean_text = clean_text[7:]
+            if clean_text.startswith("```"):
+                clean_text = clean_text[3:]
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3]
+            parsed = json.loads(clean_text.strip())
+            return SwapSessionRecapResponse(
+                summary=parsed.get("summary", "Session completed with key milestones achieved."),
+                key_takeaways=parsed.get("key_takeaways", []),
+                action_items=parsed.get("action_items", []),
+                recommended_followup=parsed.get("recommended_followup", "Continue practicing daily."),
+            )
+        except Exception:
+            return SwapSessionRecapResponse(
+                summary=f"Productive 30-minute peer swap on {skill_name}. Covered practical concepts with active mentoring.",
+                key_takeaways=[
+                    f"Established core theoretical foundations for {skill_name}.",
+                    "Identified practical troubleshooting strategies.",
+                    "Practiced hands-on implementation steps.",
+                ],
+                action_items=[
+                    "Review code and exercises covered during the session.",
+                    "Complete one independent practice exercise before the next meetup.",
+                ],
+                recommended_followup=f"Build a small mini-project applying today's {skill_name} takeaways.",
+            )
+
+    @staticmethod
+    async def generate_fairness_advice(
+        db: AsyncSession,
+        user_id: uuid.UUID,
+    ) -> SwapFairnessAdviceResponse:
+        """Analyze user reciprocity ledger and generate helpful guidance."""
+        ledger = await SwapService.get_or_create_ledger(db, user_id)
+        us_stmt = (
+            select(UserSkill)
+            .where(UserSkill.user_id == user_id)
+            .options(selectinload(UserSkill.skill))
+        )
+        skills = (await db.execute(us_stmt)).scalars().all()
+        taught = [s.skill.display_name for s in skills if s.skill_type == "teach"]
+        wanted = [s.skill.display_name for s in skills if s.skill_type == "learn"]
+
+        net = ledger.net_balance_minutes
+        if net < -30:
+            status_val = "learning_deficit"
+            headline = "You've received great mentorship! Time to pay it forward."
+            action_tips = [
+                "Create a new swap listing offering your strongest skills.",
+                "Accept incoming swap requests from community newcomers.",
+            ]
+        elif net > 30:
+            status_val = "teaching_deficit"
+            headline = "You're a star contributor! Treat yourself to new learning."
+            action_tips = [
+                "Browse the Discovery Hub and propose swaps for skills you want to learn.",
+                "Connect with recommended peers in the AI Matches section.",
+            ]
+        else:
+            status_val = "balanced"
+            headline = "Your skill exchange balance is in perfect equilibrium!"
+            action_tips = [
+                "Keep offering and receiving 30-minute peer sessions.",
+                "Share your active listings to the main feed to meet new partners.",
+            ]
+
+        ai = get_ai_service()
+        prompt = build_fairness_advisor_prompt(
+            minutes_taught=ledger.minutes_taught,
+            minutes_learned=ledger.minutes_learned,
+            net_balance_minutes=ledger.net_balance_minutes,
+            grace_used=ledger.grace_used,
+            user_skills_taught=taught,
+            user_skills_wanted=wanted,
+        )
+
+        try:
+            raw_text, _ = await ai.chat(
+                messages=[{"role": "user", "content": prompt}],
+                system_instruction=SWAP_FAIRNESS_ADVISOR_SYSTEM_PROMPT,
+            )
+            clean_text = raw_text.strip()
+            if clean_text.startswith("```json"):
+                clean_text = clean_text[7:]
+            if clean_text.startswith("```"):
+                clean_text = clean_text[3:]
+            if clean_text.endswith("```"):
+                clean_text = clean_text[:-3]
+            parsed = json.loads(clean_text.strip())
+            return SwapFairnessAdviceResponse(
+                balance_status=parsed.get("balance_status", status_val),
+                headline=parsed.get("headline", headline),
+                insights=parsed.get("insights", f"You have completed {ledger.minutes_taught}m teaching and {ledger.minutes_learned}m learning."),
+                recommended_actions=parsed.get("recommended_actions", action_tips),
+                recommended_skills_to_offer=parsed.get("recommended_skills_to_offer", taught[:2]),
+            )
+        except Exception:
+            return SwapFairnessAdviceResponse(
+                balance_status=status_val,
+                headline=headline,
+                insights=f"You have taught {ledger.minutes_taught} minutes and learned for {ledger.minutes_learned} minutes (Net balance: {net}m, Grace used: {ledger.grace_used}m).",
+                recommended_actions=action_tips,
+                recommended_skills_to_offer=taught[:2] or ["General Mentorship"],
+            )
+
+    # ── Safety & Moderation (Stage 4) ─────────────────────────────────
+    @staticmethod
+    def detect_swap_safety_violations(text: str) -> list[str]:
+        """Detect monetary requests, off-platform contact harvesting, and unsafe meetup locations."""
+        violations: list[str] = []
+        lower = text.lower()
+        for p in MONEY_PATTERNS:
+            if re.search(p, lower):
+                violations.append("Monetary payment or fee solicitation detected.")
+                break
+
+        contact_harvesting_patterns = [
+            r"\b(?:telegram|whatsapp|wa\.me|snapchat|snap|discord|wechat)\s*[:@/]?\s*[\w\.\+]+",
+            r"\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b",
+            r"\b(?:dm me on ig|hit my insta|reach me on whatsapp|message my tg)\b",
+        ]
+        for p in contact_harvesting_patterns:
+            if re.search(p, lower):
+                violations.append("External contact harvesting or off-platform communication handle detected.")
+                break
+
+        unsafe_venue_patterns = [
+            r"\b(?:my house|my place|my apartment|come over to my room|hotel room|motel)\b",
+        ]
+        for p in unsafe_venue_patterns:
+            if re.search(p, lower):
+                violations.append("Unsafe private residence or unverified private venue requested.")
+                break
+
+        return violations
+
+    @staticmethod
+    async def block_user(
+        db: AsyncSession,
+        blocker_id: uuid.UUID,
+        blocked_id: uuid.UUID,
+    ) -> UserBlockResponse:
+        """Block a peer to prevent all mutual discovery, proposals, and chats."""
+        if blocker_id == blocked_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot block yourself.")
+
+        # Check existing block
+        existing = (
+            await db.execute(
+                select(UserBlock).where(
+                    UserBlock.blocker_id == blocker_id,
+                    UserBlock.blocked_id == blocked_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing:
+            blocked_user = await db.get(User, blocked_id)
+            return UserBlockResponse(
+                id=existing.id,
+                blocker_id=existing.blocker_id,
+                blocked_id=existing.blocked_id,
+                blocked_user=build_user_minimal(blocked_user) if blocked_user else None,
+                created_at=existing.created_at,
+            )
+
+        block = UserBlock(
+            id=uuid.uuid4(),
+            blocker_id=blocker_id,
+            blocked_id=blocked_id,
+            created_at=datetime.now(UTC),
+        )
+        db.add(block)
+        await db.commit()
+        await db.refresh(block)
+
+        blocked_user = await db.get(User, blocked_id)
+        return UserBlockResponse(
+            id=block.id,
+            blocker_id=block.blocker_id,
+            blocked_id=block.blocked_id,
+            blocked_user=build_user_minimal(blocked_user) if blocked_user else None,
+            created_at=block.created_at,
+        )
+
+    @staticmethod
+    async def unblock_user(
+        db: AsyncSession,
+        blocker_id: uuid.UUID,
+        blocked_id: uuid.UUID,
+    ) -> None:
+        """Remove a block pair."""
+        await db.execute(
+            delete(UserBlock).where(
+                UserBlock.blocker_id == blocker_id,
+                UserBlock.blocked_id == blocked_id,
+            )
+        )
+        await db.commit()
+
+    @staticmethod
+    async def list_blocked_users(
+        db: AsyncSession,
+        user_id: uuid.UUID,
+    ) -> list[UserBlockResponse]:
+        """List all users blocked by the authenticated user."""
+        stmt = (
+            select(UserBlock)
+            .where(UserBlock.blocker_id == user_id)
+            .options(selectinload(UserBlock.blocked_user))
+            .order_by(UserBlock.created_at.desc())
+        )
+        res = await db.execute(stmt)
+        return [
+            UserBlockResponse(
+                id=b.id,
+                blocker_id=b.blocker_id,
+                blocked_id=b.blocked_id,
+                blocked_user=build_user_minimal(b.blocked_user) if b.blocked_user else None,
+                created_at=b.created_at,
+            )
+            for b in res.scalars().all()
+        ]
+
+    @staticmethod
+    async def report_target(
+        db: AsyncSession,
+        reporter_id: uuid.UUID,
+        req: SwapReportCreate,
+    ) -> SwapReportResponse:
+        """
+        Submit a safety report against a listing, user, or session.
+        AUTOMATIC 3-STRIKE THRESHOLD:
+        If 3 distinct users report the target within 24 hours, the system automatically:
+        - Unpublishes/removes the listing (if listing)
+        - Hides user profile (is_invisible=True) and pauses listings (if user)
+        """
+        # Save report
+        report = SwapReport(
+            id=uuid.uuid4(),
+            reporter_id=reporter_id,
+            target_type=req.target_type,
+            target_id=req.target_id,
+            category=req.category,
+            notes=req.notes,
+            status="pending",
+            created_at=datetime.now(UTC),
+        )
+        db.add(report)
+        await db.commit()
+
+        # Check 3-strike threshold in the last 24h
+        cutoff = datetime.now(UTC) - timedelta(hours=24)
+        count_stmt = select(func.count(func.distinct(SwapReport.reporter_id))).where(
+            SwapReport.target_type == req.target_type,
+            SwapReport.target_id == req.target_id,
+            SwapReport.created_at >= cutoff,
+        )
+        distinct_reporters = (await db.execute(count_stmt)).scalar_one() or 0
+
+        if distinct_reporters >= 3:
+            if req.target_type == "listing":
+                listing = await db.get(SwapListing, req.target_id)
+                if listing and listing.status == "active":
+                    listing.status = "removed"
+                    await db.commit()
+            elif req.target_type == "user":
+                prof_stmt = select(UserSwapProfile).where(UserSwapProfile.user_id == req.target_id)
+                prof = (await db.execute(prof_stmt)).scalar_one_or_none()
+                if prof:
+                    prof.is_invisible = True
+                    # Pause all active listings
+                    active_listings_res = await db.execute(
+                        select(SwapListing).where(
+                            SwapListing.user_id == prof.user_id,
+                            SwapListing.status == "active",
+                        )
+                    )
+                    for lst_item in active_listings_res.scalars().all():
+                        lst_item.status = "paused"
+                    await db.commit()
+
+        reporter = await db.get(User, reporter_id)
+        return SwapReportResponse(
+            id=report.id,
+            reporter_id=report.reporter_id,
+            reporter=build_user_minimal(reporter) if reporter else None,
+            target_type=report.target_type,
+            target_id=report.target_id,
+            category=report.category,
+            notes=report.notes,
+            status=report.status,
+            admin_resolution=report.admin_resolution,
+            created_at=report.created_at,
+        )
+
+    @staticmethod
+    def check_in_person_safety(
+        place_name: str,
+        address: str,
+    ) -> InPersonSafetyCheck:
+        """Verify public venue safety and provide guidance."""
+        try:
+            assert_public_place(place_name, address)
+            return InPersonSafetyCheck(
+                public_place_name=place_name,
+                public_place_address=address,
+                is_safe_public_venue=True,
+                warning=None,
+                safety_tips=[
+                    "Meet in well-lit, public areas with people around (e.g. library, cafe, campus center).",
+                    "Keep your phone charged and inform a friend about your meetup location and schedule.",
+                    "Never accept rides from strangers or move to private locations.",
+                    "If you ever feel uncomfortable, you may leave immediately without penalty.",
+                ],
+            )
+        except HTTPException as e:
+            return InPersonSafetyCheck(
+                public_place_name=place_name,
+                public_place_address=address,
+                is_safe_public_venue=False,
+                warning=str(e.detail),
+                safety_tips=[
+                    "Residential addresses and private units are strictly prohibited.",
+                    "Please choose a public library, coffee shop, or university commons.",
+                ],
+            )
+
+    # ── Admin Swaps Console Operations (Stage 4) ──────────────────────
+    @staticmethod
+    async def get_swap_admin_stats(db: AsyncSession) -> SwapAdminStatsResponse:
+        """Aggregate platform KPIs for Admin Swaps console."""
+        active_listings = (
+            await db.execute(select(func.count(SwapListing.id)).where(SwapListing.status == "active"))
+        ).scalar_one() or 0
+
+        week_ago = datetime.now(UTC) - timedelta(days=7)
+        swaps_this_week = (
+            await db.execute(
+                select(func.count(SwapSession.id)).where(SwapSession.created_at >= week_ago)
+            )
+        ).scalar_one() or 0
+
+        completed = (
+            await db.execute(
+                select(func.count(SwapSession.id)).where(SwapSession.status == "completed")
+            )
+        ).scalar_one() or 0
+
+        disputes = (
+            await db.execute(select(func.count(SwapReport.id)))
+        ).scalar_one() or 0
+
+        total_sessions = (
+            await db.execute(select(func.count(SwapSession.id)))
+        ).scalar_one() or 0
+
+        completion_rate = (completed / total_sessions * 100.0) if total_sessions > 0 else 100.0
+        dispute_rate = (disputes / total_sessions * 100.0) if total_sessions > 0 else 0.0
+
+        # Top skills
+        top_skills_query = (
+            select(Skill.display_name, func.count(UserSkill.id).label("count"))
+            .join(UserSkill, UserSkill.skill_id == Skill.id)
+            .group_by(Skill.display_name)
+            .order_by(func.count(UserSkill.id).desc())
+            .limit(5)
+        )
+        top_skills_res = await db.execute(top_skills_query)
+        top_skills = [
+            {"skill": row[0], "count": row[1]}
+            for row in top_skills_res.all()
+        ]
+
+        return SwapAdminStatsResponse(
+            total_active_listings=active_listings,
+            swaps_this_week=swaps_this_week,
+            total_scheduled_sessions=total_sessions,
+            total_completed_sessions=completed,
+            total_disputes=disputes,
+            completion_rate=round(completion_rate, 1),
+            dispute_rate=round(dispute_rate, 1),
+            top_skills=top_skills,
+        )
+
+    @staticmethod
+    async def list_admin_listings(
+        db: AsyncSession,
+        status_filter: str | None = None,
+        limit: int = 50,
+    ) -> list[SwapListingAdminResponse]:
+        """Admin listing view with report counts."""
+        stmt = (
+            select(SwapListing)
+            .options(
+                selectinload(SwapListing.user),
+                selectinload(SwapListing.skill_offered),
+                selectinload(SwapListing.skill_wanted),
+            )
+            .order_by(SwapListing.created_at.desc())
+            .limit(limit)
+        )
+        if status_filter:
+            stmt = stmt.where(SwapListing.status == status_filter)
+
+        res = await db.execute(stmt)
+        listings = res.scalars().all()
+
+        output = []
+        for listing_obj in listings:
+            reports_count = (
+                await db.execute(
+                    select(func.count(SwapReport.id)).where(
+                        SwapReport.target_type == "listing",
+                        SwapReport.target_id == listing_obj.id,
+                    )
+                )
+            ).scalar_one() or 0
+
+            output.append(
+                SwapListingAdminResponse(
+                    id=listing_obj.id,
+                    title=listing_obj.title,
+                    user=build_user_minimal(listing_obj.user),
+                    skill_offered=SkillResponse.model_validate(listing_obj.skill_offered),
+                    skill_wanted=SkillResponse.model_validate(listing_obj.skill_wanted) if listing_obj.skill_wanted else None,
+                    status=listing_obj.status,
+                    modes=listing_obj.modes,
+                    reports_count=reports_count,
+                    created_at=listing_obj.created_at,
+                )
+            )
+        return output
+
+    @staticmethod
+    async def update_admin_listing_status(
+        db: AsyncSession,
+        listing_id: uuid.UUID,
+        new_status: str,
+    ) -> SwapListing:
+        """Suspend, pause, or reinstate a swap listing."""
+        listing = await db.get(SwapListing, listing_id)
+        if not listing:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found.")
+        listing.status = new_status
+        await db.commit()
+        await db.refresh(listing)
+        return listing
+
+    @staticmethod
+    async def list_admin_disputes(
+        db: AsyncSession,
+        status_filter: str | None = None,
+    ) -> list[SwapDisputeAdminResponse]:
+        """Retrieve disputes and reports for admin triage."""
+        stmt = (
+            select(SwapReport)
+            .options(selectinload(SwapReport.reporter))
+            .order_by(SwapReport.created_at.desc())
+        )
+        if status_filter:
+            stmt = stmt.where(SwapReport.status == status_filter)
+
+        res = await db.execute(stmt)
+        reports = res.scalars().all()
+        return [
+            SwapDisputeAdminResponse(
+                id=r.id,
+                session_id=r.target_id,
+                reporter=build_user_minimal(r.reporter),
+                target_type=r.target_type,
+                category=r.category,
+                notes=r.notes,
+                status=r.status,
+                created_at=r.created_at,
+            )
+            for r in reports
+        ]
+
+    @staticmethod
+    async def resolve_admin_dispute(
+        db: AsyncSession,
+        report_id: uuid.UUID,
+        req: SwapDisputeResolveRequest,
+    ) -> SwapReportResponse:
+        """Resolve a dispute report and apply trust score penalties if warranted."""
+        report = await db.get(SwapReport, report_id, options=[selectinload(SwapReport.reporter)])
+        if not report:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found.")
+
+        report.status = req.status
+        report.admin_resolution = req.admin_resolution
+
+        # If penalty specified and target was user/session
+        if req.trust_score_penalty > 0 and report.target_type == "user":
+            trust = await SwapService.get_or_create_trust_score(db, report.target_id)
+            trust.score = max(0, trust.score - req.trust_score_penalty)
+            trust.no_show_count += 1
+            trust.updated_at = datetime.now(UTC)
+
+        await db.commit()
+        await db.refresh(report)
+
+        return SwapReportResponse(
+            id=report.id,
+            reporter_id=report.reporter_id,
+            reporter=build_user_minimal(report.reporter) if report.reporter else None,
+            target_type=report.target_type,
+            target_id=report.target_id,
+            category=report.category,
+            notes=report.notes,
+            status=report.status,
+            admin_resolution=report.admin_resolution,
+            created_at=report.created_at,
+        )
+
+    @staticmethod
+    async def approve_taxonomy_skill(
+        db: AsyncSession,
+        skill_id: uuid.UUID,
+        display_name: str | None = None,
+        category: str | None = None,
+    ) -> SkillResponse:
+        """Approve a pending user-suggested skill."""
+        skill = await db.get(Skill, skill_id)
+        if not skill:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Skill not found.")
+        skill.status = "active"
+        if display_name:
+            skill.display_name = display_name
+        if category:
+            skill.category = category
+        await db.commit()
+        await db.refresh(skill)
+        return SkillResponse.model_validate(skill)
+
+    @staticmethod
+    async def merge_taxonomy_skills(
+        db: AsyncSession,
+        source_skill_id: uuid.UUID,
+        target_skill_id: uuid.UUID,
+    ) -> SkillResponse:
+        """Merge a redundant/synonym skill into a canonical target skill."""
+        source = await db.get(Skill, source_skill_id)
+        target = await db.get(Skill, target_skill_id)
+        if not source or not target:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Skill not found.")
+
+        # Re-link user_skills pointing to source
+        user_skills_res = await db.execute(
+            select(UserSkill).where(UserSkill.skill_id == source_skill_id)
+        )
+        for us in user_skills_res.scalars().all():
+            us.skill_id = target_skill_id
+
+        # Re-link swap_listings pointing to source
+        listings_offered = await db.execute(
+            select(SwapListing).where(SwapListing.skill_offered_id == source_skill_id)
+        )
+        for off_item in listings_offered.scalars().all():
+            off_item.skill_offered_id = target_skill_id
+
+        listings_wanted = await db.execute(
+            select(SwapListing).where(SwapListing.skill_wanted_id == source_skill_id)
+        )
+        for want_item in listings_wanted.scalars().all():
+            want_item.skill_wanted_id = target_skill_id
+
+        # Add source display_name / slug to target aliases
+        aliases = list(target.aliases) if target.aliases else []
+        if source.slug not in aliases:
+            aliases.append(source.slug)
+        if source.display_name.lower() not in aliases:
+            aliases.append(source.display_name.lower())
+        target.aliases = aliases
+
+        # Mark source as rejected/merged
+        source.status = "rejected"
+
+        await db.commit()
+        await db.refresh(target)
+        return SkillResponse.model_validate(target)

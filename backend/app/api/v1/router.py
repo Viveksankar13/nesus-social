@@ -15,6 +15,7 @@ from app.api.v1.internal_jobs import router as internal_jobs_router
 from app.api.v1.messages import router as messages_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.posts import router as posts_router
+from app.api.v1.swap_admin import router as swap_admin_router
 from app.api.v1.swaps import router as swaps_router
 from app.api.v1.users import router as users_router
 
@@ -27,6 +28,7 @@ api_router.include_router(posts_router)
 api_router.include_router(comments_router)
 api_router.include_router(notifications_router)
 api_router.include_router(admin_router)
+api_router.include_router(swap_admin_router)
 api_router.include_router(ai_router)
 api_router.include_router(friends_router)
 api_router.include_router(messages_router)

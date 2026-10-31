@@ -443,3 +443,149 @@ class SwapDisputeCreate(BaseModel):
 class ICSExportResponse(BaseModel):
     filename: str
     content: str
+
+
+# ── Stage 4: AI Helpers, Safety & Admin Schemas ───────────────────────
+
+class SwapSessionPlanRequest(BaseModel):
+    goals: str | None = Field(default=None, max_length=500)
+    mentor_notes: str | None = Field(default=None, max_length=500)
+
+
+class AgendaItem(BaseModel):
+    minute: str
+    title: str
+    description: str
+
+
+class SwapSessionPlanResponse(BaseModel):
+    objective: str
+    agenda_items: list[AgendaItem]
+    suggested_questions: list[str]
+    mentor_tips: str
+
+
+class SwapSessionRecapRequest(BaseModel):
+    rough_notes: str = Field(..., min_length=5, max_length=5000)
+
+
+class SwapSessionRecapResponse(BaseModel):
+    summary: str
+    key_takeaways: list[str]
+    action_items: list[str]
+    recommended_followup: str
+
+
+class SwapFairnessAdviceResponse(BaseModel):
+    balance_status: str
+    headline: str
+    insights: str
+    recommended_actions: list[str]
+    recommended_skills_to_offer: list[str]
+
+
+# ── Safety: Blocking & Reporting ──────────────────────────────────────
+
+class UserBlockCreate(BaseModel):
+    blocked_id: uuid.UUID
+
+
+class UserBlockResponse(BaseModel):
+    id: uuid.UUID
+    blocker_id: uuid.UUID
+    blocked_id: uuid.UUID
+    blocked_user: PublicUserMinimal | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapReportCreate(BaseModel):
+    target_type: Literal["listing", "user", "session"]
+    target_id: uuid.UUID
+    category: Literal["payment_solicitation", "off_platform", "inappropriate", "no_show", "spam", "safety"]
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class SwapReportResponse(BaseModel):
+    id: uuid.UUID
+    reporter_id: uuid.UUID
+    reporter: PublicUserMinimal | None = None
+    target_type: str
+    target_id: uuid.UUID
+    category: str
+    notes: str | None = None
+    status: str
+    admin_resolution: str | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InPersonSafetyCheck(BaseModel):
+    public_place_name: str
+    public_place_address: str
+    is_safe_public_venue: bool
+    warning: str | None = None
+    safety_tips: list[str] = Field(default_factory=list)
+
+
+# ── Admin Swaps Console Schemas ───────────────────────────────────────
+
+class SwapAdminStatsResponse(BaseModel):
+    total_active_listings: int
+    swaps_this_week: int = 0
+    total_scheduled_sessions: int
+    total_completed_sessions: int
+    total_disputes: int
+    completion_rate: float
+    dispute_rate: float
+    top_skills: list[dict[str, Any]]
+
+
+class SwapListingAdminResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    user: PublicUserMinimal
+    skill_offered: SkillResponse
+    skill_wanted: SkillResponse | None = None
+    status: str
+    modes: list[str]
+    reports_count: int = 0
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapListingStatusUpdate(BaseModel):
+    status: Literal["active", "paused", "closed", "removed"]
+
+
+class SwapDisputeAdminResponse(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    reporter: PublicUserMinimal
+    target_type: str
+    category: str
+    notes: str | None = None
+    status: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapDisputeResolveRequest(BaseModel):
+    admin_resolution: str = Field(..., min_length=5, max_length=1000)
+    status: Literal["resolved", "dismissed"]
+    trust_score_penalty: int = Field(default=0, ge=0, le=50)
+
+
+class SwapTaxonomyApproveRequest(BaseModel):
+    skill_id: uuid.UUID
+    display_name: str | None = None
+    category: str | None = None
+
+
+class SwapTaxonomyMergeRequest(BaseModel):
+    source_skill_id: uuid.UUID
+    target_skill_id: uuid.UUID

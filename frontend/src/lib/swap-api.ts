@@ -27,6 +27,19 @@ import {
   SwapSession,
   UserSwapProfilePrivate,
   UserSwapProfilePublic,
+  InPersonSafetyCheck,
+  SwapAdminStats,
+  SwapDisputeAdmin,
+  SwapDisputeResolveRequest,
+  SwapFairnessAdviceResponse,
+  SwapListingAdmin,
+  SwapReport,
+  SwapReportCreate,
+  SwapSessionPlanRequest,
+  SwapSessionPlanResponse,
+  SwapSessionRecapRequest,
+  SwapSessionRecapResponse,
+  UserBlock,
 } from "@/types/swap";
 
 export const swapApi = {
@@ -168,6 +181,117 @@ export const swapApi = {
 
   submitSessionReview: async (id: string, data: SwapReviewCreate): Promise<SwapReview> => {
     return apiClient.post<SwapReview>(`/swaps/sessions/${id}/reviews`, data);
+  },
+
+  // ── Stage 4: AI Helpers, Safety & Admin ─────────────────────────────
+  generateSessionPlan: async (
+    sessionId: string,
+    data: SwapSessionPlanRequest
+  ): Promise<SwapSessionPlanResponse> => {
+    return apiClient.post<SwapSessionPlanResponse>(`/swaps/sessions/${sessionId}/ai-plan`, data);
+  },
+
+  generateSessionRecap: async (
+    sessionId: string,
+    data: SwapSessionRecapRequest
+  ): Promise<SwapSessionRecapResponse> => {
+    return apiClient.post<SwapSessionRecapResponse>(`/swaps/sessions/${sessionId}/ai-recap`, data);
+  },
+
+  getFairnessAdvice: async (): Promise<SwapFairnessAdviceResponse> => {
+    return apiClient.get<SwapFairnessAdviceResponse>("/swaps/fairness-advice");
+  },
+
+  blockUser: async (blockedId: string): Promise<UserBlock> => {
+    return apiClient.post<UserBlock>("/swaps/blocks", { blocked_id: blockedId });
+  },
+
+  unblockUser: async (blockedId: string): Promise<{ message: string }> => {
+    return apiClient.delete<{ message: string }>(`/swaps/blocks/${blockedId}`);
+  },
+
+  getBlockedUsers: async (): Promise<UserBlock[]> => {
+    return apiClient.get<UserBlock[]>("/swaps/blocks");
+  },
+
+  reportTarget: async (data: SwapReportCreate): Promise<SwapReport> => {
+    return apiClient.post<SwapReport>("/swaps/reports", data);
+  },
+
+  checkVenueSafety: async (placeName: string, address: string): Promise<InPersonSafetyCheck> => {
+    const params = new URLSearchParams({
+      place_name: placeName,
+      address,
+    });
+    return apiClient.post<InPersonSafetyCheck>(`/swaps/safety/check-venue?${params.toString()}`, {});
+  },
+
+  // ── Stage 4 Admin Swaps Console API ─────────────────────────────────
+  getAdminStats: async (): Promise<SwapAdminStats> => {
+    return apiClient.get<SwapAdminStats>("/admin/swaps/stats");
+  },
+
+  getAdminListings: async (status?: string): Promise<SwapListingAdmin[]> => {
+    return apiClient.get<SwapListingAdmin[]>(
+      `/admin/swaps/listings${status ? `?status=${status}` : ""}`
+    );
+  },
+
+  updateAdminListingStatus: async (
+    listingId: string,
+    status: string
+  ): Promise<{ message: string }> => {
+    return apiClient.put<{ message: string }>(`/admin/swaps/listings/${listingId}/status`, { status });
+  },
+
+  getAdminDisputes: async (status?: string): Promise<SwapDisputeAdmin[]> => {
+    return apiClient.get<SwapDisputeAdmin[]>(
+      `/admin/swaps/disputes${status ? `?status=${status}` : ""}`
+    );
+  },
+
+  resolveAdminDispute: async (
+    reportId: string,
+    data: SwapDisputeResolveRequest
+  ): Promise<SwapReport> => {
+    return apiClient.post<SwapReport>(`/admin/swaps/disputes/${reportId}/resolve`, data);
+  },
+
+  getAdminTaxonomy: async (status?: string): Promise<Skill[]> => {
+    return apiClient.get<Skill[]>(
+      `/admin/swaps/taxonomy${status ? `?status=${status}` : ""}`
+    );
+  },
+
+  approveAdminSkill: async (
+    skillId: string,
+    displayName?: string,
+    category?: string
+  ): Promise<Skill> => {
+    return apiClient.post<Skill>("/admin/swaps/taxonomy/approve", {
+      skill_id: skillId,
+      display_name: displayName,
+      category,
+    });
+  },
+
+  mergeAdminSkills: async (
+    sourceSkillId: string,
+    targetSkillId: string
+  ): Promise<Skill> => {
+    return apiClient.post<Skill>("/admin/swaps/taxonomy/merge", {
+      source_skill_id: sourceSkillId,
+      target_skill_id: targetSkillId,
+    });
+  },
+
+  triggerAdminJob: async (
+    jobName: string
+  ): Promise<{ job: string; status: string; records_processed: number }> => {
+    return apiClient.post<{ job: string; status: string; records_processed: number }>(
+      `/admin/swaps/jobs/${jobName}/run`,
+      {}
+    );
   },
 };
 

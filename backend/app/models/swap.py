@@ -391,6 +391,8 @@ class UserBlock(Base, UUIDMixin):
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
+    blocked_user: Mapped["User"] = relationship("User", foreign_keys=[blocked_id], lazy="joined")
+
 
 class SwapReport(Base, UUIDMixin):
     """User report on listing, user, or session."""
@@ -418,6 +420,8 @@ class SwapReport(Base, UUIDMixin):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
+
+    reporter: Mapped["User"] = relationship("User", foreign_keys=[reporter_id], lazy="joined")
 
 
 class TrustScore(Base, UUIDMixin):

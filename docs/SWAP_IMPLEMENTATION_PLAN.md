@@ -391,29 +391,29 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 *Goal: Comprehensive trust & safety suite (18+ verification, public place validator, reporting, auto-moderation), Gemini AI productivity helpers (Session Planner, Recap Helper, Fairness Advisor), and complete Admin Swaps management console.*
 
 #### Sub-Milestone S4a: AI Assistants & Extended Content Moderation
-- [ ] Implement Gemini Session Planner prompt: Generates a structured 30-minute agenda with time allocations and milestones based on user goals.
-- [ ] Implement Gemini Post-Session Recap Helper prompt: Converts quick rough notes into polished takeaways.
-- [ ] Implement Gemini Fairness Advisor prompt: Recommends reciprocal actions and skills to balance user trade ratios.
-- [ ] Extended moderation detector for swap content: flags payment solicitation ("$20", "Venmo", "cash"), off-platform contact harvesting (external messaging handles in initial requests), and unsafe meetup proposals.
-- [ ] **Commit:** `feat(swap): S4a - AI session planner, recap helper, and extended safety moderation`
+- [x] Implement Gemini Session Planner prompt: Generates a structured 30-minute agenda with time allocations and milestones based on user goals.
+- [x] Implement Gemini Post-Session Recap Helper prompt: Converts quick rough notes into polished takeaways.
+- [x] Implement Gemini Fairness Advisor prompt: Recommends reciprocal actions and skills to balance user trade ratios.
+- [x] Extended moderation detector for swap content: flags payment solicitation ("$20", "Venmo", "cash"), off-platform contact harvesting (external messaging handles in initial requests), and unsafe meetup proposals.
+- [x] **Commit:** `feat(swap): S4a - AI session planner, recap helper, and extended safety moderation`
 
 #### Sub-Milestone S4b: User Safety, Reporting & In-Person Verification
-- [ ] Implement user blocking (`user_blocks`) and reporting (`swap_reports`).
-- [ ] Automatic threshold: 3 distinct reports in 24 hours automatically unpublishes listings and sets profile to invisible pending admin triage.
-- [ ] Public place address validator: Checks against residential patterns (e.g., "Apt", "Unit", "Suite", residential street numbers) and requires public venues for in-person swaps.
-- [ ] In-person safety checklist component presented before confirming an in-person exchange.
-- [ ] **Commit:** `feat(swap): S4b - blocking, reporting, auto-hide threshold, and public place verification`
+- [x] Implement user blocking (`user_blocks`) and reporting (`swap_reports`).
+- [x] Automatic threshold: 3 distinct reports in 24 hours automatically unpublishes listings and sets profile to invisible pending admin triage.
+- [x] Public place address validator: Checks against residential patterns (e.g., "Apt", "Unit", "Suite", residential street numbers) and requires public venues for in-person swaps.
+- [x] In-person safety checklist component presented before confirming an in-person exchange.
+- [x] **Commit:** `feat(swap): S4b - blocking, reporting, auto-hide threshold, and public place verification`
 
 #### Sub-Milestone S4c: Admin Swap Management Console
-- [ ] Backend admin endpoints in `backend/app/api/v1/swap_admin.py`:
+- [x] Backend admin endpoints in `backend/app/api/v1/swap_admin.py`:
   - `GET /api/v1/admin/swaps/stats`: Overview KPIs (active listings, swaps this week, completion rate, dispute rate, top skills).
   - `GET /api/v1/admin/swaps/listings`: Search and manage listings (suspend/reinstate).
   - `GET /api/v1/admin/swaps/disputes`: Review active disputes and no-show reports with session chat audit logs.
   - `POST /api/v1/admin/swaps/disputes/{id}/resolve`: Resolve dispute, adjust trust scores, or issue bans.
   - `GET /api/v1/admin/swaps/taxonomy`: Curation interface to approve pending skills, merge synonyms, and edit categories.
   - `POST /api/v1/admin/swaps/jobs/{job_name}/run`: Manually trigger cron maintenance tasks.
-- [ ] Frontend Admin Console at `/admin/swaps` with 5 dedicated tabs: Overview, Listings, Disputes, Taxonomy, and Cron Jobs.
-- [ ] **Commit:** `feat(swap): S4c - admin swap console, taxonomy curation, and dispute resolution`
+- [x] Frontend Admin Console at `/admin/swaps` with 5 dedicated tabs: Overview, Listings, Disputes, Taxonomy, and Cron Jobs.
+- [x] **Commit:** `feat(swap): S4c - admin swap console, taxonomy curation, and dispute resolution`
 
 ---
 

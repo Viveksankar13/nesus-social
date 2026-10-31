@@ -293,4 +293,119 @@ export interface SwapDisputeCreate {
   reason: string;
 }
 
+// ── Stage 4: AI Helpers, Safety & Admin ──────────────────────────────
+export interface AgendaItem {
+  minute: string;
+  title: string;
+  description: string;
+}
+
+export interface SwapSessionPlanRequest {
+  goals?: string;
+  mentor_notes?: string;
+}
+
+export interface SwapSessionPlanResponse {
+  objective: string;
+  agenda_items: AgendaItem[];
+  suggested_questions: string[];
+  mentor_tips: string;
+}
+
+export interface SwapSessionRecapRequest {
+  rough_notes: string;
+}
+
+export interface SwapSessionRecapResponse {
+  summary: string;
+  key_takeaways: string[];
+  action_items: string[];
+  recommended_followup: string;
+}
+
+export interface SwapFairnessAdviceResponse {
+  balance_status: "balanced" | "learning_deficit" | "teaching_deficit";
+  headline: string;
+  insights: string;
+  recommended_actions: string[];
+  recommended_skills_to_offer: string[];
+}
+
+export interface UserBlock {
+  id: string;
+  blocker_id: string;
+  blocked_id: string;
+  blocked_user?: PublicUserMinimal | null;
+  created_at: string;
+}
+
+export interface SwapReport {
+  id: string;
+  reporter_id: string;
+  reporter?: PublicUserMinimal | null;
+  target_type: "listing" | "user" | "session";
+  target_id: string;
+  category: "payment_solicitation" | "off_platform" | "inappropriate" | "no_show" | "spam" | "safety";
+  notes?: string | null;
+  status: "pending" | "investigating" | "resolved" | "dismissed";
+  admin_resolution?: string | null;
+  created_at: string;
+}
+
+export interface SwapReportCreate {
+  target_type: "listing" | "user" | "session";
+  target_id: string;
+  category: "payment_solicitation" | "off_platform" | "inappropriate" | "no_show" | "spam" | "safety";
+  notes?: string | null;
+}
+
+export interface InPersonSafetyCheck {
+  public_place_name: string;
+  public_place_address: string;
+  is_safe_public_venue: boolean;
+  warning?: string | null;
+  safety_tips: string[];
+}
+
+export interface SwapAdminStats {
+  total_active_listings: number;
+  swaps_this_week: number;
+  total_scheduled_sessions: number;
+  total_completed_sessions: number;
+  total_disputes: number;
+  completion_rate: number;
+  dispute_rate: number;
+  top_skills: { skill: string; count: number }[];
+}
+
+export interface SwapListingAdmin {
+  id: string;
+  title: string;
+  user: PublicUserMinimal;
+  skill_offered: Skill;
+  skill_wanted?: Skill | null;
+  status: "active" | "paused" | "closed" | "removed";
+  modes: string[];
+  reports_count: number;
+  created_at: string;
+}
+
+export interface SwapDisputeAdmin {
+  id: string;
+  session_id: string;
+  reporter: PublicUserMinimal;
+  target_type: string;
+  category: string;
+  notes?: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface SwapDisputeResolveRequest {
+  admin_resolution: string;
+  status: "resolved" | "dismissed";
+  trust_score_penalty?: number;
+}
+
+
 

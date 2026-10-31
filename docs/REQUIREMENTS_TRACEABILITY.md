@@ -93,13 +93,13 @@
 | **SWAP-21** | Reciprocity ledger tracking with 2-session grace balance | S3 | ✅ Done | `reciprocity_ledger` table, +30m taught / +30m learned, -60m grace limit check, test `test_session_completion_double_blind_reviews_and_reciprocity` |
 | **SWAP-22** | Automated session reminder jobs (24h & 15m) via SSE & Brevo SMTP | S3 | ✅ Done | `send-session-reminders` job in `swap_jobs.py`, templates `swap_reminder.html`, `swap_accepted.html`, `swap_request.html` |
 | **SWAP-23** | Secret-protected internal cron endpoint (`X-Cron-Secret`) | S3 | ✅ Done | `POST /api/v1/internal/jobs/{job_name}`, `job_runs` table, test `test_internal_cron_runner_and_secret` |
-| **SWAP-24** | Gemini Session Planner: 30-minute structured agenda | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-25** | Gemini Post-Session Recap helper | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-26** | Gemini Fairness & Reciprocity Advisor | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-27** | User blocking & reporting with 3-strike auto-hide | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-28** | Admin Swaps Console: KPI dashboard & analytics | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-29** | Admin dispute resolution & trust score adjustment | S4 | 🔲 Planned | Stage 4 Deliverable |
-| **SWAP-30** | Admin taxonomy curation (approve, rename, merge skills) | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-24** | Gemini Session Planner: 30-minute structured agenda | S4 | ✅ Done | `POST /api/v1/swaps/sessions/{id}/ai-plan`, `SwapService.generate_session_plan`, test `test_stage4_ai_planner_and_recap` |
+| **SWAP-25** | Gemini Post-Session Recap helper | S4 | ✅ Done | `POST /api/v1/swaps/sessions/{id}/ai-recap`, `SwapService.generate_session_recap`, test `test_stage4_ai_planner_and_recap` |
+| **SWAP-26** | Gemini Fairness & Reciprocity Advisor | S4 | ✅ Done | `GET /api/v1/swaps/fairness-advice`, `SwapService.generate_fairness_advice`, test `test_stage4_fairness_advisor` |
+| **SWAP-27** | User blocking & reporting with 3-strike auto-hide | S4 | ✅ Done | `user_blocks`, `swap_reports`, `block_user`, `report_target`, tests `test_stage4_user_blocking_and_discovery_isolation`, `test_stage4_auto_hide_threshold_on_reports` |
+| **SWAP-28** | Admin Swaps Console: KPI dashboard & analytics | S4 | ✅ Done | `GET /api/v1/admin/swaps/stats`, `src/app/admin/swaps/page.tsx`, Playwright test `swap-stage4.spec.ts` |
+| **SWAP-29** | Admin dispute resolution & trust score adjustment | S4 | ✅ Done | `POST /api/v1/admin/swaps/disputes/{id}/resolve`, test `test_stage4_admin_operations` |
+| **SWAP-30** | Admin taxonomy curation (approve, rename, merge skills) | S4 | ✅ Done | `POST /api/v1/admin/swaps/taxonomy/approve`, `POST /api/v1/admin/swaps/taxonomy/merge`, test `test_stage4_admin_operations` |
 | **SWAP-31** | High-performance spatial query benchmark (10k listings) | S5 | 🔲 Planned | Stage 5 Deliverable |
 | **SWAP-32** | Zero coordinate/geohash API leakage security audit | S5 | 🔲 Planned | Stage 5 Deliverable |
 | **SWAP-33** | Full Playwright E2E swap lifecycle smoke test | S5 | 🔲 Planned | Stage 5 Deliverable |
@@ -110,4 +110,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage S3 complete — Requirements SWAP-01 through SWAP-23 100% Satisfied & Verified*
+*Last updated: Stage S4 complete — Requirements SWAP-01 through SWAP-30 100% Satisfied & Verified*

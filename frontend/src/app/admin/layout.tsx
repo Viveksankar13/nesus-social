@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   ArrowLeft,
+  ArrowLeftRight,
   FileText,
   LayoutDashboard,
   Loader2,
@@ -48,6 +49,11 @@ const navItems: NavItem[] = [
     title: "Content",
     href: "/admin/content",
     icon: FileText,
+  },
+  {
+    title: "Skill Swaps",
+    href: "/admin/swaps",
+    icon: ArrowLeftRight,
   },
   {
     title: "Moderation Queue",

@@ -265,3 +265,104 @@ Skill Wanted: {sanitize_input(skill_wanted) if skill_wanted else "Open to anythi
 User Notes: {sanitize_input(notes) if notes else "No additional notes"}
 </draft_request>
 Generate a JSON object with title, description, and suggested_tags."""
+
+
+# ── Stage 4 AI Prompts: Session Planner, Recap, and Fairness Advisor ──────────
+
+SWAP_SESSION_PLAN_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
+
+You are an expert peer-learning coach for Nexus Skill Swaps.
+Help the participants design a highly focused, structured 30-minute agenda.
+Respond ONLY with a valid JSON object matching this structure:
+{{
+  "objective": "A one-sentence summary of the learning goal",
+  "agenda_items": [
+    {{"minute": "0-5", "title": "Warm-up & Goal Alignment", "description": "Brief intros and outline of specific questions"}},
+    {{"minute": "5-20", "title": "Hands-on Demonstration / Coaching", "description": "Core concepts and practice"}},
+    {{"minute": "20-27", "title": "Interactive Exercise / Review", "description": "Learner practices under mentor guidance"}},
+    {{"minute": "27-30", "title": "Wrap-up & Next Steps", "description": "Key takeaways and suggested resources to continue"}}
+  ],
+  "suggested_questions": ["Question 1", "Question 2", "Question 3"],
+  "mentor_tips": "A short practical tip for the mentor"
+}}
+
+Strictly adhere to the 30-minute timeframe. Never mention money or paid services."""
+
+
+SWAP_SESSION_RECAP_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
+
+You are an executive study assistant for Nexus Skill Swaps.
+Convert the user's rough session notes into clear, actionable takeaways.
+Respond ONLY with a valid JSON object matching this structure:
+{{
+  "summary": "A 2-3 sentence overview of what was learned",
+  "key_takeaways": ["Takeaway 1", "Takeaway 2", "Takeaway 3"],
+  "action_items": ["Action item 1", "Action item 2"],
+  "recommended_followup": "A concise suggested next step or skill to explore next"
+}}"""
+
+
+SWAP_FAIRNESS_ADVISOR_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
+
+You are a community balance and reciprocity counselor for Nexus Skill Swaps.
+Given a user's taught vs. learned minutes and current skills, provide friendly,
+practical advice to help them maintain balanced reciprocity in the swap economy.
+Respond ONLY with a valid JSON object matching this structure:
+{{
+  "balance_status": "balanced" | "learning_deficit" | "teaching_deficit",
+  "headline": "A friendly one-sentence status headline",
+  "insights": "2-3 sentences explaining their current trade equilibrium and grace buffer",
+  "recommended_actions": ["Suggestion 1", "Suggestion 2"],
+  "recommended_skills_to_offer": ["Skill 1", "Skill 2"]
+}}
+
+Emphasize pure non-monetary reciprocity and mutual community benefit."""
+
+
+def build_session_plan_prompt(
+    skill_name: str,
+    mentor_notes: str | None,
+    learner_level: str | None,
+    session_goals: str | None,
+) -> str:
+    """Build formatted prompt for 30-minute session agenda planning."""
+    return f"""<session_plan_context>
+Skill: {sanitize_input(skill_name)}
+Learner Level: {sanitize_input(learner_level) if learner_level else "Intermediate"}
+Mentor Notes: {sanitize_input(mentor_notes) if mentor_notes else "Standard peer mentoring"}
+Session Goals: {sanitize_input(session_goals) if session_goals else "Gain practical understanding and confidence"}
+</session_plan_context>
+Create a structured 30-minute agenda."""
+
+
+def build_session_recap_prompt(
+    skill_name: str,
+    rough_notes: str,
+) -> str:
+    """Build formatted prompt for post-session recap generation."""
+    return f"""<session_notes>
+Skill Studied: {sanitize_input(skill_name)}
+Rough Notes Taken During Session:
+{sanitize_input(rough_notes)}
+</session_notes>
+Convert these notes into structured takeaways and action items."""
+
+
+def build_fairness_advisor_prompt(
+    minutes_taught: int,
+    minutes_learned: int,
+    net_balance_minutes: int,
+    grace_used: int,
+    user_skills_taught: list[str],
+    user_skills_wanted: list[str],
+) -> str:
+    """Build formatted prompt for reciprocity advisor."""
+    return f"""<reciprocity_context>
+Minutes Taught: {minutes_taught}
+Minutes Learned: {minutes_learned}
+Net Balance: {net_balance_minutes} minutes
+Grace Buffer Used: {grace_used} minutes (out of 60 max)
+Skills Taught: {", ".join(user_skills_taught) if user_skills_taught else "General knowledge"}
+Skills Wanted: {", ".join(user_skills_wanted) if user_skills_wanted else "Various skills"}
+</reciprocity_context>
+Analyze balance and provide constructive recommendations."""

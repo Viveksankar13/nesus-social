@@ -19,12 +19,14 @@ from app.api.deps import get_db, get_optional_current_user, require_user
 from app.models.user import User
 from app.schemas.swap import (
     GeocodeSearchResult,
+    InPersonSafetyCheck,
     ListingAIDraftRequest,
     ListingAIDraftResponse,
     SkillCategoryGroup,
     SkillResponse,
     SkillSuggestRequest,
     SwapDisputeCreate,
+    SwapFairnessAdviceResponse,
     SwapListingCreate,
     SwapListingListResponse,
     SwapListingResponse,
@@ -33,6 +35,8 @@ from app.schemas.swap import (
     SwapMatchResponse,
     SwapMessageCreate,
     SwapMessageResponse,
+    SwapReportCreate,
+    SwapReportResponse,
     SwapRequestAccept,
     SwapRequestCounter,
     SwapRequestCreate,
@@ -40,7 +44,13 @@ from app.schemas.swap import (
     SwapRequestResponse,
     SwapReviewCreate,
     SwapReviewResponse,
+    SwapSessionPlanRequest,
+    SwapSessionPlanResponse,
+    SwapSessionRecapRequest,
+    SwapSessionRecapResponse,
     SwapSessionResponse,
+    UserBlockCreate,
+    UserBlockResponse,
     UserSwapProfilePrivateResponse,
     UserSwapProfilePublicResponse,
     UserSwapProfileUpdate,
@@ -393,3 +403,86 @@ async def get_session_reviews(
 ) -> list[SwapReviewResponse]:
     """Get reviews for a session (isolated until revealed)."""
     return await SwapService.get_session_reviews(db, session_id, current_user.id)
+
+
+# ── 9. AI Assistants (Stage 4) ───────────────────────────────────────
+@router.post("/sessions/{session_id}/ai-plan", response_model=SwapSessionPlanResponse)
+async def generate_session_plan(
+    session_id: uuid.UUID,
+    req: SwapSessionPlanRequest,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionPlanResponse:
+    """Generate a structured 30-minute agenda with time allocations and milestones."""
+    return await SwapService.generate_session_plan(db, session_id, current_user.id, req)
+
+
+@router.post("/sessions/{session_id}/ai-recap", response_model=SwapSessionRecapResponse)
+async def generate_session_recap(
+    session_id: uuid.UUID,
+    req: SwapSessionRecapRequest,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionRecapResponse:
+    """Convert rough session notes into structured takeaways and action items."""
+    return await SwapService.generate_session_recap(db, session_id, current_user.id, req)
+
+
+@router.get("/fairness-advice", response_model=SwapFairnessAdviceResponse)
+async def get_fairness_advice(
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapFairnessAdviceResponse:
+    """Analyze reciprocal balance and receive personalized barter guidance."""
+    return await SwapService.generate_fairness_advice(db, current_user.id)
+
+
+# ── 10. Safety: User Blocking & Reporting (Stage 4) ───────────────────
+@router.post("/blocks", response_model=UserBlockResponse)
+async def block_user(
+    req: UserBlockCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserBlockResponse:
+    """Block a user from all discovery, matching, and proposals."""
+    return await SwapService.block_user(db, current_user.id, req.blocked_id)
+
+
+@router.delete("/blocks/{blocked_id}", response_model=dict[str, str])
+async def unblock_user(
+    blocked_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> dict[str, str]:
+    """Unblock a user."""
+    await SwapService.unblock_user(db, current_user.id, blocked_id)
+    return {"message": "User unblocked successfully."}
+
+
+@router.get("/blocks", response_model=list[UserBlockResponse])
+async def list_blocks(
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[UserBlockResponse]:
+    """List all blocked users."""
+    return await SwapService.list_blocked_users(db, current_user.id)
+
+
+@router.post("/reports", response_model=SwapReportResponse)
+async def report_target(
+    req: SwapReportCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapReportResponse:
+    """Submit a safety report against a listing, user, or session. Auto-hides on 3 reports in 24h."""
+    return await SwapService.report_target(db, current_user.id, req)
+
+
+@router.post("/safety/check-venue", response_model=InPersonSafetyCheck)
+async def check_in_person_venue(
+    place_name: str = Query(..., max_length=150),
+    address: str = Query(..., max_length=255),
+    current_user: Annotated[User | None, Depends(get_optional_current_user)] = None,
+) -> InPersonSafetyCheck:
+    """Verify venue safety and guard against private residential addresses."""
+    return SwapService.check_in_person_safety(place_name, address)

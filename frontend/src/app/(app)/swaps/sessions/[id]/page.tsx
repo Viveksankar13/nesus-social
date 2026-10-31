@@ -17,6 +17,8 @@ import {
   ExternalLink,
   ChevronLeft,
   Sparkles,
+  BookOpen,
+  FileCheck,
   Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,8 @@ import {
   SwapReview,
   SwapReviewCreate,
   SwapDisputeCreate,
+  SwapSessionPlanResponse,
+  SwapSessionRecapResponse,
 } from "@/types/swap";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -75,6 +79,45 @@ export default function SwapSessionRoomPage() {
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
   const [publicComment, setPublicComment] = React.useState("");
   const [privateFeedback, setPrivateFeedback] = React.useState("");
+
+  // AI Planner Modal State
+  const [isPlanOpen, setIsPlanOpen] = React.useState(false);
+  const [planGoals, setPlanGoals] = React.useState("");
+  const [sessionPlan, setSessionPlan] = React.useState<SwapSessionPlanResponse | null>(null);
+  const [isGeneratingPlan, setIsGeneratingPlan] = React.useState(false);
+
+  // AI Recap Modal State
+  const [isRecapOpen, setIsRecapOpen] = React.useState(false);
+  const [roughNotes, setRoughNotes] = React.useState("");
+  const [sessionRecap, setSessionRecap] = React.useState<SwapSessionRecapResponse | null>(null);
+  const [isGeneratingRecap, setIsGeneratingRecap] = React.useState(false);
+
+  const handleGeneratePlan = async () => {
+    setIsGeneratingPlan(true);
+    try {
+      const res = await swapApi.generateSessionPlan(sessionId, { goals: planGoals });
+      setSessionPlan(res);
+      toast({ title: "AI Plan Ready", description: "Structured 30-minute agenda generated." });
+    } catch {
+      toast({ title: "Generation Failed", description: "Could not generate agenda.", variant: "destructive" });
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  const handleGenerateRecap = async () => {
+    if (!roughNotes.trim()) return;
+    setIsGeneratingRecap(true);
+    try {
+      const res = await swapApi.generateSessionRecap(sessionId, { rough_notes: roughNotes });
+      setSessionRecap(res);
+      toast({ title: "Recap Generated", description: "Key takeaways and action items created." });
+    } catch {
+      toast({ title: "Recap Failed", description: "Could not generate recap.", variant: "destructive" });
+    } finally {
+      setIsGeneratingRecap(false);
+    }
+  };
 
   // Current Viewer
   const { data: currentUser } = useQuery({
@@ -285,6 +328,16 @@ export default function SwapSessionRoomPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsPlanOpen(true)}>
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            AI Plan
+          </Button>
+
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsRecapOpen(true)}>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
+            AI Recap
+          </Button>
+
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleDownloadIcs}>
             <Download className="w-3.5 h-3.5" />
             .ics
@@ -716,6 +769,161 @@ export default function SwapSessionRoomPage() {
               onClick={() => disputeMutation.mutate({ reason: disputeReason })}
             >
               {disputeMutation.isPending ? "Submitting..." : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Session Planner Dialog */}
+      <Dialog open={isPlanOpen} onOpenChange={setIsPlanOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-500" />
+              Gemini AI Session Planner
+            </DialogTitle>
+            <DialogDescription>
+              Generate a structured 30-minute agenda with time allocations and milestones.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-semibold">Your Learning Goals (Optional)</Label>
+              <Input
+                placeholder="e.g. Master React hooks, debug state management..."
+                value={planGoals}
+                onChange={(e) => setPlanGoals(e.target.value)}
+                className="mt-1 text-xs"
+              />
+            </div>
+
+            <Button
+              className="w-full gap-2 text-xs"
+              onClick={handleGeneratePlan}
+              disabled={isGeneratingPlan}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${isGeneratingPlan ? "animate-spin" : ""}`} />
+              {isGeneratingPlan ? "Generating Structured Agenda..." : "Generate 30-Min Agenda"}
+            </Button>
+
+            {sessionPlan && (
+              <div className="space-y-3 p-3 bg-muted/40 rounded-lg border text-xs">
+                <div>
+                  <span className="font-semibold text-primary">Goal:</span> {sessionPlan.objective}
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <span className="font-semibold">30-Minute Breakdown:</span>
+                  {sessionPlan.agenda_items.map((item, idx) => (
+                    <div key={idx} className="p-2 bg-background rounded border space-y-0.5">
+                      <div className="flex items-center justify-between font-medium">
+                        <span>{item.title}</span>
+                        <Badge variant="outline" className="text-[10px]">{item.minute} min</Badge>
+                      </div>
+                      <p className="text-muted-foreground text-[11px]">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {sessionPlan.suggested_questions?.length > 0 && (
+                  <div className="space-y-1 pt-1">
+                    <span className="font-semibold">Suggested Questions:</span>
+                    <ul className="list-disc list-inside text-muted-foreground text-[11px] space-y-0.5">
+                      {sessionPlan.suggested_questions.map((q, i) => (
+                        <li key={i}>{q}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {sessionPlan.mentor_tips && (
+                  <p className="italic text-[11px] text-muted-foreground bg-primary/5 p-2 rounded border border-primary/20">
+                    💡 Mentor Tip: {sessionPlan.mentor_tips}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsPlanOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Session Recap Dialog */}
+      <Dialog open={isRecapOpen} onOpenChange={setIsRecapOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-emerald-500" />
+              Gemini AI Post-Session Recap
+            </DialogTitle>
+            <DialogDescription>
+              Convert your rough notes into polished takeaways and action items.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-semibold">Rough Notes Taken During Session *</Label>
+              <Textarea
+                placeholder="Paste key concepts discussed, code snippets, book recommendations..."
+                value={roughNotes}
+                onChange={(e) => setRoughNotes(e.target.value)}
+                rows={4}
+                className="mt-1 text-xs resize-none"
+              />
+            </div>
+
+            <Button
+              className="w-full gap-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={handleGenerateRecap}
+              disabled={isGeneratingRecap || !roughNotes.trim()}
+            >
+              <FileCheck className={`w-3.5 h-3.5 ${isGeneratingRecap ? "animate-spin" : ""}`} />
+              {isGeneratingRecap ? "Converting Notes to Takeaways..." : "Generate Takeaways & Action Items"}
+            </Button>
+
+            {sessionRecap && (
+              <div className="space-y-3 p-3 bg-muted/40 rounded-lg border text-xs">
+                <div>
+                  <span className="font-semibold text-primary">Summary:</span> {sessionRecap.summary}
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <span className="font-semibold">Key Takeaways:</span>
+                  <ul className="list-disc list-inside text-muted-foreground text-[11px] space-y-0.5">
+                    {sessionRecap.key_takeaways.map((t, idx) => (
+                      <li key={idx}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <span className="font-semibold">Action Items:</span>
+                  <ul className="list-disc list-inside text-muted-foreground text-[11px] space-y-0.5">
+                    {sessionRecap.action_items.map((a, idx) => (
+                      <li key={idx}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {sessionRecap.recommended_followup && (
+                  <p className="text-[11px] text-muted-foreground bg-emerald-500/10 p-2 rounded border border-emerald-500/20">
+                    🎯 Recommended Next Step: {sessionRecap.recommended_followup}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsRecapOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
