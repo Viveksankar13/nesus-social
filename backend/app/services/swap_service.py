@@ -21,7 +21,6 @@ from app.models.post import Post
 from app.models.swap import (
     AvailabilityBlackout,
     AvailabilityWindow,
-    JobRun,
     ReciprocityLedger,
     Skill,
     SwapListing,
@@ -41,7 +40,6 @@ from app.schemas.swap import (
     AvailabilityBlackoutResponse,
     AvailabilityWindowResponse,
     ICSExportResponse,
-    ProposedSlotItem,
     PublicUserMinimal,
     SkillResponse,
     SwapDisputeCreate,
@@ -152,14 +150,11 @@ def build_user_minimal(u: User) -> PublicUserMinimal:
     )
 
 
-
 class SwapService:
     """Core domain service for skill swap profiles, availability, and privacy."""
 
     @staticmethod
-    async def get_or_create_profile(
-        db: AsyncSession, user_id: uuid.UUID
-    ) -> UserSwapProfile:
+    async def get_or_create_profile(db: AsyncSession, user_id: uuid.UUID) -> UserSwapProfile:
         """Fetch existing swap profile or initialize default settings."""
         stmt = select(UserSwapProfile).where(UserSwapProfile.user_id == user_id)
         res = await db.execute(stmt)
@@ -271,10 +266,7 @@ class SwapService:
             .order_by(AvailabilityWindow.day_of_week, AvailabilityWindow.start_time_utc)
         )
         aw_res = await db.execute(aw_stmt)
-        windows = [
-            AvailabilityWindowResponse.model_validate(w)
-            for w in aw_res.scalars().all()
-        ]
+        windows = [AvailabilityWindowResponse.model_validate(w) for w in aw_res.scalars().all()]
 
         # Blackout dates
         ab_stmt = (
@@ -283,10 +275,7 @@ class SwapService:
             .order_by(AvailabilityBlackout.start_datetime_utc)
         )
         ab_res = await db.execute(ab_stmt)
-        blackouts = [
-            AvailabilityBlackoutResponse.model_validate(b)
-            for b in ab_res.scalars().all()
-        ]
+        blackouts = [AvailabilityBlackoutResponse.model_validate(b) for b in ab_res.scalars().all()]
 
         # Trust score & ledger
         ts_stmt = select(TrustScore).where(TrustScore.user_id == user_id)
@@ -378,9 +367,7 @@ class SwapService:
             )
 
         # Update availability windows
-        await db.execute(
-            delete(AvailabilityWindow).where(AvailabilityWindow.user_id == user_id)
-        )
+        await db.execute(delete(AvailabilityWindow).where(AvailabilityWindow.user_id == user_id))
         for w in data.availability_windows:
             db.add(
                 AvailabilityWindow(
@@ -667,9 +654,7 @@ class SwapService:
             title=listing.title,
             skill_offered=SkillResponse.model_validate(listing.skill_offered),
             skill_wanted=(
-                SkillResponse.model_validate(listing.skill_wanted)
-                if listing.skill_wanted
-                else None
+                SkillResponse.model_validate(listing.skill_wanted) if listing.skill_wanted else None
             ),
             description=listing.description,
             modes=listing.modes,
@@ -717,9 +702,7 @@ class SwapService:
                 title=item.title,
                 skill_offered=SkillResponse.model_validate(item.skill_offered),
                 skill_wanted=(
-                    SkillResponse.model_validate(item.skill_wanted)
-                    if item.skill_wanted
-                    else None
+                    SkillResponse.model_validate(item.skill_wanted) if item.skill_wanted else None
                 ),
                 description=item.description,
                 modes=item.modes,
@@ -845,11 +828,7 @@ class SwapService:
             )
 
         offered = await db.get(Skill, listing.skill_offered_id)
-        wanted = (
-            await db.get(Skill, listing.skill_wanted_id)
-            if listing.skill_wanted_id
-            else None
-        )
+        wanted = await db.get(Skill, listing.skill_wanted_id) if listing.skill_wanted_id else None
         wanted_label = wanted.display_name if wanted else "Open to anything / Pay it forward"
 
         post_content = (
@@ -948,7 +927,8 @@ class SwapService:
         # In-memory filter for modes if specified (cross-dialect safe)
         if mode:
             all_listings = [
-                entry for entry in all_listings
+                entry
+                for entry in all_listings
                 if mode in (entry.modes or []) or "any" in (entry.modes or [])
             ]
 
@@ -962,9 +942,7 @@ class SwapService:
             )
             owner_profiles = {p.user_id: p for p in prof_res.scalars().all()}
 
-            ts_res = await db.execute(
-                select(TrustScore).where(TrustScore.user_id.in_(owner_ids))
-            )
+            ts_res = await db.execute(select(TrustScore).where(TrustScore.user_id.in_(owner_ids)))
             trust_scores = {ts.user_id: ts.score for ts in ts_res.scalars().all()}
 
         # Compute distance bucket and km for each listing
@@ -991,12 +969,14 @@ class SwapService:
             if distance_filter and bucket != distance_filter:
                 continue
 
-            decorated_listings.append({
-                "listing": entry,
-                "distance_bucket": bucket,
-                "distance_km": dist_km if dist_km is not None else 99999.0,
-                "trust_score": trust_scores.get(entry.user_id, 100),
-            })
+            decorated_listings.append(
+                {
+                    "listing": entry,
+                    "distance_bucket": bucket,
+                    "distance_km": dist_km if dist_km is not None else 99999.0,
+                    "trust_score": trust_scores.get(entry.user_id, 100),
+                }
+            )
 
         # Sort
         if sort == "nearest":
@@ -1071,8 +1051,12 @@ class SwapService:
         # Block check
         block_stmt = select(UserBlock).where(
             or_(
-                and_(UserBlock.blocker_id == requester_id, UserBlock.blocked_id == data.recipient_id),
-                and_(UserBlock.blocker_id == data.recipient_id, UserBlock.blocked_id == requester_id),
+                and_(
+                    UserBlock.blocker_id == requester_id, UserBlock.blocked_id == data.recipient_id
+                ),
+                and_(
+                    UserBlock.blocker_id == data.recipient_id, UserBlock.blocked_id == requester_id
+                ),
             )
         )
         if (await db.execute(block_stmt)).scalars().first():
@@ -1112,8 +1096,12 @@ class SwapService:
             )
 
         # Verify skills exist
-        offered = (await db.execute(select(Skill).where(Skill.id == data.offered_skill_id))).scalar_one_or_none()
-        wanted = (await db.execute(select(Skill).where(Skill.id == data.wanted_skill_id))).scalar_one_or_none()
+        offered = (
+            await db.execute(select(Skill).where(Skill.id == data.offered_skill_id))
+        ).scalar_one_or_none()
+        wanted = (
+            await db.execute(select(Skill).where(Skill.id == data.wanted_skill_id))
+        ).scalar_one_or_none()
         if not offered or not wanted:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -1234,10 +1222,14 @@ class SwapService:
         )
         req = (await db.execute(stmt)).scalar_one_or_none()
         if not req:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found"
+            )
 
         if user_id not in (req.requester_id, req.recipient_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this proposal")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this proposal"
+            )
 
         return SwapService._build_swap_request_response(req)
 
@@ -1265,10 +1257,15 @@ class SwapService:
         )
         req = (await db.execute(stmt)).scalar_one_or_none()
         if not req:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found"
+            )
 
         if user_id not in (req.requester_id, req.recipient_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to counter this proposal")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to counter this proposal",
+            )
 
         if req.status not in ("pending", "countered"):
             raise HTTPException(
@@ -1327,10 +1324,15 @@ class SwapService:
         )
         req = (await db.execute(stmt)).scalar_one_or_none()
         if not req:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found"
+            )
 
         if user_id not in (req.requester_id, req.recipient_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to decline this proposal")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to decline this proposal",
+            )
 
         if req.status not in ("pending", "countered"):
             raise HTTPException(
@@ -1374,10 +1376,15 @@ class SwapService:
         )
         req = (await db.execute(stmt)).scalar_one_or_none()
         if not req:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found"
+            )
 
         if user_id not in (req.requester_id, req.recipient_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to cancel this proposal")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to cancel this proposal",
+            )
 
         if req.status not in ("pending", "countered"):
             raise HTTPException(
@@ -1451,10 +1458,15 @@ class SwapService:
         )
         req = (await db.execute(stmt)).scalar_one_or_none()
         if not req:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap proposal not found"
+            )
 
         if user_id not in (req.requester_id, req.recipient_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to accept this proposal")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to accept this proposal",
+            )
 
         if req.status not in ("pending", "countered"):
             raise HTTPException(
@@ -1463,7 +1475,10 @@ class SwapService:
             )
 
         if not req.proposed_slots:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No proposed slots found on proposal")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No proposed slots found on proposal",
+            )
 
         slot_idx = accept_data.selected_slot_index
         if slot_idx < 0 or slot_idx >= len(req.proposed_slots):
@@ -1609,10 +1624,14 @@ class SwapService:
         )
         sess = (await db.execute(stmt)).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if user_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to view this session"
+            )
 
         return SwapService._build_swap_session_response(sess)
 
@@ -1637,14 +1656,18 @@ class SwapService:
         )
         sess = (await db.execute(stmt)).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if user_id == sess.user_a_id:
             sess.user_a_confirmed = True
         elif user_id == sess.user_b_id:
             sess.user_b_confirmed = True
         else:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         now = datetime.now(UTC)
         # If both confirmed, complete session and update reciprocity & trust
@@ -1656,7 +1679,11 @@ class SwapService:
 
             # Update reciprocity ledgers (+30m taught, +30m learned for each)
             for uid in (sess.user_a_id, sess.user_b_id):
-                rl = (await db.execute(select(ReciprocityLedger).where(ReciprocityLedger.user_id == uid))).scalar_one_or_none()
+                rl = (
+                    await db.execute(
+                        select(ReciprocityLedger).where(ReciprocityLedger.user_id == uid)
+                    )
+                ).scalar_one_or_none()
                 if not rl:
                     rl = ReciprocityLedger(
                         id=uuid.uuid4(),
@@ -1674,7 +1701,9 @@ class SwapService:
                 rl.updated_at = now
 
                 # Trust Score update
-                ts = (await db.execute(select(TrustScore).where(TrustScore.user_id == uid))).scalar_one_or_none()
+                ts = (
+                    await db.execute(select(TrustScore).where(TrustScore.user_id == uid))
+                ).scalar_one_or_none()
                 if not ts:
                     ts = TrustScore(
                         id=uuid.uuid4(),
@@ -1728,12 +1757,18 @@ class SwapService:
         Submit a double-blind review.
         Reviews remain hidden until both participants submit or 7 calendar days elapse.
         """
-        sess = (await db.execute(select(SwapSession).where(SwapSession.id == session_id))).scalar_one_or_none()
+        sess = (
+            await db.execute(select(SwapSession).where(SwapSession.id == session_id))
+        ).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if reviewer_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         reviewee_id = sess.user_b_id if reviewer_id == sess.user_a_id else sess.user_a_id
 
@@ -1747,7 +1782,10 @@ class SwapService:
             )
         ).scalar_one_or_none()
         if existing:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already reviewed this session")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already reviewed this session",
+            )
 
         # Check if peer review exists
         peer_review = (
@@ -1792,7 +1830,9 @@ class SwapService:
                     )
                 ).scalar()
                 if avg_res is not None:
-                    ts = (await db.execute(select(TrustScore).where(TrustScore.user_id == uid))).scalar_one_or_none()
+                    ts = (
+                        await db.execute(select(TrustScore).where(TrustScore.user_id == uid))
+                    ).scalar_one_or_none()
                     if ts:
                         ts.avg_rating = round(float(avg_res), 2)
                         ts.updated_at = now
@@ -1880,10 +1920,14 @@ class SwapService:
         )
         sess = (await db.execute(stmt)).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if user_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         now = datetime.now(UTC)
         sess.status = "disputed"
@@ -1929,12 +1973,18 @@ class SwapService:
         data: SwapMessageCreate,
     ) -> SwapMessageResponse:
         """Post a logistics chat message within an active or scheduled session."""
-        sess = (await db.execute(select(SwapSession).where(SwapSession.id == session_id))).scalar_one_or_none()
+        sess = (
+            await db.execute(select(SwapSession).where(SwapSession.id == session_id))
+        ).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if sender_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         now = datetime.now(UTC)
         msg_id = uuid.uuid4()
@@ -1979,12 +2029,18 @@ class SwapService:
         user_id: uuid.UUID,
     ) -> list[SwapMessageResponse]:
         """Fetch logistics chat messages for a session."""
-        sess = (await db.execute(select(SwapSession).where(SwapSession.id == session_id))).scalar_one_or_none()
+        sess = (
+            await db.execute(select(SwapSession).where(SwapSession.id == session_id))
+        ).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if user_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         stmt = (
             select(SwapMessage)
@@ -2024,10 +2080,14 @@ class SwapService:
         )
         sess = (await db.execute(stmt)).scalar_one_or_none()
         if not sess:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Swap session not found"
+            )
 
         if user_id not in (sess.user_a_id, sess.user_b_id):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not a participant of this session"
+            )
 
         now_fmt = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         lines = [
@@ -2046,18 +2106,20 @@ class SwapService:
                 if sess.mode == "in_person"
                 else f"{settings.JITSI_BASE_URL}/nexus-swap-{sess.id}-{sess.jitsi_room_token}"
             )
-            lines.extend([
-                "BEGIN:VEVENT",
-                f"UID:{h.ics_uid}",
-                f"DTSTAMP:{now_fmt}",
-                f"DTSTART:{start_fmt}",
-                f"DTEND:{end_fmt}",
-                f"SUMMARY:Skill Swap Half {h.half_number}: {h.skill.display_name} ({h.mentor.display_name} -> {h.learner.display_name})",
-                "DESCRIPTION:Reciprocal 30-minute peer skill mentorship on Nexus Social.",
-                f"LOCATION:{loc or 'Remote Video'}",
-                "STATUS:CONFIRMED",
-                "END:VEVENT",
-            ])
+            lines.extend(
+                [
+                    "BEGIN:VEVENT",
+                    f"UID:{h.ics_uid}",
+                    f"DTSTAMP:{now_fmt}",
+                    f"DTSTART:{start_fmt}",
+                    f"DTEND:{end_fmt}",
+                    f"SUMMARY:Skill Swap Half {h.half_number}: {h.skill.display_name} ({h.mentor.display_name} -> {h.learner.display_name})",
+                    "DESCRIPTION:Reciprocal 30-minute peer skill mentorship on Nexus Social.",
+                    f"LOCATION:{loc or 'Remote Video'}",
+                    "STATUS:CONFIRMED",
+                    "END:VEVENT",
+                ]
+            )
 
         lines.append("END:VCALENDAR")
         return ICSExportResponse(
@@ -2152,5 +2214,3 @@ class SwapService:
             revealed_at=r.revealed_at,
             created_at=r.created_at,
         )
-
-

@@ -434,12 +434,14 @@ class SwapMatchingService:
                     op.coarse_lng,
                 )
 
-            scored_candidates.append({
-                "listing": c,
-                "score": score,
-                "breakdown": breakdown,
-                "distance_bucket": dist_bucket,
-            })
+            scored_candidates.append(
+                {
+                    "listing": c,
+                    "score": score,
+                    "breakdown": breakdown,
+                    "distance_bucket": dist_bucket,
+                }
+            )
 
         # Sort descending by score
         scored_candidates.sort(key=lambda x: x["score"], reverse=True)

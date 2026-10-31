@@ -443,9 +443,13 @@ async def test_internal_cron_runner_and_secret(
 
     # Verify audit record in job_runs table
     job_run = (
-        await test_db_session.execute(
-            select(JobRun).where(JobRun.job_name == "auto-expire-requests")
+        (
+            await test_db_session.execute(
+                select(JobRun).where(JobRun.job_name == "auto-expire-requests")
+            )
         )
-    ).scalars().first()
+        .scalars()
+        .first()
+    )
     assert job_run is not None
     assert job_run.status == "success"

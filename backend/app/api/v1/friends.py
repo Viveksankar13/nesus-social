@@ -261,13 +261,17 @@ async def list_friends(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> list[FriendUserResponse]:
     """List all accepted friends of the authenticated user."""
-    stmt = select(Friendship).where(
-        (Friendship.status == "accepted")
-        & (
-            (Friendship.sender_id == current_user.id)
-            | (Friendship.receiver_id == current_user.id)
+    stmt = (
+        select(Friendship)
+        .where(
+            (Friendship.status == "accepted")
+            & (
+                (Friendship.sender_id == current_user.id)
+                | (Friendship.receiver_id == current_user.id)
+            )
         )
-    ).order_by(Friendship.updated_at.desc())
+        .order_by(Friendship.updated_at.desc())
+    )
     res = await db.execute(stmt)
     friendships = res.scalars().all()
 

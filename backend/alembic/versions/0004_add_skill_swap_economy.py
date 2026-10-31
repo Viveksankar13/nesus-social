@@ -81,7 +81,9 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("is_invisible", sa.Boolean(), server_default=sa.text("false"), nullable=False),
-        sa.Column("accepts_newcomers", sa.Boolean(), server_default=sa.text("true"), nullable=False),
+        sa.Column(
+            "accepts_newcomers", sa.Boolean(), server_default=sa.text("true"), nullable=False
+        ),
         sa.Column("is_18_confirmed", sa.Boolean(), server_default=sa.text("false"), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
@@ -210,8 +212,12 @@ def upgrade() -> None:
         sa.Column("public_place_name", sa.String(length=150), nullable=True),
         sa.Column("public_place_address", sa.String(length=255), nullable=True),
         sa.Column("jitsi_room_token", sa.String(length=100), nullable=True),
-        sa.Column("user_a_confirmed", sa.Boolean(), server_default=sa.text("false"), nullable=False),
-        sa.Column("user_b_confirmed", sa.Boolean(), server_default=sa.text("false"), nullable=False),
+        sa.Column(
+            "user_a_confirmed", sa.Boolean(), server_default=sa.text("false"), nullable=False
+        ),
+        sa.Column(
+            "user_b_confirmed", sa.Boolean(), server_default=sa.text("false"), nullable=False
+        ),
         sa.Column("dispute_reason", sa.Text(), nullable=True),
         sa.Column("disputed_by_id", sa.Uuid(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -250,7 +256,9 @@ def upgrade() -> None:
     op.create_index("ix_swap_session_halves_session_id", "swap_session_halves", ["session_id"])
     op.create_index("ix_swap_session_halves_mentor_id", "swap_session_halves", ["mentor_id"])
     op.create_index("ix_swap_session_halves_learner_id", "swap_session_halves", ["learner_id"])
-    op.create_index("ix_swap_session_halves_time", "swap_session_halves", ["start_time_utc", "end_time_utc"])
+    op.create_index(
+        "ix_swap_session_halves_time", "swap_session_halves", ["start_time_utc", "end_time_utc"]
+    )
 
     # ── 10. swap_messages ──────────────────────────────────────────────────
     op.create_table(

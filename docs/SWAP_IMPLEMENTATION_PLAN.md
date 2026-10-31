@@ -1,7 +1,7 @@
 # 🔄 Hyper-Local Skill Swap Economy — Implementation Plan
 
 > **Add-on Module to Nexus Social** · 6 Stage-Gated Vertical Slices · Living Plan  
-> **Status:** Stage 1 (Taxonomy & Profiles) Complete · Awaiting Approval to Proceed to Stage 2  
+> **Status:** Stage 3 (Swaps & Sessions) Complete · Awaiting Approval to Proceed to Stage 4  
 > **Last Updated:** 2026-10-31
 
 ---
@@ -326,64 +326,64 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 
 ---
 
-### Stage 3: Swaps & Sessions Vertical Slice (CURRENT STAGE)
+### Stage 3: Swaps & Sessions Vertical Slice (COMPLETED)
 *Goal: Full end-to-end exchange lifecycle: request state machine, slot scheduling, Jitsi video room generation, real-time logistics chat, double-blind reviews, trust score calculations, and background reminder jobs.*
 
 #### Sub-Milestone S3a: Request State Machine
-- [ ] Implement `swap_requests` table and state machine in `swap_service.py`:
+- [x] Implement `swap_requests` table and state machine in `swap_service.py`:
   - Transitions: `pending → accepted | declined | countered | cancelled | expired`.
   - Max active pending requests per user (`SWAP_MAX_PENDING_REQUESTS = 5`).
   - Auto-expiry after 72 hours of inactivity.
   - Counter-proposals with alternate proposed slots or modes.
-- [ ] Endpoints:
+- [x] Endpoints:
   - `POST /api/v1/swaps/requests`: Propose swap.
   - `GET /api/v1/swaps/requests`: List incoming and outgoing requests.
   - `POST /api/v1/swaps/requests/{id}/accept`: Accept request and auto-create session.
   - `POST /api/v1/swaps/requests/{id}/decline`: Decline request.
   - `POST /api/v1/swaps/requests/{id}/counter`: Send counter-proposal.
   - `POST /api/v1/swaps/requests/{id}/cancel`: Cancel pending request.
-- [ ] Tests for all legal and illegal state transitions.
-- [ ] **Commit:** `feat(swap): S3a - swap request state machine and counter-offers`
+- [x] Tests for all legal and illegal state transitions (`test_swap_requests.py`).
+- [x] **Commit:** `feat(swap): S3a-d - request state machine, sessions, Jitsi rooms, cron jobs, and email alerts` (`3367de0`)
 
 #### Sub-Milestone S3b: Sessions, Slots & Jitsi Room Generation
-- [ ] Implement `swap_sessions` and `swap_session_halves` tables.
-- [ ] Slot overlap validation: Ensure neither user has conflicting scheduled sessions or blackout intervals.
-- [ ] Implement auto-generation of unguessable Jitsi Meet room URLs (`https://meet.jit.si/nexus-swap-{uuid}-{random_token}`).
-- [ ] Implement `.ics` iCalendar file generator for seamless addition to Google Calendar / Apple Calendar.
-- [ ] Implement internal cron runner in `swap_jobs.py` and endpoint `POST /api/v1/internal/jobs/{job_name}` authenticated via `X-Cron-Secret`.
-- [ ] **Commit:** `feat(swap): S3b - session halves, slot overlap guard, Jitsi rooms, and cron jobs`
+- [x] Implement `swap_sessions` and `swap_session_halves` tables with explicit relationships.
+- [x] Slot overlap validation: Ensure neither user has conflicting scheduled sessions or blackout intervals (`check_schedule_conflicts`).
+- [x] Implement auto-generation of unguessable Jitsi Meet room URLs (`https://meet.jit.si/nexus-swap-{uuid}-{random_token}`).
+- [x] Implement `.ics` iCalendar file generator for seamless addition to Google Calendar / Apple Calendar.
+- [x] Implement internal cron runner in `swap_jobs.py` and endpoint `POST /api/v1/internal/jobs/{job_name}` authenticated via `X-Cron-Secret`.
+- [x] **Commit:** `feat(swap): S3a-d - request state machine, sessions, Jitsi rooms, cron jobs, and email alerts` (`3367de0`)
 
 #### Sub-Milestone S3c: Completion, Blind Reviews & Trust Engine
-- [ ] Implement double-blind review system:
+- [x] Implement double-blind review system:
   - Reviews remain private until both parties submit or 7 calendar days elapse.
   - Rating (1–5 stars), peer tags ("Patient Teacher", "Prepared", "Great Explanations"), public feedback, private feedback.
-- [ ] Implement dispute / no-show reporting:
+- [x] Implement dispute / no-show reporting:
   - Reporting no-show pauses auto-completion and flags for admin review.
-- [ ] Implement trust score engine (0–100 scale):
+- [x] Implement trust score engine (0–100 scale):
   - Weighted algorithm: completion rate (40%), average review (30%), response time (15%), verified credentials (10%), account age (5%). Severe penalty (-20 pts) for confirmed no-shows.
   - Automatic badge assignment ("Top Mentor", "Fast Responder", "Reliable Swapper").
-- [ ] Reciprocity ledger balance tracking (tracks taught vs learned minutes; alerts when balance drops below -60 min).
-- [ ] Real-time session logistics chat (`swap_messages` table + SSE channel `session:{id}`).
-- [ ] **Commit:** `feat(swap): S3c - blind reviews, trust score engine, and session logistics chat`
+- [x] Reciprocity ledger balance tracking (tracks taught vs learned minutes; alerts when balance drops below -60 min).
+- [x] Real-time session logistics chat (`swap_messages` table + SSE channel `session:{id}`).
+- [x] **Commit:** `feat(swap): S3a-d - request state machine, sessions, Jitsi rooms, cron jobs, and email alerts` (`3367de0`)
 
 #### Sub-Milestone S3d: Real-Time & Email Notifications
-- [ ] Extend SSE pub/sub event bus with 17 swap notification types (e.g., `swap_request_received`, `swap_accepted`, `swap_reminder_24h`, `swap_reminder_15m`, `review_revealed`).
-- [ ] Add Brevo SMTP HTML email templates for transactional swap updates.
-- [ ] Background job `send-session-reminders` running every 15 minutes to trigger 24h and 15m alerts.
-- [ ] **Commit:** `feat(swap): S3d - real-time SSE alerts and Brevo email notifications`
+- [x] Extend SSE pub/sub event bus with 17 swap notification types (e.g., `swap_request_received`, `swap_accepted`, `swap_reminder_24h`, `swap_reminder_15m`, `review_revealed`).
+- [x] Add Brevo SMTP HTML email templates for transactional swap updates.
+- [x] Background job `send-session-reminders` running every 15 minutes to trigger 24h and 15m alerts.
+- [x] **Commit:** `feat(swap): S3a-d - request state machine, sessions, Jitsi rooms, cron jobs, and email alerts` (`3367de0`)
 
 #### Sub-Milestone S3e: Frontend Request Inbox & Session Room UI
-- [ ] Build `/swaps/requests` inbox: tabs for "Incoming" and "Outgoing" with action buttons (Accept, Decline, Counter, Cancel).
-- [ ] Build interactive 30-minute Slot Picker component with timezone conversion and conflict highlighting.
-- [ ] Build `/swaps/sessions` calendar & upcoming sessions view.
-- [ ] Build `/swaps/sessions/[id]` Session Room:
+- [x] Build `/swaps/requests` inbox: tabs for "Incoming" and "Outgoing" with action buttons (Accept, Decline, Counter, Cancel).
+- [x] Build interactive 30-minute Slot Picker component with timezone conversion and conflict highlighting.
+- [x] Build `/swaps/sessions` calendar & upcoming sessions view.
+- [x] Build `/swaps/sessions/[id]` Session Room:
   - Split halves countdown timer (Half 1: 30 min, Half 2: 30 min).
   - Video Mode: Embedded responsive Jitsi Meet iframe with "Open in New Tab" fallback.
   - In-Person Mode: Verified public place details, map directions link, and safety checklist banner.
   - Logistics Chat sidebar powered by SSE.
   - Action bar: "Confirm Completed", "Report Issue / No-Show", "Download .ics Calendar Invite".
   - Double-Blind Review Modal with star rating and accomplishment tags.
-- [ ] **Commit:** `feat(swap): S3e - request inbox, slot picker, and interactive session room`
+- [x] **Commit:** `feat(swap): S3e - request inbox, slot picker, and interactive session room` (`753d49f`)
 
 ---
 

@@ -70,4 +70,3 @@ class Friendship(Base, UUIDMixin):
         Index("ix_friendships_status_receiver", "status", "receiver_id"),
         Index("ix_friendships_status_sender", "status", "sender_id"),
     )
-

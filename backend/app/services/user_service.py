@@ -37,8 +37,7 @@ class UserService:
             query = select(User).where(User.id == user_uuid)
         else:
             query = select(User).where(
-                (func.lower(User.username) == identifier.lower())
-                | (User.usn == identifier.upper())
+                (func.lower(User.username) == identifier.lower()) | (User.usn == identifier.upper())
             )
 
         result = await db.execute(query)

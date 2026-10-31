@@ -42,4 +42,3 @@ class FriendUserResponse(BaseModel):
     since: datetime
 
     model_config = ConfigDict(from_attributes=True)
-

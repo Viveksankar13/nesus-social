@@ -14,7 +14,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -26,7 +26,6 @@ from app.models.swap import (
     SwapRequest,
     SwapReview,
     SwapSession,
-    SwapSessionHalf,
     TrustScore,
 )
 from app.services.email_service import EmailService

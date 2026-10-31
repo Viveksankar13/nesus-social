@@ -82,17 +82,17 @@
 | **SWAP-10** | Multi-filter discovery (category, mode, distance, day, level) | S2 | ✅ Done | `GET /api/v1/swaps/listings`, `SwapService.search_listings`, test `test_swap_discovery_spatial_and_blocking` |
 | **SWAP-11** | Transparent 5-criteria weighted matching engine | S2 | ✅ Done | `SwapMatchingService.calculate_match_score`, test `test_matching_engine_and_cached_explanation` |
 | **SWAP-12** | Cached Gemini "Why you match" one-sentence explanation | S2 | ✅ Done | `GET /api/v1/swaps/matches`, `match_explanations` SHA-256 table cache, test `test_matching_engine_and_cached_explanation` |
-| **SWAP-13** | Swap request state machine with counter-proposals & 72h expiry | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-14** | Fixed 30-min halves barter with slot overlap prevention | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-15** | Auto-generated unguessable Jitsi Meet video room tokens | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-16** | Public place validation & warning for in-person swaps | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-17** | Downloadable `.ics` calendar invite files for scheduled halves | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-18** | Real-time session-scoped logistics chat over SSE | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-19** | Double-blind review system with 7-day auto-reveal | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-20** | Quantitative trust score (0–100) & badge assignment | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-21** | Reciprocity ledger tracking with 2-session grace balance | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-22** | Automated session reminder jobs (24h & 15m) via SSE & Brevo SMTP | S3 | 🔲 Planned | Stage 3 Deliverable |
-| **SWAP-23** | Secret-protected internal cron endpoint (`X-Cron-Secret`) | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-13** | Swap request state machine with counter-proposals & 72h expiry | S3 | ✅ Done | `SwapService.create_swap_request`, `counter_swap_request`, `auto_expire_requests` cron job, test `test_swap_request_state_machine_counter_and_decline` |
+| **SWAP-14** | Fixed 30-min halves barter with slot overlap prevention | S3 | ✅ Done | `SwapSessionHalf` (2x30m), `check_schedule_conflicts`, test `test_swap_request_acceptance_creates_session_and_halves` |
+| **SWAP-15** | Auto-generated unguessable Jitsi Meet video room tokens | S3 | ✅ Done | `jitsi_room_token`, `jitsi_room_url`, test `test_swap_request_acceptance_creates_session_and_halves` |
+| **SWAP-16** | Public place validation & warning for in-person swaps | S3 | ✅ Done | `assert_public_place`, residential address pattern rejection, safety guidelines in session room UI |
+| **SWAP-17** | Downloadable `.ics` calendar invite files for scheduled halves | S3 | ✅ Done | `GET /api/v1/swaps/sessions/{id}/ics`, RFC 5545 generator, test `test_session_completion_double_blind_reviews_and_reciprocity` |
+| **SWAP-18** | Real-time session-scoped logistics chat over SSE | S3 | ✅ Done | `swap_messages` table, SSE channel `session:{id}`, `/swaps/sessions/{id}/messages`, test `test_session_completion_double_blind_reviews_and_reciprocity` |
+| **SWAP-19** | Double-blind review system with 7-day auto-reveal | S3 | ✅ Done | `swap_reviews`, `is_revealed = False` until mutual submit or `reveal-swap-reviews` cron job, test `test_session_completion_double_blind_reviews_and_reciprocity` |
+| **SWAP-20** | Quantitative trust score (0–100) & badge assignment | S3 | ✅ Done | `trust_scores` table, recalculation on review & completion, test `test_session_completion_double_blind_reviews_and_reciprocity` |
+| **SWAP-21** | Reciprocity ledger tracking with 2-session grace balance | S3 | ✅ Done | `reciprocity_ledger` table, +30m taught / +30m learned, -60m grace limit check, test `test_session_completion_double_blind_reviews_and_reciprocity` |
+| **SWAP-22** | Automated session reminder jobs (24h & 15m) via SSE & Brevo SMTP | S3 | ✅ Done | `send-session-reminders` job in `swap_jobs.py`, templates `swap_reminder.html`, `swap_accepted.html`, `swap_request.html` |
+| **SWAP-23** | Secret-protected internal cron endpoint (`X-Cron-Secret`) | S3 | ✅ Done | `POST /api/v1/internal/jobs/{job_name}`, `job_runs` table, test `test_internal_cron_runner_and_secret` |
 | **SWAP-24** | Gemini Session Planner: 30-minute structured agenda | S4 | 🔲 Planned | Stage 4 Deliverable |
 | **SWAP-25** | Gemini Post-Session Recap helper | S4 | 🔲 Planned | Stage 4 Deliverable |
 | **SWAP-26** | Gemini Fairness & Reciprocity Advisor | S4 | 🔲 Planned | Stage 4 Deliverable |
@@ -110,4 +110,4 @@
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage 12 complete — All Requirements 100% Satisfied & Verified*
+*Last updated: Stage S3 complete — Requirements SWAP-01 through SWAP-23 100% Satisfied & Verified*

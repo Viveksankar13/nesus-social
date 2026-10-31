@@ -102,4 +102,3 @@ class DirectMessage(Base, UUIDMixin):
     # Relationships
     conversation: Mapped["Conversation"] = relationship("Conversation", back_populates="messages")
     sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id], lazy="selectin")
-

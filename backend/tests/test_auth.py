@@ -370,9 +370,7 @@ async def test_student_usn_lifecycle(
 
     # Manually activate user for login test
     user = (
-        await test_db_session.execute(
-            select(User).where(User.email == "student1@college.edu")
-        )
+        await test_db_session.execute(select(User).where(User.email == "student1@college.edu"))
     ).scalar_one()
     user.is_verified = True
     await test_db_session.commit()
@@ -413,4 +411,3 @@ async def test_security_headers_middleware(
     assert headers["x-frame-options"] == "DENY"
     assert "referrer-policy" in headers
     assert "permissions-policy" in headers
-

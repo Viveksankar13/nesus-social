@@ -265,4 +265,3 @@ Skill Wanted: {sanitize_input(skill_wanted) if skill_wanted else "Open to anythi
 User Notes: {sanitize_input(notes) if notes else "No additional notes"}
 </draft_request>
 Generate a JSON object with title, description, and suggested_tags."""
-

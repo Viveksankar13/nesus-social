@@ -80,4 +80,3 @@ def downgrade() -> None:
     op.drop_table("direct_messages")
     op.drop_table("conversations")
     op.drop_table("friendships")
-

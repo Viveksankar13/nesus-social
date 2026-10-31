@@ -118,9 +118,7 @@ async def test_profile_lifecycle_and_privacy_guarantee(
     Test setting up a swap profile with skills, availability, and coarse coordinates,
     then verifying that public viewing exposes ONLY distance buckets, with ZERO coordinate leakage.
     """
-    user_alice, headers_alice = await create_user(
-        username="alice_mentor", email="alice@nexus.dev"
-    )
+    user_alice, headers_alice = await create_user(username="alice_mentor", email="alice@nexus.dev")
     user_bob, headers_bob = await create_user(username="bob_learner", email="bob@nexus.dev")
 
     # Add skill

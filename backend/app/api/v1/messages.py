@@ -173,8 +173,7 @@ async def send_direct_message(
     friend_stmt = select(Friendship).where(
         (Friendship.status == "accepted")
         & (
-            (Friendship.sender_id == current_user.id)
-            & (Friendship.receiver_id == req.receiver_id)
+            (Friendship.sender_id == current_user.id) & (Friendship.receiver_id == req.receiver_id)
             | (Friendship.sender_id == req.receiver_id)
             & (Friendship.receiver_id == current_user.id)
         )
@@ -241,4 +240,3 @@ async def send_direct_message(
     await db.refresh(msg)
 
     return DirectMessageResponse.model_validate(msg)
-

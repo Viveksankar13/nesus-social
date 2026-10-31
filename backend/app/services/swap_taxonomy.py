@@ -49,10 +49,7 @@ class SwapTaxonomyService:
                 groups[s.category] = []
             groups[s.category].append(SkillResponse.model_validate(s))
 
-        return [
-            SkillCategoryGroup(category=cat, skills=items)
-            for cat, items in groups.items()
-        ]
+        return [SkillCategoryGroup(category=cat, skills=items) for cat, items in groups.items()]
 
     @staticmethod
     async def find_by_slug(db: AsyncSession, slug: str) -> Skill | None:
@@ -97,18 +94,14 @@ class SwapTaxonomyService:
             for a in s.aliases:
                 candidates_map[a.lower()] = s
 
-        matches = difflib.get_close_matches(
-            clean_q, list(candidates_map.keys()), n=1, cutoff=0.7
-        )
+        matches = difflib.get_close_matches(clean_q, list(candidates_map.keys()), n=1, cutoff=0.7)
         if matches:
             return candidates_map[matches[0]]
 
         return None
 
     @staticmethod
-    async def suggest_skill(
-        db: AsyncSession, name: str, category: str
-    ) -> Skill:
+    async def suggest_skill(db: AsyncSession, name: str, category: str) -> Skill:
         """
         Suggest a new skill.
         Auto-approves if valid and doesn't conflict with existing skills.

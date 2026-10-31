@@ -25,9 +25,7 @@ def coarsen_coord(val: float | None) -> float | None:
     return round(val, 2) if val is not None else None
 
 
-def calculate_haversine_km(
-    lat1: float, lng1: float, lat2: float, lng2: float
-) -> float:
+def calculate_haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     """
     Calculate great-circle distance between two points in kilometers.
     """
@@ -36,9 +34,7 @@ def calculate_haversine_km(
     d_lng = math.radians(lng2 - lng1)
     a = (
         math.sin(d_lat / 2.0) ** 2
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.sin(d_lng / 2.0) ** 2
+        + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(d_lng / 2.0) ** 2
     )
     c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
     return r * c
@@ -54,12 +50,7 @@ def get_distance_bucket(
     Categorize distance into safe, coarse human-readable buckets.
     Returns 'remote' if either location is missing or distance exceeds 25 km.
     """
-    if (
-        viewer_lat is None
-        or viewer_lng is None
-        or target_lat is None
-        or target_lng is None
-    ):
+    if viewer_lat is None or viewer_lng is None or target_lat is None or target_lng is None:
         return "remote"
 
     dist = calculate_haversine_km(viewer_lat, viewer_lng, target_lat, target_lng)

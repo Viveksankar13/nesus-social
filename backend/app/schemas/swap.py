@@ -443,5 +443,3 @@ class SwapDisputeCreate(BaseModel):
 class ICSExportResponse(BaseModel):
     filename: str
     content: str
-
-

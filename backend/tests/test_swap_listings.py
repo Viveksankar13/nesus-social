@@ -266,9 +266,7 @@ async def test_swap_discovery_spatial_and_blocking(
     test_db_session: AsyncSession,
 ) -> None:
     """Test discovery search with spatial distance bucketing and blocked user exclusion."""
-    user_viewer, viewer_headers = await create_user(
-        username="viewer_user", email="viewer@swap.dev"
-    )
+    user_viewer, viewer_headers = await create_user(username="viewer_user", email="viewer@swap.dev")
     user_neighbor, neighbor_headers = await create_user(
         username="neighbor_user", email="neighbor@swap.dev"
     )
@@ -474,4 +472,3 @@ async def test_listing_ai_draft_helper(
     assert "title" in data
     assert "description" in data
     assert len(data["suggested_tags"]) >= 1
-

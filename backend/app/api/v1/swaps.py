@@ -9,23 +9,16 @@ REST endpoints for:
 - Hyper-local swap discovery query engine
 """
 
-import asyncio
-import json
 import uuid
-from collections.abc import AsyncGenerator
-from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, status
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, get_optional_current_user, require_user
-from app.core.tokens import decode_token
 from app.models.user import User
 from app.schemas.swap import (
     GeocodeSearchResult,
-    ICSExportResponse,
     ListingAIDraftRequest,
     ListingAIDraftResponse,
     SkillCategoryGroup,
@@ -52,14 +45,12 @@ from app.schemas.swap import (
     UserSwapProfilePublicResponse,
     UserSwapProfileUpdate,
 )
-from app.services.pubsub import pubsub
 from app.services.swap_geocoding import search_coarse_locations
 from app.services.swap_matching import SwapMatchingService
 from app.services.swap_service import SwapService
 from app.services.swap_taxonomy import SwapTaxonomyService
 
 router = APIRouter(prefix="/swaps", tags=["Skill Swaps"])
-
 
 
 # ── 1. Taxonomy Endpoints ────────────────────────────────────────────
@@ -219,9 +210,7 @@ async def update_swap_listing(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> SwapListingResponse:
     """Update title, description, modes, or status of an owned swap listing."""
-    return await SwapService.update_listing(
-        db, listing_id, current_user.id, data, background_tasks
-    )
+    return await SwapService.update_listing(db, listing_id, current_user.id, data, background_tasks)
 
 
 @router.post("/listings/{listing_id}/share", response_model=SwapListingShareResponse)
@@ -404,4 +393,3 @@ async def get_session_reviews(
 ) -> list[SwapReviewResponse]:
     """Get reviews for a session (isolated until revealed)."""
     return await SwapService.get_session_reviews(db, session_id, current_user.id)
-

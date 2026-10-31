@@ -342,36 +342,161 @@ async def seed_demo(session: AsyncSession, admin: User) -> None:
 
 DEMO_SKILLS = [
     # Technology
-    {"slug": "python-programming", "display_name": "Python Programming", "category": "Technology", "aliases": ["python", "django", "fastapi", "pandas"]},
-    {"slug": "web-development", "display_name": "Full-Stack Web Development", "category": "Technology", "aliases": ["react", "nextjs", "javascript", "typescript", "frontend", "html/css"]},
-    {"slug": "machine-learning", "display_name": "Machine Learning & AI", "category": "Technology", "aliases": ["ml", "deep learning", "pytorch", "tensorflow", "nlp"]},
-    {"slug": "data-structures", "display_name": "Data Structures & Algorithms", "category": "Technology", "aliases": ["dsa", "leetcode", "algorithms", "competitive programming"]},
-    {"slug": "git-and-github", "display_name": "Git & Version Control", "category": "Technology", "aliases": ["git", "github", "gitlab", "version control"]},
+    {
+        "slug": "python-programming",
+        "display_name": "Python Programming",
+        "category": "Technology",
+        "aliases": ["python", "django", "fastapi", "pandas"],
+    },
+    {
+        "slug": "web-development",
+        "display_name": "Full-Stack Web Development",
+        "category": "Technology",
+        "aliases": ["react", "nextjs", "javascript", "typescript", "frontend", "html/css"],
+    },
+    {
+        "slug": "machine-learning",
+        "display_name": "Machine Learning & AI",
+        "category": "Technology",
+        "aliases": ["ml", "deep learning", "pytorch", "tensorflow", "nlp"],
+    },
+    {
+        "slug": "data-structures",
+        "display_name": "Data Structures & Algorithms",
+        "category": "Technology",
+        "aliases": ["dsa", "leetcode", "algorithms", "competitive programming"],
+    },
+    {
+        "slug": "git-and-github",
+        "display_name": "Git & Version Control",
+        "category": "Technology",
+        "aliases": ["git", "github", "gitlab", "version control"],
+    },
     # Languages
-    {"slug": "conversational-spanish", "display_name": "Conversational Spanish", "category": "Languages", "aliases": ["spanish", "espanol", "hablar espanol"]},
-    {"slug": "french-language", "display_name": "French for Beginners", "category": "Languages", "aliases": ["french", "francais"]},
-    {"slug": "japanese-basics", "display_name": "Japanese Basics & Kanji", "category": "Languages", "aliases": ["japanese", "nihongo", "kanji"]},
-    {"slug": "english-public-speaking", "display_name": "English Presentation & Speaking", "category": "Languages", "aliases": ["public speaking", "toastmasters", "speech", "presentation"]},
-    {"slug": "german-grammar", "display_name": "German Conversation & Grammar", "category": "Languages", "aliases": ["german", "deutsch"]},
+    {
+        "slug": "conversational-spanish",
+        "display_name": "Conversational Spanish",
+        "category": "Languages",
+        "aliases": ["spanish", "espanol", "hablar espanol"],
+    },
+    {
+        "slug": "french-language",
+        "display_name": "French for Beginners",
+        "category": "Languages",
+        "aliases": ["french", "francais"],
+    },
+    {
+        "slug": "japanese-basics",
+        "display_name": "Japanese Basics & Kanji",
+        "category": "Languages",
+        "aliases": ["japanese", "nihongo", "kanji"],
+    },
+    {
+        "slug": "english-public-speaking",
+        "display_name": "English Presentation & Speaking",
+        "category": "Languages",
+        "aliases": ["public speaking", "toastmasters", "speech", "presentation"],
+    },
+    {
+        "slug": "german-grammar",
+        "display_name": "German Conversation & Grammar",
+        "category": "Languages",
+        "aliases": ["german", "deutsch"],
+    },
     # Music & Creative Arts
-    {"slug": "acoustic-guitar", "display_name": "Acoustic Guitar Basics", "category": "Music & Creative Arts", "aliases": ["guitar", "acoustic guitar", "fingerpicking", "chords"]},
-    {"slug": "piano-keyboard", "display_name": "Piano & Keyboard Fundamentals", "category": "Music & Creative Arts", "aliases": ["piano", "keyboard", "sight reading"]},
-    {"slug": "digital-illustration", "display_name": "Digital Illustration & Procreate", "category": "Music & Creative Arts", "aliases": ["drawing", "procreate", "digital art", "illustration"]},
-    {"slug": "photo-editing", "display_name": "Photography & Lightroom", "category": "Music & Creative Arts", "aliases": ["photography", "lightroom", "photoshop", "photo editing"]},
-    {"slug": "ui-ux-design", "display_name": "UI/UX Design with Figma", "category": "Music & Creative Arts", "aliases": ["figma", "ui design", "ux design", "product design", "wireframing"]},
+    {
+        "slug": "acoustic-guitar",
+        "display_name": "Acoustic Guitar Basics",
+        "category": "Music & Creative Arts",
+        "aliases": ["guitar", "acoustic guitar", "fingerpicking", "chords"],
+    },
+    {
+        "slug": "piano-keyboard",
+        "display_name": "Piano & Keyboard Fundamentals",
+        "category": "Music & Creative Arts",
+        "aliases": ["piano", "keyboard", "sight reading"],
+    },
+    {
+        "slug": "digital-illustration",
+        "display_name": "Digital Illustration & Procreate",
+        "category": "Music & Creative Arts",
+        "aliases": ["drawing", "procreate", "digital art", "illustration"],
+    },
+    {
+        "slug": "photo-editing",
+        "display_name": "Photography & Lightroom",
+        "category": "Music & Creative Arts",
+        "aliases": ["photography", "lightroom", "photoshop", "photo editing"],
+    },
+    {
+        "slug": "ui-ux-design",
+        "display_name": "UI/UX Design with Figma",
+        "category": "Music & Creative Arts",
+        "aliases": ["figma", "ui design", "ux design", "product design", "wireframing"],
+    },
     # Academics & STEM
-    {"slug": "calculus-tutoring", "display_name": "Calculus & Linear Algebra", "category": "Academics & STEM", "aliases": ["calculus", "calc 1", "calc 2", "linear algebra", "math tutoring"]},
-    {"slug": "physics-mechanics", "display_name": "College Physics & Mechanics", "category": "Academics & STEM", "aliases": ["physics", "mechanics", "electromagnetism"]},
-    {"slug": "organic-chemistry", "display_name": "Organic Chemistry", "category": "Academics & STEM", "aliases": ["ochem", "chemistry", "organic chem"]},
-    {"slug": "statistics-probability", "display_name": "Probability & Applied Statistics", "category": "Academics & STEM", "aliases": ["stats", "probability", "r programming", "biostatistics"]},
-    {"slug": "academic-writing", "display_name": "Academic Paper Proofreading", "category": "Academics & STEM", "aliases": ["essay writing", "thesis", "research paper", "proofreading"]},
+    {
+        "slug": "calculus-tutoring",
+        "display_name": "Calculus & Linear Algebra",
+        "category": "Academics & STEM",
+        "aliases": ["calculus", "calc 1", "calc 2", "linear algebra", "math tutoring"],
+    },
+    {
+        "slug": "physics-mechanics",
+        "display_name": "College Physics & Mechanics",
+        "category": "Academics & STEM",
+        "aliases": ["physics", "mechanics", "electromagnetism"],
+    },
+    {
+        "slug": "organic-chemistry",
+        "display_name": "Organic Chemistry",
+        "category": "Academics & STEM",
+        "aliases": ["ochem", "chemistry", "organic chem"],
+    },
+    {
+        "slug": "statistics-probability",
+        "display_name": "Probability & Applied Statistics",
+        "category": "Academics & STEM",
+        "aliases": ["stats", "probability", "r programming", "biostatistics"],
+    },
+    {
+        "slug": "academic-writing",
+        "display_name": "Academic Paper Proofreading",
+        "category": "Academics & STEM",
+        "aliases": ["essay writing", "thesis", "research paper", "proofreading"],
+    },
     # Fitness & Wellness
-    {"slug": "vinyasa-yoga", "display_name": "Vinyasa Yoga & Breathwork", "category": "Fitness & Wellness", "aliases": ["yoga", "pranayama", "meditation", "stretching"]},
-    {"slug": "strength-training", "display_name": "Strength Training & Gym Form", "category": "Fitness & Wellness", "aliases": ["gym", "powerlifting", "weightlifting", "calisthenics"]},
-    {"slug": "running-conditioning", "display_name": "5K/10K Running Conditioning", "category": "Fitness & Wellness", "aliases": ["running", "marathon training", "cardio"]},
+    {
+        "slug": "vinyasa-yoga",
+        "display_name": "Vinyasa Yoga & Breathwork",
+        "category": "Fitness & Wellness",
+        "aliases": ["yoga", "pranayama", "meditation", "stretching"],
+    },
+    {
+        "slug": "strength-training",
+        "display_name": "Strength Training & Gym Form",
+        "category": "Fitness & Wellness",
+        "aliases": ["gym", "powerlifting", "weightlifting", "calisthenics"],
+    },
+    {
+        "slug": "running-conditioning",
+        "display_name": "5K/10K Running Conditioning",
+        "category": "Fitness & Wellness",
+        "aliases": ["running", "marathon training", "cardio"],
+    },
     # Business & Career
-    {"slug": "resume-review", "display_name": "Tech Resume & LinkedIn Review", "category": "Business & Career", "aliases": ["resume", "cv", "linkedin", "job search"]},
-    {"slug": "behavioral-interview", "display_name": "Behavioral & STAR Interview Prep", "category": "Business & Career", "aliases": ["interview prep", "mock interview", "star method"]},
+    {
+        "slug": "resume-review",
+        "display_name": "Tech Resume & LinkedIn Review",
+        "category": "Business & Career",
+        "aliases": ["resume", "cv", "linkedin", "job search"],
+    },
+    {
+        "slug": "behavioral-interview",
+        "display_name": "Behavioral & STAR Interview Prep",
+        "category": "Business & Career",
+        "aliases": ["interview prep", "mock interview", "star method"],
+    },
 ]
 
 
@@ -471,7 +596,9 @@ async def seed_swaps(session: AsyncSession) -> None:
 
         # User Skills (teach 2, learn 2)
         teach_keys = list(skills_map.keys())[idx % len(skills_map) : (idx % len(skills_map)) + 2]
-        learn_keys = list(skills_map.keys())[(idx + 4) % len(skills_map) : ((idx + 4) % len(skills_map)) + 2]
+        learn_keys = list(skills_map.keys())[
+            (idx + 4) % len(skills_map) : ((idx + 4) % len(skills_map)) + 2
+        ]
 
         for s_key in teach_keys:
             s_obj = skills_map[s_key]

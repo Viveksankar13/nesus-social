@@ -174,9 +174,7 @@ class SwapListing(Base, UUIDMixin, TimestampMixin):
         Uuid(as_uuid=True), ForeignKey("skills.id", ondelete="SET NULL"), index=True, nullable=True
     )  # None = Open to anything / Pay it forward
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    modes: Mapped[list[str]] = mapped_column(
-        JSONType, default=lambda: ["video"], nullable=False
-    )
+    modes: Mapped[list[str]] = mapped_column(JSONType, default=lambda: ["video"], nullable=False)
     area_label: Mapped[str | None] = mapped_column(String(150), nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), index=True, default="active", nullable=False
@@ -349,9 +347,7 @@ class SwapReview(Base, UUIDMixin):
     """
 
     __tablename__ = "swap_reviews"
-    __table_args__ = (
-        UniqueConstraint("session_id", "reviewer_id", name="uq_session_reviewer"),
-    )
+    __table_args__ = (UniqueConstraint("session_id", "reviewer_id", name="uq_session_reviewer"),)
 
     session_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -383,9 +379,7 @@ class UserBlock(Base, UUIDMixin):
     """Bi-directional block preventing discovery, matching, and messaging."""
 
     __tablename__ = "user_blocks"
-    __table_args__ = (
-        UniqueConstraint("blocker_id", "blocked_id", name="uq_user_blocks_pair"),
-    )
+    __table_args__ = (UniqueConstraint("blocker_id", "blocked_id", name="uq_user_blocks_pair"),)
 
     blocker_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False

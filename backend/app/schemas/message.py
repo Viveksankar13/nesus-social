@@ -49,4 +49,3 @@ class UnreadMessageCountResponse(BaseModel):
     """Total unread messages across all conversations."""
 
     unread_count: int
-
