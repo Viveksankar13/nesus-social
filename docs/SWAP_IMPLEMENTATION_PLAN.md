@@ -1,7 +1,7 @@
 # 🔄 Hyper-Local Skill Swap Economy — Implementation Plan
 
 > **Add-on Module to Nexus Social** · 6 Stage-Gated Vertical Slices · Living Plan  
-> **Status:** Stage 0 (Audit & Planning) Complete · Awaiting Approval to Proceed to Stage 1  
+> **Status:** Stage 1 (Taxonomy & Profiles) Complete · Awaiting Approval to Proceed to Stage 2  
 > **Last Updated:** 2026-10-31
 
 ---
@@ -235,41 +235,41 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 
 ---
 
-### Stage 1: Skill Taxonomy & Profiles Vertical Slice
+### Stage 1: Skill Taxonomy & Profiles Vertical Slice (COMPLETED)
 *Goal: Enable users to define what they teach/learn, set availability windows, configure privacy-preserving coarse location, and complete the 4-step onboarding wizard.*
 
 #### Sub-Milestone S1a: Database Layer & Models
-- [ ] Create Alembic migration `0004_add_skill_swap_economy.py` with the first 5 core tables (`skills`, `user_skills`, `user_swap_profiles`, `availability_windows`, `availability_blackouts`) plus supporting tables (`trust_scores`, `reciprocity_ledger`).
-- [ ] Implement SQLAlchemy ORM models in `backend/app/models/swap.py`.
-- [ ] Add indexes on `skills(slug)`, `skills(category)`, and composite index on `(coarse_lat, coarse_lng)`.
-- [ ] Implement seed data in `backend/scripts/seed.py` with `--demo-swaps` creating 25 canonical skills and 10 realistic profiles.
-- [ ] Test migration upgrade and downgrade on clean and populated test databases.
-- [ ] **Commit:** `feat(swap): S1a - database schema, models, and demo seed data`
+- [x] Create Alembic migration `0004_add_skill_swap_economy.py` with the 17 core swap tables.
+- [x] Implement SQLAlchemy ORM models in `backend/app/models/swap.py`.
+- [x] Add indexes on `skills(slug)`, `skills(category)`, and composite index on `(coarse_lat, coarse_lng)`.
+- [x] Implement seed data in `backend/scripts/seed.py` with `--demo-swaps` creating 25 canonical skills and 10 realistic profiles.
+- [x] Test migration upgrade and downgrade on clean and populated test databases.
+- [x] **Commit:** `feat(swap): S1a - database schema, models, and demo seed data` (`e570a26`)
 
 #### Sub-Milestone S1b: Backend Services & API
-- [ ] Implement `swap_taxonomy.py`: fuzzy matching with canonical skills, auto-approval moderation check, and alias lookup.
-- [ ] Implement `swap_service.py` profile operations: upsert profile, validate timezone, manage availability windows, and manage blackout dates.
-- [ ] Implement coarse geocoding service using Open-Meteo Geocoding API (`round(lat, 2)`, `round(lng, 2)`).
-- [ ] Create Pydantic v2 schemas in `backend/app/schemas/swap.py` ensuring coordinate privacy (never serializing raw coordinates for other users).
-- [ ] Implement REST endpoints in `backend/app/api/v1/swaps.py`:
+- [x] Implement `swap_taxonomy.py`: fuzzy matching with canonical skills, auto-approval moderation check, and alias lookup.
+- [x] Implement `swap_service.py` profile operations: upsert profile, validate timezone, manage availability windows, and manage blackout dates.
+- [x] Implement coarse geocoding service using Open-Meteo Geocoding API (`round(lat, 2)`, `round(lng, 2)`).
+- [x] Create Pydantic v2 schemas in `backend/app/schemas/swap.py` ensuring coordinate privacy (never serializing raw coordinates for other users).
+- [x] Implement REST endpoints in `backend/app/api/v1/swaps.py`:
   - `GET /api/v1/swaps/taxonomy`: List active canonical skills & categories.
   - `POST /api/v1/swaps/taxonomy/suggest`: Suggest new skill (auto-approve or queue).
   - `GET /api/v1/swaps/profile/me`: Get own full profile with raw settings.
   - `PUT /api/v1/swaps/profile/me`: Update swap profile, availability, and coarse area.
   - `GET /api/v1/swaps/profile/{username}`: Get public swap profile with distance bucket only.
-- [ ] Write backend unit & integration tests in `backend/tests/test_swap_profiles.py` (privacy verification, timezone handling, taxonomy fuzzy match).
-- [ ] **Commit:** `feat(swap): S1b - taxonomy, profile services, and privacy-guaranteed endpoints`
+- [x] Write backend unit & integration tests in `backend/tests/test_swap_profiles.py` (privacy verification, timezone handling, taxonomy fuzzy match).
+- [x] **Commit:** `feat(swap): S1b - taxonomy, profile services, and privacy-guaranteed endpoints` (`ff76df2`)
 
 #### Sub-Milestone S1c: Frontend Onboarding & Settings UI
-- [ ] Create 4-step Onboarding Wizard at `/swaps/onboarding`:
+- [x] Create 4-step Onboarding Wizard at `/swaps/onboarding`:
   1. *Teach:* Select skills, levels, and notes with fuzzy search + "add new" pill.
   2. *Learn:* Select skills wanted with current level.
   3. *Availability:* Interactive weekly slot picker (Mon–Sun, 30-min intervals) in local timezone.
   4. *Preferences:* Mode toggles (in-person, video, chat), coarse location search with Open-Meteo, distance radius, 18+ confirmation checkbox.
-- [ ] Build `/settings/swaps` management page to update skills, availability, and location anytime.
-- [ ] Extend User Profile page (`/profile/[username]`) with a dedicated "Skills & Swaps" tab showcasing skills taught/learned and trust badges.
-- [ ] Verify accessibility, mobile responsiveness, and dark mode styling.
-- [ ] **Commit:** `feat(swap): S1c - onboarding wizard, swap settings UI, and profile tab`
+- [x] Build `/settings/swaps` management page to update skills, availability, and location anytime.
+- [x] Extend User Profile page (`/profile/[username]`) with a dedicated "Skills & Swaps" tab showcasing skills taught/learned and trust badges.
+- [x] Verify accessibility, mobile responsiveness, and dark mode styling.
+- [x] **Commit:** `feat(swap): S1c - onboarding wizard, swap settings UI, and profile tab` (`73a9892`)
 
 ---
 

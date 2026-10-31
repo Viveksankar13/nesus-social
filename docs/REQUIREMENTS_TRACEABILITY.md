@@ -70,6 +70,41 @@
 | **SEC-03** | Strict CORS allowlist | 2 | ✅ Done | `backend/app/main.py` CORS middleware |
 | **SEC-04** | Parameterized queries only | 1-6 | ✅ Done | SQLAlchemy 2.0 ORM only |
 | **SEC-05** | No stack traces to clients | 2 | ✅ Done | `backend/app/main.py` global exception handlers |
+| **SWAP-01** | Canonical skill taxonomy with fuzzy match & suggestion moderation | S1 | ✅ Done | `GET /api/v1/swaps/taxonomy`, `SwapTaxonomyService.fuzzy_match_skill`, test `test_taxonomy_fuzzy_matching` |
+| **SWAP-02** | User skill profiles (teach/learn, level, experience, notes) | S1 | ✅ Done | `PUT /api/v1/swaps/profile/me`, `UserSkill` model, test `test_profile_lifecycle_and_privacy_guarantee` |
+| **SWAP-03** | Timezone-aware recurring weekly availability windows (UTC) | S1 | ✅ Done | `availability_windows` table, `test_profile_lifecycle_and_privacy_guarantee` |
+| **SWAP-04** | Privacy-by-design coarse location (~1 km) & distance buckets | S1 | ✅ Done | `UserSwapProfilePublicResponse`, test `test_profile_lifecycle_and_privacy_guarantee` asserting zero lat/lng leakage |
+| **SWAP-05** | 4-step onboarding wizard with 18+ confirmation | S1 | ✅ Done | `/swaps/onboarding`, Playwright test `swap-onboarding.spec.ts` |
+| **SWAP-06** | Swap listing creation with limits (`SWAP_MAX_ACTIVE_LISTINGS=5`) | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-07** | Automated AI moderation blocking payment & commercial solicitation | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-08** | Feed integration: share swap listing as social post with CTA | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-09** | Interactive discovery map (Leaflet) with coarse area bubbles | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-10** | Multi-filter discovery (category, mode, distance, day, level) | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-11** | Transparent 5-criteria weighted matching engine | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-12** | Cached Gemini "Why you match" one-sentence explanation | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-13** | Swap request state machine with counter-proposals & 72h expiry | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-14** | Fixed 30-min halves barter with slot overlap prevention | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-15** | Auto-generated unguessable Jitsi Meet video room tokens | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-16** | Public place validation & warning for in-person swaps | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-17** | Downloadable `.ics` calendar invite files for scheduled halves | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-18** | Real-time session-scoped logistics chat over SSE | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-19** | Double-blind review system with 7-day auto-reveal | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-20** | Quantitative trust score (0–100) & badge assignment | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-21** | Reciprocity ledger tracking with 2-session grace balance | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-22** | Automated session reminder jobs (24h & 15m) via SSE & Brevo SMTP | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-23** | Secret-protected internal cron endpoint (`X-Cron-Secret`) | S3 | 🔲 Planned | Stage 3 Deliverable |
+| **SWAP-24** | Gemini Session Planner: 30-minute structured agenda | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-25** | Gemini Post-Session Recap helper | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-26** | Gemini Fairness & Reciprocity Advisor | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-27** | User blocking & reporting with 3-strike auto-hide | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-28** | Admin Swaps Console: KPI dashboard & analytics | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-29** | Admin dispute resolution & trust score adjustment | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-30** | Admin taxonomy curation (approve, rename, merge skills) | S4 | 🔲 Planned | Stage 4 Deliverable |
+| **SWAP-31** | High-performance spatial query benchmark (10k listings) | S5 | 🔲 Planned | Stage 5 Deliverable |
+| **SWAP-32** | Zero coordinate/geohash API leakage security audit | S5 | 🔲 Planned | Stage 5 Deliverable |
+| **SWAP-33** | Full Playwright E2E swap lifecycle smoke test | S5 | 🔲 Planned | Stage 5 Deliverable |
+| **SWAP-34** | Render Cron Job production configuration | S5 | 🔲 Planned | Stage 5 Deliverable |
+| **SWAP-35** | Complete documentation update & PDF rebuild (Chapters 17–24) | S5 | 🔲 Planned | Stage 5 Deliverable |
 
 ---
 

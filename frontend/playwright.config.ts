@@ -18,6 +18,13 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "chrome",
+      use: {
+        channel: "chrome",
+        headless: true,
+      },
+    },
+    {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
