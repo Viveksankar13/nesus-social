@@ -14,6 +14,7 @@ from app.api.v1.friends import router as friends_router
 from app.api.v1.messages import router as messages_router
 from app.api.v1.notifications import router as notifications_router
 from app.api.v1.posts import router as posts_router
+from app.api.v1.swaps import router as swaps_router
 from app.api.v1.users import router as users_router
 
 api_router = APIRouter(prefix="/api/v1")
@@ -28,3 +29,4 @@ api_router.include_router(admin_router)
 api_router.include_router(ai_router)
 api_router.include_router(friends_router)
 api_router.include_router(messages_router)
+api_router.include_router(swaps_router)
