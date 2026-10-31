@@ -36,6 +36,8 @@ import {
 import { swapApi } from "@/lib/swap-api";
 import { SwapListing } from "@/types/swap";
 
+import { SwapNav } from "@/components/swaps/swap-nav";
+
 // Dynamically import Leaflet Map (SSR disabled)
 const SwapMap = dynamic(() => import("@/components/swaps/swap-map"), {
   ssr: false,
@@ -88,6 +90,8 @@ export default function SwapsDiscoveryPage() {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 space-y-8">
+      <SwapNav />
+
       {/* Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-rose-500/10 p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

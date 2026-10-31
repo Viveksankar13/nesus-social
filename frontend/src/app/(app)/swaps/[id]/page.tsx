@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { swapApi } from "@/lib/swap-api";
+import { ProposeSwapModal } from "@/components/swaps/propose-swap-modal";
 
 export default function SwapListingDetailPage() {
   const params = useParams();
@@ -35,6 +36,7 @@ export default function SwapListingDetailPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isProposeOpen, setIsProposeOpen] = useState(false);
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: ["swap-listing", listingId],
@@ -314,7 +316,11 @@ export default function SwapListingDetailPage() {
             {/* Action CTA */}
             {!isOwner ? (
               <div className="pt-2 space-y-2">
-                <Button className="w-full gap-2 font-semibold shadow-sm" size="lg">
+                <Button
+                  className="w-full gap-2 font-semibold shadow-sm"
+                  size="lg"
+                  onClick={() => setIsProposeOpen(true)}
+                >
                   <Repeat className="w-4 h-4" />
                   <span>Propose a 30-Min Swap</span>
                 </Button>
@@ -343,6 +349,23 @@ export default function SwapListingDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Propose Swap Modal */}
+      {isProposeOpen && (
+        <ProposeSwapModal
+          isOpen={isProposeOpen}
+          onClose={() => setIsProposeOpen(false)}
+          listingId={listing.id}
+          recipientId={listing.user_id}
+          recipientUsername={listing.user.username}
+          offeredSkillId={listing.skill_wanted?.id || listing.skill_offered.id}
+          offeredSkillName={listing.skill_wanted?.display_name || "Peer Mentorship Exchange"}
+          wantedSkillId={listing.skill_offered.id}
+          wantedSkillName={listing.skill_offered.display_name}
+          defaultMode={listing.modes.includes("video") ? "video" : "in_person"}
+        />
+      )}
     </div>
   );
 }
+

@@ -9,12 +9,22 @@ import {
   ListingAIDraftResponse,
   Skill,
   SkillCategoryGroup,
+  SwapDisputeCreate,
   SwapListing,
   SwapListingCreate,
   SwapListingListResponse,
   SwapListingShareResponse,
   SwapListingUpdate,
   SwapMatchResponse,
+  SwapMessage,
+  SwapRequest,
+  SwapRequestAccept,
+  SwapRequestCounter,
+  SwapRequestCreate,
+  SwapRequestListResponse,
+  SwapReview,
+  SwapReviewCreate,
+  SwapSession,
   UserSwapProfilePrivate,
   UserSwapProfilePublic,
 } from "@/types/swap";
@@ -97,5 +107,68 @@ export const swapApi = {
   getMatches: async (limit: number = 10): Promise<SwapMatchResponse[]> => {
     return apiClient.get<SwapMatchResponse[]>(`/swaps/matches?limit=${limit}`);
   },
+
+  // ── Stage 3: Requests & Proposals ──────────────────────────────────
+  createRequest: async (data: SwapRequestCreate): Promise<SwapRequest> => {
+    return apiClient.post<SwapRequest>("/swaps/requests", data);
+  },
+
+  getRequests: async (): Promise<SwapRequestListResponse> => {
+    return apiClient.get<SwapRequestListResponse>("/swaps/requests");
+  },
+
+  getRequestById: async (id: string): Promise<SwapRequest> => {
+    return apiClient.get<SwapRequest>(`/swaps/requests/${id}`);
+  },
+
+  acceptRequest: async (id: string, payload: SwapRequestAccept): Promise<SwapSession> => {
+    return apiClient.post<SwapSession>(`/swaps/requests/${id}/accept`, payload);
+  },
+
+  counterRequest: async (id: string, payload: SwapRequestCounter): Promise<SwapRequest> => {
+    return apiClient.post<SwapRequest>(`/swaps/requests/${id}/counter`, payload);
+  },
+
+  declineRequest: async (id: string): Promise<SwapRequest> => {
+    return apiClient.post<SwapRequest>(`/swaps/requests/${id}/decline`, {});
+  },
+
+  cancelRequest: async (id: string): Promise<SwapRequest> => {
+    return apiClient.post<SwapRequest>(`/swaps/requests/${id}/cancel`, {});
+  },
+
+  // ── Stage 3: Sessions, Logistics & Reviews ─────────────────────────
+  getMySessions: async (): Promise<SwapSession[]> => {
+    return apiClient.get<SwapSession[]>("/swaps/sessions/me");
+  },
+
+  getSessionById: async (id: string): Promise<SwapSession> => {
+    return apiClient.get<SwapSession>(`/swaps/sessions/${id}`);
+  },
+
+  confirmSession: async (id: string): Promise<SwapSession> => {
+    return apiClient.post<SwapSession>(`/swaps/sessions/${id}/confirm`, {});
+  },
+
+  disputeSession: async (id: string, data: SwapDisputeCreate): Promise<SwapSession> => {
+    return apiClient.post<SwapSession>(`/swaps/sessions/${id}/dispute`, data);
+  },
+
+  getSessionMessages: async (id: string): Promise<SwapMessage[]> => {
+    return apiClient.get<SwapMessage[]>(`/swaps/sessions/${id}/messages`);
+  },
+
+  postSessionMessage: async (id: string, content: string): Promise<SwapMessage> => {
+    return apiClient.post<SwapMessage>(`/swaps/sessions/${id}/messages`, { content });
+  },
+
+  getSessionReviews: async (id: string): Promise<SwapReview[]> => {
+    return apiClient.get<SwapReview[]>(`/swaps/sessions/${id}/reviews`);
+  },
+
+  submitSessionReview: async (id: string, data: SwapReviewCreate): Promise<SwapReview> => {
+    return apiClient.post<SwapReview>(`/swaps/sessions/${id}/reviews`, data);
+  },
 };
+
 

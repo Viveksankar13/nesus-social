@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { swapApi } from "@/lib/swap-api";
 import { SwapMatchResponse } from "@/types/swap";
+import { SwapNav } from "@/components/swaps/swap-nav";
 
 export default function SwapMatchesPage() {
   const { data: matches = [], isLoading } = useQuery({
@@ -30,6 +31,8 @@ export default function SwapMatchesPage() {
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-6">
+      <SwapNav />
+
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link href="/swaps" className="hover:text-foreground flex items-center gap-1 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" />
