@@ -332,3 +332,54 @@ export interface ActivityLogListResponse {
   total_pages: number;
 }
 
+// ── Friendships & Direct Messaging ──────────────────────────────
+export interface FriendshipStatusResponse {
+  target_user_id: string;
+  status: "none" | "pending_sent" | "pending_received" | "friends";
+  friendship_id?: string | null;
+}
+
+export interface FriendUserResponse {
+  friendship_id: string;
+  friend: User;
+  since: string;
+}
+
+export interface FriendRequestResponse {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  status: string;
+  created_at: string;
+  sender: User;
+  receiver: User;
+}
+
+export interface FriendRequestsData {
+  incoming: FriendRequestResponse[];
+  outgoing: FriendRequestResponse[];
+}
+
+export interface DirectMessageResponse {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  sender: User;
+}
+
+export interface ConversationResponse {
+  id: string;
+  other_user: User;
+  last_message: DirectMessageResponse | null;
+  unread_count: number;
+  updated_at: string;
+}
+
+export interface UnreadMessageCountResponse {
+  unread_count: number;
+}
+
+

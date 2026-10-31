@@ -26,6 +26,8 @@ export function timeAgo(dateString: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+export const formatRelativeTime = timeAgo;
+
 /**
  * Truncate a string to a max length, adding ellipsis.
  */

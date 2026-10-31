@@ -31,6 +31,15 @@ import type {
   AIChatSessionDetail,
 } from "@/types";
 
+function formatChatMessage(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1") // Strip **bold**
+    .replace(/\*(.*?)\*/g, "$1") // Strip *italic*
+    .replace(/^#+\s+/gm, "") // Strip # headers
+    .replace(/^\s*\*\s+/gm, "• "); // Convert * bullets to •
+}
+
 export function AIChatWidget() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -279,9 +288,9 @@ export function AIChatWidget() {
               !streamedText ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-2 text-muted-foreground">
                 <Sparkles className="h-8 w-8 text-primary/50" />
-                <p className="font-semibold text-foreground">How can I help you today?</p>
+                <p className="font-semibold text-foreground">Nexus AI Support & Assistant</p>
                 <p className="text-xs">
-                  Ask me to brainstorm ideas, improve your post drafts, or navigate Nexus Social.
+                  Ask me for help with platform issues, account assistance, troubleshooting, or post drafting.
                 </p>
               </div>
             ) : (
@@ -301,13 +310,12 @@ export function AIChatWidget() {
                         </Avatar>
                       )}
                       <div
-                        className={`rounded-2xl px-3.5 py-2 max-w-[80%] whitespace-pre-wrap leading-relaxed ${
-                          isUser
+                        className={`rounded-2xl px-3.5 py-2 max-w-[80%] whitespace-pre-wrap leading-relaxed ${isUser
                             ? "bg-primary text-primary-foreground rounded-br-xs"
                             : "bg-muted text-foreground rounded-bl-xs border"
-                        }`}
+                          }`}
                       >
-                        {m.content}
+                        {formatChatMessage(m.content)}
                       </div>
                     </div>
                   );
@@ -323,7 +331,7 @@ export function AIChatWidget() {
                     </Avatar>
                     <div className="rounded-2xl rounded-bl-xs bg-muted text-foreground border px-3.5 py-2 max-w-[80%] whitespace-pre-wrap leading-relaxed">
                       {streamedText ? (
-                        streamedText
+                        formatChatMessage(streamedText)
                       ) : (
                         <div className="flex items-center space-x-1.5 py-1">
                           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
@@ -347,7 +355,7 @@ export function AIChatWidget() {
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Ask Nexus AI..."
+              placeholder="Ask for support, report an issue, or ask a question..."
               disabled={isStreaming}
               className="text-xs sm:text-sm h-9"
             />

@@ -138,6 +138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Ignore logout errors
     } finally {
+      if (typeof document !== "undefined") {
+        document.cookie = "user_role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      }
       setAccessToken(null);
       setUser(null);
       router.push("/login");

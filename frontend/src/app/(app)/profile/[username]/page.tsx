@@ -22,6 +22,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PostCard } from "@/components/feed/post-card";
 import { EditProfileDialog } from "@/components/profile/edit-profile-dialog";
+import { FriendshipButton } from "@/components/friends/friendship-button";
 import { getInitials } from "@/lib/utils";
 import type { FeedResponse, Post, UserProfile } from "@/types";
 
@@ -112,6 +113,9 @@ export default function ProfilePage() {
 
             {isOwnProfile && currentUser && (
               <EditProfileDialog user={currentUser} />
+            )}
+            {!isOwnProfile && currentUser && (
+              <FriendshipButton targetUserId={profile.id} targetUsername={profile.username} />
             )}
           </div>
 

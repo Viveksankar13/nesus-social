@@ -5,6 +5,8 @@ const PROTECTED_PREFIXES = [
   "/feed",
   "/profile",
   "/notifications",
+  "/messages",
+  "/friends",
   "/admin",
   "/settings",
 ];
@@ -58,6 +60,9 @@ export const config = {
     "/feed/:path*",
     "/profile/:path*",
     "/notifications/:path*",
+    "/messages/:path*",
+    "/friends/:path*",
+    "/admin",
     "/admin/:path*",
     "/settings/:path*",
     "/login",

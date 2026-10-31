@@ -29,7 +29,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.db.session import async_session_factory
+from app.db.base import Base
+from app.db.session import async_session_factory, engine
 from app.models.comment import Comment
 from app.models.like import Like
 from app.models.notification import Notification
@@ -335,6 +336,8 @@ async def main(demo: bool = False) -> None:
     """Run database seeding process."""
     print("🌱 Nexus Social — Database Seeder")
     print(f"Environment: {settings.ENVIRONMENT}")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     async with async_session_factory() as session:
         try:
             admin = await seed_admin(session)

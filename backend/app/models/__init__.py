@@ -8,7 +8,9 @@ from app.db.base import Base
 from app.models.activity import ActivityLog
 from app.models.ai import AIChatMessage, AIChatSession, AIUsageLog
 from app.models.comment import Comment
+from app.models.friendship import Friendship
 from app.models.like import Like
+from app.models.message import Conversation, DirectMessage
 from app.models.moderation import ModerationFlag
 from app.models.notification import Notification
 from app.models.post import Post
@@ -29,4 +31,7 @@ __all__ = [
     "AIChatMessage",
     "AIUsageLog",
     "ActivityLog",
+    "Friendship",
+    "Conversation",
+    "DirectMessage",
 ]
