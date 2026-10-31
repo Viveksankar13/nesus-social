@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     # ── Optional Observability ───────────────────────────────────────
     SENTRY_DSN: str = ""
 
+    # ── Media Uploads ────────────────────────────────────────────────
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+
     # ── Skill Swap Economy ───────────────────────────────────────────
     CRON_SECRET: str = "nexus-cron-secret-local-dev-key-minimum-32-chars"
     JITSI_BASE_URL: str = "https://meet.jit.si"

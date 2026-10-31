@@ -127,6 +127,10 @@ docs/diagrams/*.png
 docs/diagrams/*.svg
 !docs/diagrams/.gitkeep
 
+# ── Uploads ──────────────────────────────
+uploads/
+backend/uploads/
+
 # ── Virtual environments ─────────────────
 .venv/
 venv/

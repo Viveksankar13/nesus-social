@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Image as ImageIcon, Loader2, Sparkles, X } from "lucide-react";
+import { Image as ImageIcon, Loader2, Sparkles, UploadCloud, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api-client";
@@ -31,6 +31,46 @@ export function PostComposer() {
   const [content, setContent] = React.useState("");
   const [imageUrl, setImageUrl] = React.useState("");
   const [showImageInput, setShowImageInput] = React.useState(false);
+  const [isUploadingImage, setIsUploadingImage] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Image size must not exceed 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "posts");
+      const res = await apiClient.post<{ url: string }>("/media/upload", formData);
+      setImageUrl(res.url);
+      setShowImageInput(true);
+      toast({
+        title: "Image attached",
+        description: "Image uploaded and attached to your post.",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to upload image";
+      toast({
+        title: "Upload failed",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // AI Modal State
   const [aiModalOpen, setAiModalOpen] = React.useState(false);
@@ -146,19 +186,45 @@ export function PostComposer() {
                 className="w-full resize-none bg-transparent p-1 text-sm sm:text-base outline-none placeholder:text-muted-foreground focus:ring-0"
               />
 
-              {showImageInput && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+
+              {isUploadingImage && (
+                <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 border text-xs text-muted-foreground animate-pulse">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span>Uploading and optimizing image...</span>
+                </div>
+              )}
+
+              {showImageInput && !imageUrl && (
                 <div className="flex items-center space-x-2 pt-1">
                   <Input
                     type="url"
-                    placeholder="Paste image URL (https://...)"
+                    placeholder="Or paste image URL (https://...)"
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs flex-1"
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <UploadCloud className="h-3.5 w-3.5" />
+                    Browse
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
+                    className="h-8 px-2"
                     onClick={() => {
                       setImageUrl("");
                       setShowImageInput(false);
@@ -170,21 +236,33 @@ export function PostComposer() {
               )}
 
               {imageUrl && (
-                <div className="relative mt-2 max-h-48 overflow-hidden rounded-lg border bg-muted">
+                <div className="relative mt-2 max-h-56 overflow-hidden rounded-lg border bg-muted group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={imageUrl}
-                    alt="Preview"
-                    className="w-full object-cover max-h-48 rounded-lg"
+                    alt="Post preview"
+                    className="w-full object-cover max-h-56 rounded-lg"
                     onError={() => {
                       toast({
                         title: "Invalid image URL",
-                        description: "Could not load image from provided link.",
+                        description: "Could not load image preview.",
                         variant: "destructive",
                       });
                       setImageUrl("");
                     }}
                   />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2 h-7 w-7 p-0 rounded-full shadow-md opacity-90 hover:opacity-100"
+                    onClick={() => {
+                      setImageUrl("");
+                      setShowImageInput(false);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>
@@ -196,11 +274,12 @@ export function PostComposer() {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowImageInput(!showImageInput)}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingImage}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <ImageIcon className="h-4 w-4 mr-1.5" />
-                <span className="text-xs">Image</span>
+                <span className="text-xs">Photo</span>
               </Button>
 
               {/* AI Assist Dialog Trigger */}

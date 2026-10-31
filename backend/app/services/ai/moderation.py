@@ -30,10 +30,12 @@ async def moderate_content_task(
     content_id: uuid.UUID,
     text: str,
     user_id: uuid.UUID,
+    image_url: str | None = None,
     session: AsyncSession | None = None,
 ) -> None:
     """
-    Background worker task to check content for safety and spam.
+    Background worker task to check content for safety, exploitation, and spam.
+    Evaluates text and optional image attached to the post.
     Runs in the provided session or spins up a fresh session from factory.
     """
     start_time = time.perf_counter()
@@ -41,7 +43,9 @@ async def moderate_content_task(
 
     async def _execute(db: AsyncSession) -> None:
         try:
-            result, tokens = await ai_service.moderate_content(content_type=content_type, text=text)
+            result, tokens = await ai_service.moderate_content(
+                content_type=content_type, text=text, image_path=image_url
+            )
             elapsed_ms = int((time.perf_counter() - start_time) * 1000)
 
             action = result.get("action", "allow")

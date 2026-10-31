@@ -78,9 +78,10 @@ class BaseAIService(ABC):
         self,
         content_type: str,
         text: str,
+        image_path: str | None = None,
     ) -> tuple[dict, int]:
         """
-        Evaluate text for safety, policy violations, and spam.
+        Evaluate text and optional image for safety, policy violations, exploitation, and explicit content.
 
         Returns:
             tuple of (dict_result, tokens_used) where dict_result contains

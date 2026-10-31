@@ -5,6 +5,7 @@ Direct integration with Google Gemini 2.5 Flash using the official
 google-genai SDK (v1.x). Implements BaseAIService.
 """
 
+import hashlib
 import json
 import logging
 import re
@@ -26,8 +27,13 @@ from app.services.ai.prompts import (
     build_post_summarize_prompt,
     build_smart_replies_prompt,
 )
+from app.services.media_service import media_service
 
 logger = logging.getLogger("nexus.ai")
+
+# In-memory LRU-like cache of image SHA-256 hash -> moderation result (saves 100% tokens on repeated images)
+_IMAGE_VERDICT_CACHE: dict[str, dict] = {}
+_CACHE_MAX_SIZE = 1000
 
 
 def clean_json_response(raw_text: str) -> str:
@@ -203,17 +209,72 @@ class GeminiAIService(BaseAIService):
         self,
         content_type: str,
         text: str,
+        image_path: str | None = None,
     ) -> tuple[dict, int]:
-        prompt = build_moderation_prompt(content_type=content_type, text=text)
+        """
+        Evaluate text and optional image for safety, exploitation, and explicit content.
+        Uses image downscaling and hash caching to minimize Gemini token usage.
+        """
+        lower_text = text.lower()
+
+        # Token Optimization Strategy 1: Fast Heuristic Pre-Filter (0 tokens)
+        critical_patterns = [
+            r"\b(csam|child\s*porn|pedophil|trafficking)\b",
+            r"\b(kill\s+all|bomb\s+the|slaughter|murder\s+them)\b",
+        ]
+        for pattern in critical_patterns:
+            if re.search(pattern, lower_text):
+                logger.info("Fast heuristic detected critical violation, saving API tokens.")
+                return {
+                    "category": "exploitation" if "csam" in pattern or "child" in pattern else "violence",
+                    "severity": "critical",
+                    "score": 0.99,
+                    "action": "block",
+                    "reason": "Critical policy violation detected by automated safety filter.",
+                }, 0
+
+        # Token Optimization Strategy 2: Image Downscaling & Hash Caching
+        image_part = None
+        has_image = False
+        image_hash = None
+
+        if image_path:
+            try:
+                # Downscale to 512x512 tile to drastically reduce vision tokens
+                img_bytes, mime_type = media_service.get_optimized_image_bytes_for_ai(image_path, max_size=512)
+                image_hash = hashlib.sha256(img_bytes).hexdigest()
+
+                # Check image hash cache
+                if image_hash in _IMAGE_VERDICT_CACHE:
+                    cached_result = _IMAGE_VERDICT_CACHE[image_hash]
+                    logger.info("Image hash %s matched cache, saving vision tokens.", image_hash[:8])
+                    # If the image was blocked or flagged, return cached verdict without calling Gemini
+                    if cached_result.get("action") in ("block", "flag"):
+                        return cached_result, 0
+
+                image_part = types.Part.from_bytes(data=img_bytes, mime_type=mime_type)
+                has_image = True
+            except Exception as e:
+                logger.warning("Could not optimize image for moderation (%s): %s", image_path, e)
+
+        prompt_text = build_moderation_prompt(content_type=content_type, text=text, has_image=has_image)
+
+        # Build contents (text + image if provided)
+        if image_part:
+            contents = [types.Part.from_text(text=prompt_text), image_part]
+        else:
+            contents = prompt_text
+
         config = types.GenerateContentConfig(
             system_instruction=CONTENT_MODERATION_SYSTEM_PROMPT,
             response_mime_type="application/json",
-            temperature=0.1,
+            temperature=0.0,
+            max_output_tokens=150,
         )
 
         response = await self.client.aio.models.generate_content(
             model=self.model,
-            contents=prompt,
+            contents=contents,
             config=config,
         )
 
@@ -231,6 +292,10 @@ class GeminiAIService(BaseAIService):
             score = float(data.get("score", 0.0))
             action = data.get("action", "allow")
             reason = data.get("reason", "Automatic evaluation completed.")
+
+            # Strict guard: any explicit or exploitation content is blocked immediately
+            if category in ("exploitation", "sexual") and severity in ("high", "critical"):
+                action = "block"
         except Exception as e:
             logger.warning("Failed to parse Gemini moderation JSON: %s.", e)
             category = "other"
@@ -239,13 +304,21 @@ class GeminiAIService(BaseAIService):
             action = "allow"
             reason = "Default fallback moderation check."
 
-        return {
+        result = {
             "category": category,
             "severity": severity,
             "score": score,
             "action": action,
             "reason": reason,
-        }, tokens
+        }
+
+        # Cache image verdict
+        if image_hash:
+            if len(_IMAGE_VERDICT_CACHE) >= _CACHE_MAX_SIZE:
+                _IMAGE_VERDICT_CACHE.pop(next(iter(_IMAGE_VERDICT_CACHE)))
+            _IMAGE_VERDICT_CACHE[image_hash] = result
+
+        return result, tokens
 
     async def smart_replies(
         self,

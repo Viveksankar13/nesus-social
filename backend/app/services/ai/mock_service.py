@@ -90,8 +90,29 @@ class MockAIService(BaseAIService):
         self,
         content_type: str,
         text: str,
+        image_path: str | None = None,
     ) -> tuple[dict, int]:
         lower_text = text.lower()
+        image_hint = (image_path or "").lower()
+
+        # Exploitation and explicit content checks
+        if any(w in lower_text or w in image_hint for w in ("csam", "exploit", "trafficking", "abuse")):
+            return {
+                "category": "exploitation",
+                "severity": "critical",
+                "score": 0.99,
+                "action": "block",
+                "reason": "Severe exploitation or abusive content strictly prohibited.",
+            }, 25
+
+        if any(w in lower_text or w in image_hint for w in ("explicit", "nsfw", "nude", "porn", "xxx")):
+            return {
+                "category": "sexual",
+                "severity": "critical",
+                "score": 0.95,
+                "action": "block",
+                "reason": "Explicit sexual or pornographic material detected.",
+            }, 25
 
         # Deterministic rules for testing moderation
         if any(word in lower_text for word in ("kill", "attack", "die", "bomb")):

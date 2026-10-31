@@ -10,6 +10,7 @@ Creates and configures the FastAPI application instance:
 - API v1 router mounting
 """
 
+import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -17,6 +18,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
@@ -152,6 +154,11 @@ def create_app() -> FastAPI:
             status_code=500,
             content={"detail": "Internal server error. Please try again later."},
         )
+
+    # ── Mount Static Files (Uploads) ────────────────────────────────
+    os.makedirs(os.path.join(settings.UPLOAD_DIR, "avatars"), exist_ok=True)
+    os.makedirs(os.path.join(settings.UPLOAD_DIR, "posts"), exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
     # ── Mount API Routers ───────────────────────────────────────────
     app.include_router(api_router)

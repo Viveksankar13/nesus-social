@@ -113,27 +113,28 @@ Your capabilities:
 CONTENT_MODERATION_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
 
 You are a strict, impartial AI Content Safety Evaluator for Nexus Social.
-Analyze the provided content and determine whether it violates safety standards.
+Analyze the provided text and any attached image to detect violations.
 
 Evaluation Categories:
+- exploitation: Child sexual exploitation and abuse (CSAM), non-consensual imagery, trafficking, human exploitation, severe coercion.
+- sexual: Nudity, pornographic imagery, explicit sexual acts, non-consensual sexualization.
+- violence: Incitement of violence, graphic gore, severe physical violence, weapons/threats.
 - hate: Hate speech, bigotry, slurs against protected groups.
-- harassment: Bullying, personal attacks, intimidation, stalking.
-- sexual: Explicit sexual content, non-consensual sexualization.
-- violence: Incitement of violence, graphic violence, threats.
+- harassment: Bullying, personal attacks, intimidation, stalking, doxxing.
 - self-harm: Encouragement or glorification of suicide or self-injury.
 - spam: Scams, phishing, misleading repetitive promotions.
-- other: Severe profanity, doxxing, malicious content.
+- other: Malicious content, dangerous activities.
 
 Severity Levels:
-- low: Minor rudeness or mild edge, allowable in casual discourse.
+- low: Safe or minor rudeness within permissible limits.
 - medium: Borderline content, offensive language, or mild harassment.
-- high: Clear harassment, hate speech, severe insults, scams.
-- critical: Direct threats of violence, self-harm incitement, illegal material.
+- high: Clear harassment, hate speech, scams.
+- critical: Direct threats of violence, self-harm, ANY exploitation or explicit sexual/pornographic content.
 
 Action determination:
 - allow: Safe for platform. Score < 0.5 and severity 'low'.
 - flag: Needs human admin review. Score >= 0.5 or severity 'medium'.
-- block: High risk; must be immediately hidden. Score >= 0.8 or severity 'high'/'critical'.
+- block: High risk; must be immediately hidden. Score >= 0.8 or severity 'high'/'critical'. ANY exploitation or explicit content must trigger "block".
 
 Output MUST be valid JSON adhering to this schema:
 {{
@@ -141,7 +142,7 @@ Output MUST be valid JSON adhering to this schema:
   "severity": "low",
   "score": 0.05,
   "action": "allow",
-  "reason": "Content is a constructive, friendly discussion."
+  "reason": "Content is safe."
 }}
 Do not include markdown code fence formatting. Output valid JSON only."""
 
@@ -197,12 +198,18 @@ def build_post_summarize_prompt(post_content: str, comments: list[str]) -> str:
 </comment_thread>"""
 
 
-def build_moderation_prompt(content_type: str, text: str) -> str:
+def build_moderation_prompt(content_type: str, text: str, has_image: bool = False) -> str:
     """Build formatted prompt for content moderation check."""
-    return f"""Content Type: {content_type}
+    image_note = (
+        "\nNote: An attached image is provided with this post. You must inspect BOTH the text and the image."
+        if has_image
+        else ""
+    )
+    return f"""Content Type: {content_type}{image_note}
 <content_to_analyze>
 {sanitize_input(text)}
-</content_to_analyze>"""
+</content_to_analyze>
+Evaluate both text and image for exploitation (CSAM, abuse, trafficking), explicit sexual material (nudity, pornography), violence/gore, hate, and harassment."""
 
 
 def build_smart_replies_prompt(post_content: str, parent_comment: str | None = None) -> str:

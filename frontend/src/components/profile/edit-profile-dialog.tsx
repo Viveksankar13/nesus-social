@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Pencil } from "lucide-react";
+import { Camera, Loader2, Pencil } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/contexts/auth-context";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { getInitials } from "@/lib/utils";
 import type { User, UserUpdateData } from "@/types";
 
 interface EditProfileDialogProps {
@@ -37,6 +39,46 @@ export function EditProfileDialog({ user }: EditProfileDialogProps) {
   const [location, setLocation] = React.useState(user.location || "");
   const [website, setWebsite] = React.useState(user.website || "");
   const [avatarUrl, setAvatarUrl] = React.useState(user.avatar_url || "");
+  const [isUploadingAvatar, setIsUploadingAvatar] = React.useState(false);
+  const avatarFileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Avatar image must be under 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const updatedUser = await apiClient.post<User>("/media/avatar", formData);
+      setAvatarUrl(updatedUser.avatar_url || "");
+      await refreshUser();
+      queryClient.invalidateQueries({ queryKey: ["users", "profile", user.username] });
+      toast({
+        title: "Avatar updated!",
+        description: "Your new profile picture is active.",
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to upload avatar";
+      toast({
+        title: "Upload failed",
+        description: msg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarFileRef.current) avatarFileRef.current.value = "";
+    }
+  };
 
   const updateMutation = useMutation({
     mutationFn: (data: UserUpdateData) =>
@@ -148,15 +190,59 @@ export function EditProfileDialog({ user }: EditProfileDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="avatar_url">Avatar Image URL</Label>
-            <Input
-              id="avatar_url"
-              type="url"
-              placeholder="https://..."
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-            />
+          <div className="space-y-2 pt-1 border-t">
+            <Label>Profile Picture</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-sm">
+                <AvatarImage src={avatarUrl || `https://avatar.vercel.sh/${user.username}`} />
+                <AvatarFallback>{getInitials(displayName || user.display_name)}</AvatarFallback>
+              </Avatar>
+
+              <div className="flex-1 space-y-2">
+                <input
+                  ref={avatarFileRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="hidden"
+                  onChange={handleAvatarFileChange}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs"
+                  onClick={() => avatarFileRef.current?.click()}
+                  disabled={isUploadingAvatar}
+                >
+                  {isUploadingAvatar ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-3.5 w-3.5" />
+                      Upload Photo
+                    </>
+                  )}
+                </Button>
+                <p className="text-[11px] text-muted-foreground">
+                  JPG, PNG, WebP or GIF. Max 5MB.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-1">
+              <Label htmlFor="avatar_url" className="text-xs text-muted-foreground">Or Avatar Image URL</Label>
+              <Input
+                id="avatar_url"
+                type="url"
+                placeholder="https://..."
+                value={avatarUrl}
+                onChange={(e) => setAvatarUrl(e.target.value)}
+                className="h-8 text-xs mt-1"
+              />
+            </div>
           </div>
 
           <DialogFooter className="pt-2">

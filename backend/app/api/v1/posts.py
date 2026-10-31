@@ -59,6 +59,7 @@ async def create_post(
         content_id=post_res.id,
         text=data.content,
         user_id=current_user.id,
+        image_url=post_res.image_url,
     )
     return post_res
 
@@ -90,6 +91,7 @@ async def update_post(
             content_id=post_res.id,
             text=data.content,
             user_id=current_user.id,
+            image_url=post_res.image_url,
         )
     return post_res
 
