@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function AuthLayout({
@@ -15,10 +15,17 @@ export default function AuthLayout({
       <div className="flex items-center justify-between w-full max-w-6xl mx-auto py-2">
         <Link
           href="/"
-          className="flex items-center space-x-2 text-foreground font-bold text-lg tracking-tight hover:opacity-90 transition-opacity"
+          className="flex items-center space-x-2.5 text-foreground font-bold text-lg tracking-tight hover:opacity-90 transition-opacity"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <Sparkles className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-primary/10 shadow-sm p-1">
+            <Image
+              src="/drupal.png"
+              alt="Nexus Social Logo"
+              width={32}
+              height={32}
+              className="h-7 w-7 object-contain"
+              priority
+            />
           </div>
           <span className="bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent font-extrabold text-xl">
             Nexus Social

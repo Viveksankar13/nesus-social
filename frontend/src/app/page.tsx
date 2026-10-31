@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,7 +11,6 @@ import {
   Rss,
   Shield,
   ShieldAlert,
-  Sparkles,
   Zap,
 } from "lucide-react";
 
@@ -29,11 +29,18 @@ export default function LandingPage() {
       <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href={user ? (isAdmin ? "/admin" : "/feed") : "/"} className="flex items-center space-x-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-              <Sparkles className="h-5 w-5" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-primary/10 shadow-sm p-1">
+              <Image
+                src="/drupal.png"
+                alt="Nexus Social Logo"
+                width={32}
+                height={32}
+                className="h-7 w-7 object-contain"
+                priority
+              />
             </div>
             <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent">
-              JAIN Social
+              Nexus Social
             </span>
           </Link>
 

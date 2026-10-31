@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -162,8 +163,15 @@ export default function AdminLayout({
         {/* Brand Header */}
         <div className="flex h-16 items-center justify-between border-b border-zinc-800/80 px-6">
           <Link href="/admin" className="flex items-center gap-2.5 font-bold tracking-tight">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-md">
-              <Shield className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-white/10 shadow-md p-1">
+              <Image
+                src="/drupal.png"
+                alt="Nexus Admin Logo"
+                width={28}
+                height={28}
+                className="h-6 w-6 object-contain"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-wide text-white">NEXUS ADMIN</span>

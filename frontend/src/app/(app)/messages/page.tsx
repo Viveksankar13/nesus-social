@@ -137,9 +137,8 @@ function MessagesContent() {
     <div className="max-w-5xl mx-auto h-[calc(100vh-10.5rem)] md:h-[calc(100vh-7rem)] flex border rounded-xl overflow-hidden bg-card shadow-sm">
       {/* ── Left Sidebar: Conversations List ── */}
       <div
-        className={`w-full md:w-72 lg:w-80 border-r flex flex-col shrink-0 bg-background ${
-          activeRecipient ? "hidden md:flex" : "flex"
-        }`}
+        className={`w-full md:w-72 lg:w-80 border-r flex flex-col shrink-0 bg-background ${activeRecipient ? "hidden md:flex" : "flex"
+          }`}
       >
         <div className="p-3 border-b space-y-2 bg-muted/20 shrink-0">
           <div className="flex items-center justify-between">
@@ -186,9 +185,8 @@ function MessagesContent() {
                     setActiveConvId(c.id);
                     setActiveRecipient(c.other_user);
                   }}
-                  className={`w-full p-3 flex items-start space-x-3 text-left transition-colors hover:bg-muted/50 ${
-                    isSelected ? "bg-muted/80 border-l-4 border-primary" : ""
-                  }`}
+                  className={`w-full p-3 flex items-start space-x-3 text-left transition-colors hover:bg-muted/50 ${isSelected ? "bg-muted/80 border-l-4 border-primary" : ""
+                    }`}
                 >
                   <Avatar className="h-10 w-10 shrink-0 border shadow-xs">
                     {c.other_user.avatar_url && (
@@ -313,18 +311,16 @@ function MessagesContent() {
                       )}
                       <div className="max-w-[78%] sm:max-w-[70%] space-y-1">
                         <div
-                          className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed shadow-xs break-words ${
-                            isMe
+                          className={`rounded-2xl px-3.5 py-2 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed shadow-xs break-words ${isMe
                               ? "bg-primary text-primary-foreground rounded-tr-xs"
                               : "bg-muted text-foreground border rounded-tl-xs"
-                          }`}
+                            }`}
                         >
                           {m.content}
                         </div>
                         <p
-                          className={`text-[9px] text-muted-foreground px-1 ${
-                            isMe ? "text-right" : "text-left"
-                          }`}
+                          className={`text-[9px] text-muted-foreground px-1 ${isMe ? "text-right" : "text-left"
+                            }`}
                         >
                           {formatRelativeTime(m.created_at)}
                         </p>

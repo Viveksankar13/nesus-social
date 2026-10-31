@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   keywords: ["social media", "AI", "community", "posts", "connect"],
   authors: [{ name: "Nexus Social Team" }],
   creator: "Nexus Social",
+  icons: {
+    icon: "/drupal.png",
+    apple: "/drupal.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
