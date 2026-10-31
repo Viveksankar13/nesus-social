@@ -42,6 +42,10 @@ COPY --chown=appuser:appgroup alembic ./alembic
 COPY --chown=appuser:appgroup scripts ./scripts
 COPY --chown=appuser:appgroup app ./app
 
+# Create and grant permissions on uploads directory
+RUN mkdir -p /app/uploads/avatars /app/uploads/posts && \
+    chown -R appuser:appgroup /app/uploads
+
 # Ensure entrypoint is executable
 RUN chmod +x ./scripts/entrypoint.sh
 

@@ -15,7 +15,8 @@ services:
     plan: free
     region: oregon
     branch: main
-    preDeployCommand: "alembic upgrade head"
+    # Note: Alembic migrations run automatically on container startup via entrypoint.sh.
+    # preDeployCommand is supported only on paid plans; entrypoint.sh works on both free and paid tiers.
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
@@ -92,27 +93,28 @@ services:
       - key: MATCH_WEIGHT_FRESHNESS
         value: "0.05"
 
-  # ── Render Cron Jobs: Skill Swap Maintenance ──
-  - type: cron
-    name: swap-reminders-job
-    plan: free
-    region: oregon
-    schedule: "*/15 * * * *"
-    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/send-session-reminders || true"
-
-  - type: cron
-    name: swap-auto-expiry-job
-    plan: free
-    region: oregon
-    schedule: "0 * * * *"
-    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/auto-expire-requests || true"
-
-  - type: cron
-    name: swap-reviews-and-trust-job
-    plan: free
-    region: oregon
-    schedule: "0 2 * * *"
-    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/reveal-swap-reviews && curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/recalculate-trust-scores || true"
+  # ── Skill Swap Cron Jobs (Note: Render native cron requires paid compute) ──
+  # For free tier, schedule via cron-job.org or GitHub Actions targeting /api/v1/internal/jobs/*
+  # - type: cron
+  #   name: swap-reminders-job
+  #   plan: starter
+  #   region: oregon
+  #   schedule: "*/15 * * * *"
+  #   command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/send-session-reminders || true"
+  #
+  # - type: cron
+  #   name: swap-auto-expiry-job
+  #   plan: starter
+  #   region: oregon
+  #   schedule: "0 * * * *"
+  #   command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/auto-expire-requests || true"
+  #
+  # - type: cron
+  #   name: swap-reviews-and-trust-job
+  #   plan: starter
+  #   region: oregon
+  #   schedule: "0 2 * * *"
+  #   command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/reveal-swap-reviews && curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/recalculate-trust-scores || true"
 
 databases:
   - name: nexus-social-db
