@@ -17,7 +17,6 @@ from app.models.swap import (
     AvailabilityBlackout,
     AvailabilityWindow,
     ReciprocityLedger,
-    Skill,
     TrustScore,
     UserBlock,
     UserSkill,
@@ -174,9 +173,12 @@ class SwapService:
         ]
 
         # Trust score & ledger
-        ts_res = await db.execute(select(TrustScore).where(TrustScore.user_id == user_id))
+        ts_stmt = select(TrustScore).where(TrustScore.user_id == user_id)
+        ts_res = await db.execute(ts_stmt)
         ts = ts_res.scalar_one_or_none()
-        rl_res = await db.execute(select(ReciprocityLedger).where(ReciprocityLedger.user_id == user_id))
+
+        rl_stmt = select(ReciprocityLedger).where(ReciprocityLedger.user_id == user_id)
+        rl_res = await db.execute(rl_stmt)
         rl = rl_res.scalar_one_or_none()
 
         return UserSwapProfilePrivateResponse(

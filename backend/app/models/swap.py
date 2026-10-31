@@ -12,7 +12,7 @@ SQLAlchemy 2.0 models representing the Hyper-Local Skill Swap Economy:
 
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from sqlalchemy import (
     Boolean,
@@ -194,7 +194,10 @@ class SwapRequest(Base, UUIDMixin, TimestampMixin):
     __tablename__ = "swap_requests"
 
     listing_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("swap_listings.id", ondelete="SET NULL"), index=True, nullable=True
+        Uuid(as_uuid=True),
+        ForeignKey("swap_listings.id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
     )
     requester_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
@@ -271,7 +274,10 @@ class SwapSessionHalf(Base, UUIDMixin):
     __tablename__ = "swap_session_halves"
 
     session_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("swap_sessions.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True),
+        ForeignKey("swap_sessions.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     half_number: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 or 2
     mentor_id: Mapped[uuid.UUID] = mapped_column(
@@ -304,7 +310,10 @@ class SwapMessage(Base, UUIDMixin):
     __tablename__ = "swap_messages"
 
     session_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("swap_sessions.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True),
+        ForeignKey("swap_sessions.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     sender_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
@@ -328,7 +337,10 @@ class SwapReview(Base, UUIDMixin):
     )
 
     session_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("swap_sessions.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True),
+        ForeignKey("swap_sessions.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     reviewer_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
@@ -372,7 +384,10 @@ class SwapReport(Base, UUIDMixin):
     __tablename__ = "swap_reports"
 
     reporter_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False
+        Uuid(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     target_type: Mapped[str] = mapped_column(
         String(20), nullable=False
@@ -380,7 +395,7 @@ class SwapReport(Base, UUIDMixin):
     target_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), index=True, nullable=False)
     category: Mapped[str] = mapped_column(
         String(50), nullable=False
-    )  # payment_solicitation, off_platform_contact, inappropriate_behavior, no_show, spam, safety_concern
+    )  # payment_solicitation, off_platform, inappropriate, no_show, spam, safety
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(
         String(20), index=True, default="pending", nullable=False
@@ -429,7 +444,8 @@ class ReciprocityLedger(Base, UUIDMixin):
     minutes_taught: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     minutes_learned: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     net_balance_minutes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    grace_used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # up to 60m (2 sessions)
+    # Grace used: up to 60m (2 sessions)
+    grace_used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )

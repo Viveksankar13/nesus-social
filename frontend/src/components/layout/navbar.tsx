@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, Shield, User as UserIcon } from "lucide-react";
+import { LogOut, Repeat, Shield, User as UserIcon } from "lucide-react";
 
 import { useAuth } from "@/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -84,6 +84,13 @@ export function Navbar() {
                   <Link href={`/profile/${user.username}`} className="cursor-pointer">
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>View Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/swaps" className="cursor-pointer">
+                    <Repeat className="mr-2 h-4 w-4" />
+                    <span>Swap Settings</span>
                   </Link>
                 </DropdownMenuItem>
 

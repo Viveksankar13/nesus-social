@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, MessageSquare, Shield, User as UserIcon, Users } from "lucide-react";
+import { Bell, Home, MessageSquare, Repeat, Shield, User as UserIcon, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { useAuth } from "@/contexts/auth-context";
@@ -28,6 +28,12 @@ export function Sidebar() {
       href: "/feed",
       icon: Home,
       active: pathname === "/feed",
+    },
+    {
+      label: "Skill Swaps",
+      href: "/swaps",
+      icon: Repeat,
+      active: pathname.startsWith("/swaps"),
     },
     {
       label: "Messages",

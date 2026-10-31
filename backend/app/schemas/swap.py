@@ -192,7 +192,10 @@ class UserSwapProfilePublicResponse(BaseModel):
     area_label: str | None
     distance_bucket: str = Field(
         ...,
-        description="Distance bucket: 'under 1 km', '1–3 km', '3–5 km', '5–10 km', '10–25 km', or 'remote'",
+        description=(
+            "Distance bucket: 'under 1 km', '1–3 km', '3–5 km', "
+            "'5–10 km', '10–25 km', or 'remote'"
+        ),
     )
     modes: list[str]
     languages: list[str]
