@@ -291,3 +291,157 @@ class SwapMatchResponse(BaseModel):
     explanation: str
     score_breakdown: dict[str, float]
 
+
+# ── Swap Request & Proposal Schemas (Stage 3) ────────────────────────
+class ProposedSlotItem(BaseModel):
+    start_time_utc: datetime
+    end_time_utc: datetime
+
+    @field_validator("end_time_utc")
+    @classmethod
+    def validate_slot_times(cls, v: datetime, info: Any) -> datetime:
+        start = info.data.get("start_time_utc")
+        if start:
+            diff = (v - start).total_seconds()
+            if diff <= 0:
+                raise ValueError("end_time_utc must be after start_time_utc")
+            if diff != 1800:
+                raise ValueError("Each proposed slot half must be exactly 30 minutes (1800s)")
+        return v
+
+
+class SwapRequestCreate(BaseModel):
+    listing_id: uuid.UUID | None = None
+    recipient_id: uuid.UUID
+    offered_skill_id: uuid.UUID
+    wanted_skill_id: uuid.UUID
+    mode: Literal["video", "in_person"] = "video"
+    message: str = Field(..., min_length=5, max_length=500)
+    proposed_slots: list[ProposedSlotItem] = Field(..., min_length=1, max_length=3)
+    public_place_name: str | None = Field(default=None, max_length=150)
+    public_place_address: str | None = Field(default=None, max_length=255)
+
+
+class SwapRequestCounter(BaseModel):
+    message: str = Field(..., min_length=5, max_length=500)
+    proposed_slots: list[ProposedSlotItem] = Field(..., min_length=1, max_length=3)
+    mode: Literal["video", "in_person"] | None = None
+    public_place_name: str | None = Field(default=None, max_length=150)
+    public_place_address: str | None = Field(default=None, max_length=255)
+
+
+class SwapRequestAccept(BaseModel):
+    selected_slot_index: int = Field(default=0, ge=0, le=2)
+    public_place_name: str | None = Field(default=None, max_length=150)
+    public_place_address: str | None = Field(default=None, max_length=255)
+
+
+class SwapRequestResponse(BaseModel):
+    id: uuid.UUID
+    listing_id: uuid.UUID | None
+    requester: PublicUserMinimal
+    recipient: PublicUserMinimal
+    offered_skill: SkillResponse
+    wanted_skill: SkillResponse
+    mode: str
+    message: str
+    proposed_slots: list[dict[str, Any]]
+    status: str
+    counter_note: str | None = None
+    expires_at: datetime
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapRequestListResponse(BaseModel):
+    incoming: list[SwapRequestResponse]
+    outgoing: list[SwapRequestResponse]
+
+
+# ── Session & Halves Schemas (Stage 3) ───────────────────────────────
+class SwapSessionHalfResponse(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    half_number: int
+    mentor: PublicUserMinimal
+    learner: PublicUserMinimal
+    skill: SkillResponse
+    start_time_utc: datetime
+    end_time_utc: datetime
+    status: str
+    ics_uid: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapSessionResponse(BaseModel):
+    id: uuid.UUID
+    request_id: uuid.UUID
+    user_a: PublicUserMinimal
+    user_b: PublicUserMinimal
+    status: str
+    mode: str
+    public_place_name: str | None = None
+    public_place_address: str | None = None
+    jitsi_room_token: str | None = None
+    jitsi_room_url: str | None = None
+    user_a_confirmed: bool = False
+    user_b_confirmed: bool = False
+    dispute_reason: str | None = None
+    halves: list[SwapSessionHalfResponse] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── Logistics Chat Schemas (Stage 3) ─────────────────────────────────
+class SwapMessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=1000)
+
+
+class SwapMessageResponse(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    sender: PublicUserMinimal
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── Double-Blind Review Schemas (Stage 3) ────────────────────────────
+class SwapReviewCreate(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    tags: list[str] = Field(default_factory=list)
+    public_comment: str | None = Field(default=None, max_length=1000)
+    private_feedback: str | None = Field(default=None, max_length=1000)
+
+
+class SwapReviewResponse(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    reviewer: PublicUserMinimal
+    reviewee: PublicUserMinimal
+    rating: int | None = None
+    tags: list[str] = Field(default_factory=list)
+    public_comment: str | None = None
+    is_revealed: bool
+    revealed_at: datetime | None = None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── Dispute & iCalendar Schemas (Stage 3) ────────────────────────────
+class SwapDisputeCreate(BaseModel):
+    reason: str = Field(..., min_length=10, max_length=1000)
+
+
+class ICSExportResponse(BaseModel):
+    filename: str
+    content: str
+
+

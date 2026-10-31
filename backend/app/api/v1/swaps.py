@@ -9,31 +9,50 @@ REST endpoints for:
 - Hyper-local swap discovery query engine
 """
 
+import asyncio
+import json
 import uuid
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db, get_optional_current_user, require_user
+from app.core.tokens import decode_token
 from app.models.user import User
 from app.schemas.swap import (
     GeocodeSearchResult,
+    ICSExportResponse,
     ListingAIDraftRequest,
     ListingAIDraftResponse,
     SkillCategoryGroup,
     SkillResponse,
     SkillSuggestRequest,
+    SwapDisputeCreate,
     SwapListingCreate,
     SwapListingListResponse,
     SwapListingResponse,
     SwapListingShareResponse,
     SwapListingUpdate,
     SwapMatchResponse,
+    SwapMessageCreate,
+    SwapMessageResponse,
+    SwapRequestAccept,
+    SwapRequestCounter,
+    SwapRequestCreate,
+    SwapRequestListResponse,
+    SwapRequestResponse,
+    SwapReviewCreate,
+    SwapReviewResponse,
+    SwapSessionResponse,
     UserSwapProfilePrivateResponse,
     UserSwapProfilePublicResponse,
     UserSwapProfileUpdate,
 )
+from app.services.pubsub import pubsub
 from app.services.swap_geocoding import search_coarse_locations
 from app.services.swap_matching import SwapMatchingService
 from app.services.swap_service import SwapService
@@ -213,4 +232,176 @@ async def share_swap_listing_to_feed(
 ) -> SwapListingShareResponse:
     """Share an active swap listing into the social feed as an interactive Swap Offer post."""
     return await SwapService.share_listing_to_feed(db, listing_id, current_user.id)
+
+
+# ── 5. Swap Proposals & Request State Machine ────────────────────────
+@router.post("/requests", response_model=SwapRequestResponse)
+async def create_swap_request(
+    data: SwapRequestCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestResponse:
+    """Propose a reciprocal 30-minute skill swap with up to 3 candidate slots."""
+    return await SwapService.create_request(db, current_user.id, data)
+
+
+@router.get("/requests", response_model=SwapRequestListResponse)
+async def list_swap_requests(
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestListResponse:
+    """List incoming proposals received and outgoing proposals sent."""
+    return await SwapService.get_user_requests(db, current_user.id)
+
+
+@router.get("/requests/{request_id}", response_model=SwapRequestResponse)
+async def get_swap_request_by_id(
+    request_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestResponse:
+    """Fetch details of a single swap proposal (participants only)."""
+    return await SwapService.get_request_by_id(db, request_id, current_user.id)
+
+
+@router.post("/requests/{request_id}/accept", response_model=SwapSessionResponse)
+async def accept_swap_request(
+    request_id: uuid.UUID,
+    accept_data: SwapRequestAccept,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionResponse:
+    """Accept a proposal and schedule the swap session into two 30-minute halves."""
+    return await SwapService.accept_request(db, request_id, current_user.id, accept_data)
+
+
+@router.post("/requests/{request_id}/counter", response_model=SwapRequestResponse)
+async def counter_swap_request(
+    request_id: uuid.UUID,
+    counter_data: SwapRequestCounter,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestResponse:
+    """Counter-propose alternative times or swap mode on an existing proposal."""
+    return await SwapService.counter_request(db, request_id, current_user.id, counter_data)
+
+
+@router.post("/requests/{request_id}/decline", response_model=SwapRequestResponse)
+async def decline_swap_request(
+    request_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestResponse:
+    """Politely decline a swap proposal."""
+    return await SwapService.decline_request(db, request_id, current_user.id)
+
+
+@router.post("/requests/{request_id}/cancel", response_model=SwapRequestResponse)
+async def cancel_swap_request(
+    request_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapRequestResponse:
+    """Cancel an outgoing swap proposal before acceptance."""
+    return await SwapService.cancel_request(db, request_id, current_user.id)
+
+
+# ── 6. Agreed Sessions & Logistics ───────────────────────────────────
+@router.get("/sessions/me", response_model=list[SwapSessionResponse])
+async def get_my_swap_sessions(
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[SwapSessionResponse]:
+    """Retrieve all upcoming, active, and completed swap sessions for the user."""
+    return await SwapService.get_user_sessions(db, current_user.id)
+
+
+@router.get("/sessions/{session_id}", response_model=SwapSessionResponse)
+async def get_swap_session_by_id(
+    session_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionResponse:
+    """Fetch session details, split halves, and video room token."""
+    return await SwapService.get_session_by_id(db, session_id, current_user.id)
+
+
+@router.post("/sessions/{session_id}/confirm", response_model=SwapSessionResponse)
+async def confirm_swap_session(
+    session_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionResponse:
+    """Confirm completion of both session halves. Auto-completes when both confirm."""
+    return await SwapService.confirm_session_completion(db, session_id, current_user.id)
+
+
+@router.post("/sessions/{session_id}/dispute", response_model=SwapSessionResponse)
+async def dispute_swap_session(
+    session_id: uuid.UUID,
+    data: SwapDisputeCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapSessionResponse:
+    """Report a no-show, conduct violation, or safety dispute."""
+    return await SwapService.report_session_dispute(db, session_id, current_user.id, data)
+
+
+@router.get("/sessions/{session_id}/ics")
+async def export_session_ics(
+    session_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> Response:
+    """Download RFC 5545 iCalendar (.ics) file with entries for both 30-minute halves."""
+    ics = await SwapService.generate_session_ics(db, session_id, current_user.id)
+    return Response(
+        content=ics.content,
+        media_type="text/calendar",
+        headers={"Content-Disposition": f'attachment; filename="{ics.filename}"'},
+    )
+
+
+# ── 7. Session Logistics Chat ────────────────────────────────────────
+@router.post("/sessions/{session_id}/messages", response_model=SwapMessageResponse)
+async def post_session_message(
+    session_id: uuid.UUID,
+    data: SwapMessageCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapMessageResponse:
+    """Send a coordination message in the session room with real-time SSE broadcast."""
+    return await SwapService.post_session_message(db, session_id, current_user.id, data)
+
+
+@router.get("/sessions/{session_id}/messages", response_model=list[SwapMessageResponse])
+async def get_session_messages(
+    session_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[SwapMessageResponse]:
+    """Retrieve all chat messages for a session."""
+    return await SwapService.get_session_messages(db, session_id, current_user.id)
+
+
+# ── 8. Double-Blind Reviews ──────────────────────────────────────────
+@router.post("/sessions/{session_id}/reviews", response_model=SwapReviewResponse)
+async def submit_swap_review(
+    session_id: uuid.UUID,
+    data: SwapReviewCreate,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> SwapReviewResponse:
+    """Submit a double-blind review. Revealed only when both submit or 7 days elapse."""
+    return await SwapService.create_session_review(db, session_id, current_user.id, data)
+
+
+@router.get("/sessions/{session_id}/reviews", response_model=list[SwapReviewResponse])
+async def get_session_reviews(
+    session_id: uuid.UUID,
+    current_user: Annotated[User, Depends(require_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> list[SwapReviewResponse]:
+    """Get reviews for a session (isolated until revealed)."""
+    return await SwapService.get_session_reviews(db, session_id, current_user.id)
 

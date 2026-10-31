@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New Skill Swap Proposal - Nexus Social</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; line-height: 1.6; }
+    .container { max-width: 580px; margin: 40px auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 32px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .content { padding: 32px; }
+    .content p { margin: 0 0 16px; font-size: 15px; color: #475569; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .card h3 { margin: 0 0 10px; font-size: 16px; color: #0f172a; }
+    .button-wrap { text-align: center; margin: 32px 0; }
+    .btn { display: inline-block; background: #10b981; color: #ffffff !important; text-decoration: none; font-weight: 600; font-size: 15px; padding: 14px 32px; border-radius: 10px; }
+    .footer { background: #f1f5f9; padding: 20px 32px; text-align: center; font-size: 12px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Nexus Skill Swap</h1>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{{ username }}</strong>,</p>
+      <p>You have received a new peer skill swap proposal from <strong>@{{ requester_name }}</strong>!</p>
+      
+      <div class="card">
+        <h3>Swap Details</h3>
+        <p><strong>Offered to teach you:</strong> {{ offered_skill }} (30 min)</p>
+        <p><strong>Wants to learn from you:</strong> {{ wanted_skill }} (30 min)</p>
+        <p><strong>Message:</strong> "{{ message }}"</p>
+      </div>
+
+      <p>Nexus Swaps are strictly non-monetary, 30-minute peer mentorship sessions. Review the proposed time slots and accept, counter, or decline:</p>
+
+      <div class="button-wrap">
+        <a href="{{ swap_url }}" class="btn" target="_blank">Review Swap Proposal</a>
+      </div>
+    </div>
+    <div class="footer">
+      &copy; Nexus Social Skill Swap Economy &bull; Non-monetary peer mentorship
+    </div>
+  </div>
+</body>
+</html>

@@ -148,5 +148,86 @@ class EmailService:
             html_content=html_content,
         )
 
+    async def send_swap_request_email(
+        self,
+        to_email: str,
+        username: str,
+        requester_name: str,
+        offered_skill: str,
+        wanted_skill: str,
+        message: str,
+        request_id: str,
+    ) -> bool:
+        """Send notification when a user receives a new peer swap proposal."""
+        swap_url = f"{settings.FRONTEND_URL}/swaps/requests"
+        template = jinja_env.get_template("swap_request.html")
+        html_content = template.render(
+            username=username,
+            requester_name=requester_name,
+            offered_skill=offered_skill,
+            wanted_skill=wanted_skill,
+            message=message,
+            swap_url=swap_url,
+        )
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"New skill swap proposal from @{requester_name}",
+            html_content=html_content,
+        )
+
+    async def send_swap_accepted_email(
+        self,
+        to_email: str,
+        username: str,
+        peer_name: str,
+        scheduled_time: str,
+        mode: str,
+        session_id: str,
+        location: str | None = None,
+    ) -> bool:
+        """Send notification when a swap proposal is accepted and scheduled."""
+        session_url = f"{settings.FRONTEND_URL}/swaps/sessions/{session_id}"
+        template = jinja_env.get_template("swap_accepted.html")
+        html_content = template.render(
+            username=username,
+            peer_name=peer_name,
+            scheduled_time=scheduled_time,
+            mode=mode,
+            session_url=session_url,
+            location=location,
+        )
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Skill Swap Confirmed with @{peer_name}!",
+            html_content=html_content,
+        )
+
+    async def send_session_reminder_email(
+        self,
+        to_email: str,
+        username: str,
+        peer_name: str,
+        scheduled_time: str,
+        mode: str,
+        session_id: str,
+        location: str | None = None,
+    ) -> bool:
+        """Send reminder notification before a scheduled swap session starts."""
+        session_url = f"{settings.FRONTEND_URL}/swaps/sessions/{session_id}"
+        template = jinja_env.get_template("swap_reminder.html")
+        html_content = template.render(
+            username=username,
+            peer_name=peer_name,
+            scheduled_time=scheduled_time,
+            mode=mode,
+            session_url=session_url,
+            location=location,
+        )
+        return await self._send_email(
+            to_email=to_email,
+            subject=f"Reminder: Upcoming Skill Swap with @{peer_name}",
+            html_content=html_content,
+        )
+
 
 email_service = EmailService()

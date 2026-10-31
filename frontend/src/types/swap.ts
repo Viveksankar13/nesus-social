@@ -173,3 +173,124 @@ export interface SwapMatchResponse {
   score_breakdown: Record<string, number>;
 }
 
+// ── Stage 3: Requests & Proposals ────────────────────────────────────
+export interface ProposedSlot {
+  start_time_utc: string;
+  end_time_utc: string;
+}
+
+export interface SwapRequest {
+  id: string;
+  listing_id?: string | null;
+  requester: PublicUserMinimal;
+  recipient: PublicUserMinimal;
+  offered_skill: Skill;
+  wanted_skill: Skill;
+  mode: "video" | "in_person";
+  message: string;
+  proposed_slots: ProposedSlot[];
+  status: "pending" | "accepted" | "declined" | "countered" | "cancelled" | "expired";
+  counter_note?: string | null;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SwapRequestCreate {
+  listing_id?: string | null;
+  recipient_id: string;
+  offered_skill_id: string;
+  wanted_skill_id: string;
+  mode: "video" | "in_person";
+  message: string;
+  proposed_slots: ProposedSlot[];
+  public_place_name?: string | null;
+  public_place_address?: string | null;
+}
+
+export interface SwapRequestCounter {
+  message: string;
+  proposed_slots: ProposedSlot[];
+  mode?: "video" | "in_person" | null;
+  public_place_name?: string | null;
+  public_place_address?: string | null;
+}
+
+export interface SwapRequestAccept {
+  selected_slot_index: number;
+  public_place_name?: string | null;
+  public_place_address?: string | null;
+}
+
+export interface SwapRequestListResponse {
+  incoming: SwapRequest[];
+  outgoing: SwapRequest[];
+}
+
+// ── Stage 3: Sessions & Halves ───────────────────────────────────────
+export interface SwapSessionHalf {
+  id: string;
+  session_id: string;
+  half_number: number;
+  mentor: PublicUserMinimal;
+  learner: PublicUserMinimal;
+  skill: Skill;
+  start_time_utc: string;
+  end_time_utc: string;
+  status: string;
+  ics_uid: string;
+}
+
+export interface SwapSession {
+  id: string;
+  request_id: string;
+  user_a: PublicUserMinimal;
+  user_b: PublicUserMinimal;
+  status: "scheduled" | "active" | "completed" | "disputed" | "cancelled";
+  mode: "video" | "in_person";
+  public_place_name?: string | null;
+  public_place_address?: string | null;
+  jitsi_room_token?: string | null;
+  jitsi_room_url?: string | null;
+  user_a_confirmed: boolean;
+  user_b_confirmed: boolean;
+  dispute_reason?: string | null;
+  halves: SwapSessionHalf[];
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Stage 3: Logistics Chat & Reviews ────────────────────────────────
+export interface SwapMessage {
+  id: string;
+  session_id: string;
+  sender: PublicUserMinimal;
+  content: string;
+  created_at: string;
+}
+
+export interface SwapReview {
+  id: string;
+  session_id: string;
+  reviewer: PublicUserMinimal;
+  reviewee: PublicUserMinimal;
+  rating?: number | null;
+  tags: string[];
+  public_comment?: string | null;
+  is_revealed: boolean;
+  revealed_at?: string | null;
+  created_at: string;
+}
+
+export interface SwapReviewCreate {
+  rating: number;
+  tags: string[];
+  public_comment?: string | null;
+  private_feedback?: string | null;
+}
+
+export interface SwapDisputeCreate {
+  reason: string;
+}
+
+

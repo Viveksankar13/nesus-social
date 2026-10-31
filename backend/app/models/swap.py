@@ -228,6 +228,11 @@ class SwapRequest(Base, UUIDMixin, TimestampMixin):
         DateTime(timezone=True), index=True, nullable=False
     )
 
+    requester: Mapped["User"] = relationship("User", foreign_keys=[requester_id])
+    recipient: Mapped["User"] = relationship("User", foreign_keys=[recipient_id])
+    offered_skill: Mapped["Skill"] = relationship("Skill", foreign_keys=[offered_skill_id])
+    wanted_skill: Mapped["Skill"] = relationship("Skill", foreign_keys=[wanted_skill_id])
+
 
 class SwapSession(Base, UUIDMixin, TimestampMixin):
     """
@@ -263,6 +268,10 @@ class SwapSession(Base, UUIDMixin, TimestampMixin):
     disputed_by_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+
+    user_a: Mapped["User"] = relationship("User", foreign_keys=[user_a_id])
+    user_b: Mapped["User"] = relationship("User", foreign_keys=[user_b_id])
+    request: Mapped["SwapRequest"] = relationship("SwapRequest", foreign_keys=[request_id])
 
     halves: Mapped[list["SwapSessionHalf"]] = relationship(
         "SwapSessionHalf", back_populates="session", cascade="all, delete-orphan"
@@ -306,6 +315,9 @@ class SwapSessionHalf(Base, UUIDMixin):
     )
 
     session: Mapped["SwapSession"] = relationship("SwapSession", back_populates="halves")
+    mentor: Mapped["User"] = relationship("User", foreign_keys=[mentor_id])
+    learner: Mapped["User"] = relationship("User", foreign_keys=[learner_id])
+    skill: Mapped["Skill"] = relationship("Skill", foreign_keys=[skill_id])
 
 
 class SwapMessage(Base, UUIDMixin):
@@ -328,6 +340,7 @@ class SwapMessage(Base, UUIDMixin):
     )
 
     session: Mapped["SwapSession"] = relationship("SwapSession", back_populates="messages")
+    sender: Mapped["User"] = relationship("User", foreign_keys=[sender_id])
 
 
 class SwapReview(Base, UUIDMixin):
@@ -361,6 +374,9 @@ class SwapReview(Base, UUIDMixin):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
+
+    reviewer: Mapped["User"] = relationship("User", foreign_keys=[reviewer_id])
+    reviewee: Mapped["User"] = relationship("User", foreign_keys=[reviewee_id])
 
 
 class UserBlock(Base, UUIDMixin):
