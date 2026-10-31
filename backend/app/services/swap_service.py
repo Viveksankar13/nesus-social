@@ -1114,6 +1114,18 @@ class SwapService:
                 detail="You cannot propose a swap to yourself.",
             )
 
+        # Anti-spam: Check duplicate pending request to the same recipient
+        dup_stmt = select(SwapRequest.id).where(
+            SwapRequest.requester_id == requester_id,
+            SwapRequest.recipient_id == data.recipient_id,
+            SwapRequest.status == "pending",
+        )
+        if (await db.execute(dup_stmt)).scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A pending swap request already exists with this user.",
+            )
+
         # Non-monetary check
         assert_no_money_policy(data.message)
 
