@@ -272,3 +272,47 @@ curl -I https://nexus-social-backend.onrender.com/health
 
 ### C. Direct SSE Streaming Connection
 - Next.js Edge rewrites buffer Server-Sent Events. The frontend automatically establishes SSE connections directly to `NEXT_PUBLIC_BACKEND_URL/api/v1/notifications/stream`. Ensure `NEXT_PUBLIC_BACKEND_URL` is set to the full Render backend URL and that Render's `ALLOWED_ORIGINS` includes the Vercel domain.
+
+---
+
+## 10. Hyper-Local Skill Swap Economy — Production Operations
+
+### 10.1 Database Migration & Index Verification
+The Skill Swap economy adds 17 tables via Alembic migration `0004_add_skill_swap_economy.py`.
+In Render, the `preDeployCommand` automatically runs:
+```bash
+alembic upgrade head
+```
+This migration is strictly additive. To verify the schema in production:
+```bash
+# Verify all 17 swap tables and indexes exist
+SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name LIKE 'swap_%' OR table_name LIKE 'user_swap%';
+```
+
+### 10.2 Render Cron Jobs Configuration
+Render Cron Jobs periodically hit internal maintenance endpoints secured via constant-time `X-Cron-Secret` header comparison:
+
+| Job Name | Schedule | Target Endpoint | Description |
+|---|---|---|---|
+| `swap-reminders-job` | `*/15 * * * *` | `POST /api/v1/internal/jobs/send-session-reminders` | Sends 24-hour and 15-minute email and in-app session alerts |
+| `swap-auto-expiry-job` | `0 * * * *` | `POST /api/v1/internal/jobs/auto-expire-requests` | Expires unresponded swap proposals after 72 hours |
+| `swap-reviews-and-trust-job` | `0 2 * * *` | `POST /api/v1/internal/jobs/reveal-swap-reviews` | Auto-reveals single-submitted reviews after 7 days |
+| `swap-reviews-and-trust-job` | `0 3 * * *` | `POST /api/v1/internal/jobs/recalculate-trust-scores` | Bayesian-smoothed trust score recalculation & badge updates |
+
+### 10.3 Skill Swap Environment Variables Reference
+
+| Variable | Required | Default | Purpose |
+|---|---|---|---|
+| `CRON_SECRET` | **Yes** | Min 32 chars | Shared secret for internal cron job authentication |
+| `JITSI_BASE_URL` | No | `https://meet.jit.si` | Jitsi Meet instance base URL for video rooms |
+| `SWAP_SESSION_MINUTES` | No | `30` | Duration of each swap half (standard: 30 minutes) |
+| `SWAP_MAX_ACTIVE_LISTINGS`| No | `5` | Maximum active listings per user |
+| `SWAP_MAX_PENDING_REQUESTS`| No | `5` | Maximum concurrent outgoing pending requests |
+| `MATCH_WEIGHT_SKILL` | No | `0.35` | Matching engine weight for skill overlap |
+| `MATCH_WEIGHT_PROXIMITY` | No | `0.25` | Matching engine weight for geographic distance |
+| `MATCH_WEIGHT_AVAILABILITY`| No | `0.20` | Matching engine weight for calendar overlap |
+| `MATCH_WEIGHT_TRUST` | No | `0.15` | Matching engine weight for reputation score |
+| `MATCH_WEIGHT_FRESHNESS` | No | `0.05` | Matching engine weight for recent activity |
+| `NEXT_PUBLIC_MAP_TILE_URL`| No | OpenStreetMap tiles | Leaflet map tile server URL |
+| `NEXT_PUBLIC_MAP_ATTRIBUTION`| No | OpenStreetMap attribution | Leaflet map tile copyright string |
+

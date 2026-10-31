@@ -70,6 +70,49 @@ services:
       # ── Optional Monitoring ──
       - key: SENTRY_DSN
         sync: false
+      # ── Hyper-Local Skill Swap Economy ──
+      - key: CRON_SECRET
+        generateValue: true
+      - key: JITSI_BASE_URL
+        value: "https://meet.jit.si"
+      - key: SWAP_SESSION_MINUTES
+        value: "30"
+      - key: SWAP_MAX_ACTIVE_LISTINGS
+        value: "5"
+      - key: SWAP_MAX_PENDING_REQUESTS
+        value: "5"
+      - key: MATCH_WEIGHT_SKILL
+        value: "0.35"
+      - key: MATCH_WEIGHT_PROXIMITY
+        value: "0.25"
+      - key: MATCH_WEIGHT_AVAILABILITY
+        value: "0.20"
+      - key: MATCH_WEIGHT_TRUST
+        value: "0.15"
+      - key: MATCH_WEIGHT_FRESHNESS
+        value: "0.05"
+
+  # ── Render Cron Jobs: Skill Swap Maintenance ──
+  - type: cron
+    name: swap-reminders-job
+    plan: free
+    region: oregon
+    schedule: "*/15 * * * *"
+    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/send-session-reminders || true"
+
+  - type: cron
+    name: swap-auto-expiry-job
+    plan: free
+    region: oregon
+    schedule: "0 * * * *"
+    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/auto-expire-requests || true"
+
+  - type: cron
+    name: swap-reviews-and-trust-job
+    plan: free
+    region: oregon
+    schedule: "0 2 * * *"
+    command: "curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/reveal-swap-reviews && curl -fsS -X POST -H 'X-Cron-Secret: '$CRON_SECRET http://nexus-social-backend:8000/api/v1/internal/jobs/recalculate-trust-scores || true"
 
 databases:
   - name: nexus-social-db
