@@ -32,8 +32,39 @@ export function setAccessToken(token: string | null): void {
   inMemoryAccessToken = token;
 }
 
-interface RequestOptions extends RequestInit {
+export type QueryParamValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Array<string | number | boolean>;
+
+export type QueryParams = Record<string, QueryParamValue>;
+
+export interface RequestOptions extends RequestInit {
   _retry?: boolean;
+  params?: QueryParams;
+}
+
+export function buildUrlWithParams(url: string, params?: QueryParams): string {
+  if (!params) return url;
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item !== undefined && item !== null) {
+          searchParams.append(key, String(item));
+        }
+      }
+    } else {
+      searchParams.append(key, String(value));
+    }
+  }
+  const queryString = searchParams.toString();
+  if (!queryString) return url;
+  return url.includes("?") ? `${url}&${queryString}` : `${url}?${queryString}`;
 }
 
 /**
@@ -83,9 +114,13 @@ export async function apiFetch<T = unknown>(
   options: RequestOptions = {}
 ): Promise<T> {
   const normalizedUrl = url.startsWith("/") ? url : `/${url}`;
-  const fullUrl = normalizedUrl.startsWith("/api")
+  let fullUrl = normalizedUrl.startsWith("/api")
     ? normalizedUrl
     : `/api/v1${normalizedUrl}`;
+
+  if (options.params) {
+    fullUrl = buildUrlWithParams(fullUrl, options.params);
+  }
 
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
@@ -97,8 +132,11 @@ export async function apiFetch<T = unknown>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
+  const fetchInit = { ...options };
+  delete fetchInit.params;
+  delete fetchInit._retry;
   const response = await fetch(fullUrl, {
-    ...options,
+    ...fetchInit,
     headers,
     credentials: "include",
   });
@@ -150,9 +188,44 @@ export async function apiFetch<T = unknown>(
   return responseData as T;
 }
 
+function resolveOptions(
+  paramsOrOptions?: QueryParams | RequestOptions,
+  maybeOptions?: RequestOptions
+): RequestOptions {
+  if (!paramsOrOptions) {
+    return maybeOptions || {};
+  }
+
+  const hasRequestInitKeys =
+    "headers" in paramsOrOptions ||
+    "signal" in paramsOrOptions ||
+    "params" in paramsOrOptions ||
+    "cache" in paramsOrOptions ||
+    "credentials" in paramsOrOptions ||
+    "mode" in paramsOrOptions ||
+    "body" in paramsOrOptions ||
+    "_retry" in paramsOrOptions;
+
+  if (hasRequestInitKeys) {
+    return { ...(paramsOrOptions as RequestOptions), ...maybeOptions };
+  }
+
+  return {
+    ...maybeOptions,
+    params: paramsOrOptions as QueryParams,
+  };
+}
+
 export const apiClient = {
-  get: <T>(url: string, options?: RequestOptions) =>
-    apiFetch<T>(url, { ...options, method: "GET" }),
+  get: <T>(
+    url: string,
+    paramsOrOptions?: QueryParams | RequestOptions,
+    options?: RequestOptions
+  ) =>
+    apiFetch<T>(url, {
+      ...resolveOptions(paramsOrOptions, options),
+      method: "GET",
+    }),
 
   post: <T>(url: string, body?: unknown, options?: RequestOptions) =>
     apiFetch<T>(url, {
@@ -175,6 +248,13 @@ export const apiClient = {
       body: body instanceof FormData ? body : JSON.stringify(body),
     }),
 
-  delete: <T>(url: string, options?: RequestOptions) =>
-    apiFetch<T>(url, { ...options, method: "DELETE" }),
+  delete: <T>(
+    url: string,
+    paramsOrOptions?: QueryParams | RequestOptions,
+    options?: RequestOptions
+  ) =>
+    apiFetch<T>(url, {
+      ...resolveOptions(paramsOrOptions, options),
+      method: "DELETE",
+    }),
 };

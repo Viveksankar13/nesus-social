@@ -157,8 +157,8 @@ class AdminService:
         page_size = max(1, min(page_size, 100))
 
         query = select(User)
-        if search:
-            pattern = f"%{search}%"
+        if search and search.strip():
+            pattern = f"%{search.strip()}%"
             query = query.where(
                 or_(
                     User.username.ilike(pattern),
@@ -167,7 +167,7 @@ class AdminService:
                     User.usn.ilike(pattern),
                 )
             )
-        if role:
+        if role and role != "all":
             query = query.where(User.role == role)
         if is_suspended is not None:
             query = query.where(User.is_suspended == is_suspended)
@@ -374,8 +374,8 @@ class AdminService:
         page_size = max(1, min(page_size, 100))
 
         query = select(Post).options(selectinload(Post.author))
-        if search:
-            query = query.where(Post.content.ilike(f"%{search}%"))
+        if search and search.strip():
+            query = query.where(Post.content.ilike(f"%{search.strip()}%"))
         if is_hidden is not None:
             query = query.where(Post.is_hidden == is_hidden)
         if author_id:
@@ -563,8 +563,8 @@ class AdminService:
         page_size = max(1, min(page_size, 100))
 
         query = select(Comment).options(selectinload(Comment.author))
-        if search:
-            query = query.where(Comment.content.ilike(f"%{search}%"))
+        if search and search.strip():
+            query = query.where(Comment.content.ilike(f"%{search.strip()}%"))
         if is_hidden is not None:
             query = query.where(Comment.is_hidden == is_hidden)
         if post_id:
@@ -733,9 +733,9 @@ class AdminService:
         page_size = max(1, min(page_size, 100))
 
         query = select(ModerationFlag)
-        if category:
+        if category and category != "all":
             query = query.where(ModerationFlag.category == category)
-        if severity:
+        if severity and severity != "all":
             query = query.where(ModerationFlag.severity == severity)
         if reviewed is not None:
             query = query.where(ModerationFlag.reviewed == reviewed)
@@ -879,9 +879,9 @@ class AdminService:
         page_size = max(1, min(page_size, 100))
 
         query = select(ActivityLog).options(selectinload(ActivityLog.admin))
-        if action:
+        if action and action != "all":
             query = query.where(ActivityLog.action == action)
-        if resource_type:
+        if resource_type and resource_type != "all":
             query = query.where(ActivityLog.resource_type == resource_type)
 
         total_stmt = select(func.count()).select_from(query.subquery())

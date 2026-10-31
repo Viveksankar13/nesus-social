@@ -298,3 +298,119 @@ async def test_admin_activity_audit_logs(
     assert len(db_logs) >= 1
     actions = [log.action for log in db_logs]
     assert any("user" in a or "post" in a or "moderation" in a for a in actions)
+
+
+# ── ADMIN-07: Filter Verification (Suspension, Role, Content, Status) ────────
+
+
+@pytest.mark.asyncio
+async def test_admin_filtering_capabilities(
+    client: AsyncClient,
+    create_user: Callable[..., Any],
+) -> None:
+    """Verify admin query filtering for suspended users, roles, hidden content, and status."""
+    admin, admin_headers = await create_user(
+        username="filter_admin", email="filter_admin@example.com", role="admin"
+    )
+    user_active, user_active_headers = await create_user(
+        username="filter_active", email="active@example.com", role="user"
+    )
+    user_suspended, _ = await create_user(
+        username="filter_suspended", email="suspended@example.com", role="user"
+    )
+
+    # 1. Suspend the second user
+    suspend_res = await client.patch(
+        f"/api/v1/admin/users/{user_suspended.id}/suspend",
+        json={"is_suspended": True, "reason": "Testing suspension filter"},
+        headers=admin_headers,
+    )
+    assert suspend_res.status_code == 200
+
+    # 2. Filter users by is_suspended=true
+    res_susp = await client.get("/api/v1/admin/users?is_suspended=true", headers=admin_headers)
+    assert res_susp.status_code == 200
+    susp_data = res_susp.json()
+    susp_ids = [u["id"] for u in susp_data["items"]]
+    assert str(user_suspended.id) in susp_ids
+    assert str(user_active.id) not in susp_ids
+    assert str(admin.id) not in susp_ids
+    assert all(u["is_suspended"] is True for u in susp_data["items"])
+
+    # 3. Filter users by is_suspended=false
+    res_act = await client.get("/api/v1/admin/users?is_suspended=false", headers=admin_headers)
+    assert res_act.status_code == 200
+    act_data = res_act.json()
+    act_ids = [u["id"] for u in act_data["items"]]
+    assert str(user_active.id) in act_ids
+    assert str(user_suspended.id) not in act_ids
+    assert all(u["is_suspended"] is False for u in act_data["items"])
+
+    # 4. Filter users by role=admin
+    res_role_admin = await client.get("/api/v1/admin/users?role=admin", headers=admin_headers)
+    assert res_role_admin.status_code == 200
+    role_admin_data = res_role_admin.json()
+    assert all(u["role"] == "admin" for u in role_admin_data["items"])
+    assert str(admin.id) in [u["id"] for u in role_admin_data["items"]]
+    assert str(user_active.id) not in [u["id"] for u in role_admin_data["items"]]
+
+    # 5. Filter users by role=user
+    res_role_user = await client.get("/api/v1/admin/users?role=user", headers=admin_headers)
+    assert res_role_user.status_code == 200
+    role_user_data = res_role_user.json()
+    assert all(u["role"] == "user" for u in role_user_data["items"])
+    assert str(user_active.id) in [u["id"] for u in role_user_data["items"]]
+
+    # 6. Search users by prefix
+    res_search = await client.get("/api/v1/admin/users?search=filter_active", headers=admin_headers)
+    assert res_search.status_code == 200
+    assert len(res_search.json()["items"]) == 1
+    assert res_search.json()["items"][0]["username"] == "filter_active"
+
+    # 7. Create posts and test is_hidden filtering
+    p1 = await client.post(
+        "/api/v1/posts",
+        json={"content": "Public post for admin filter test"},
+        headers=user_active_headers,
+    )
+    p2 = await client.post(
+        "/api/v1/posts",
+        json={"content": "Hidden post for admin filter test"},
+        headers=user_active_headers,
+    )
+    p1_id = p1.json()["id"]
+    p2_id = p2.json()["id"]
+
+    # Hide post 2
+    await client.patch(
+        f"/api/v1/admin/posts/{p2_id}/hide",
+        json={"is_hidden": True},
+        headers=admin_headers,
+    )
+
+    # Filter posts is_hidden=true
+    res_posts_hidden = await client.get("/api/v1/admin/posts?is_hidden=true", headers=admin_headers)
+    assert res_posts_hidden.status_code == 200
+    hidden_post_ids = [p["id"] for p in res_posts_hidden.json()["items"]]
+    assert p2_id in hidden_post_ids
+    assert p1_id not in hidden_post_ids
+    assert all(p["is_hidden"] is True for p in res_posts_hidden.json()["items"])
+
+    # Filter posts is_hidden=false
+    res_posts_public = await client.get("/api/v1/admin/posts?is_hidden=false", headers=admin_headers)
+    assert res_posts_public.status_code == 200
+    public_post_ids = [p["id"] for p in res_posts_public.json()["items"]]
+    assert p1_id in public_post_ids
+    assert p2_id not in public_post_ids
+    assert all(p["is_hidden"] is False for p in res_posts_public.json()["items"])
+
+    # 8. Filter activity logs by action
+    res_logs = await client.get(
+        "/api/v1/admin/activity-logs?action=suspend_user",
+        headers=admin_headers,
+    )
+    assert res_logs.status_code == 200
+    logs_data = res_logs.json()
+    assert logs_data["total"] >= 1
+    assert all(item["action"] == "suspend_user" for item in logs_data["items"])
+
