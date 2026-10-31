@@ -75,13 +75,13 @@
 | **SWAP-03** | Timezone-aware recurring weekly availability windows (UTC) | S1 | ✅ Done | `availability_windows` table, `test_profile_lifecycle_and_privacy_guarantee` |
 | **SWAP-04** | Privacy-by-design coarse location (~1 km) & distance buckets | S1 | ✅ Done | `UserSwapProfilePublicResponse`, test `test_profile_lifecycle_and_privacy_guarantee` asserting zero lat/lng leakage |
 | **SWAP-05** | 4-step onboarding wizard with 18+ confirmation | S1 | ✅ Done | `/swaps/onboarding`, Playwright test `swap-onboarding.spec.ts` |
-| **SWAP-06** | Swap listing creation with limits (`SWAP_MAX_ACTIVE_LISTINGS=5`) | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-07** | Automated AI moderation blocking payment & commercial solicitation | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-08** | Feed integration: share swap listing as social post with CTA | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-09** | Interactive discovery map (Leaflet) with coarse area bubbles | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-10** | Multi-filter discovery (category, mode, distance, day, level) | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-11** | Transparent 5-criteria weighted matching engine | S2 | 🔲 Planned | Stage 2 Deliverable |
-| **SWAP-12** | Cached Gemini "Why you match" one-sentence explanation | S2 | 🔲 Planned | Stage 2 Deliverable |
+| **SWAP-06** | Swap listing creation with limits (`SWAP_MAX_ACTIVE_LISTINGS=5`) | S2 | ✅ Done | `POST /api/v1/swaps/listings`, test `test_swap_listing_max_limit_enforced` |
+| **SWAP-07** | Automated AI moderation blocking payment & commercial solicitation | S2 | ✅ Done | `SwapService.create_listing`, test `test_swap_listing_no_money_policy` |
+| **SWAP-08** | Feed integration: share swap listing as social post with CTA | S2 | ✅ Done | `POST /api/v1/swaps/listings/{id}/share`, test `test_swap_listing_share_to_feed`, `SwapPostCard` |
+| **SWAP-09** | Interactive discovery map (Leaflet) with coarse area bubbles | S2 | ✅ Done | `SwapMap` component, OpenStreetMap tiles, Playwright test `swap-discovery.spec.ts` |
+| **SWAP-10** | Multi-filter discovery (category, mode, distance, day, level) | S2 | ✅ Done | `GET /api/v1/swaps/listings`, `SwapService.search_listings`, test `test_swap_discovery_spatial_and_blocking` |
+| **SWAP-11** | Transparent 5-criteria weighted matching engine | S2 | ✅ Done | `SwapMatchingService.calculate_match_score`, test `test_matching_engine_and_cached_explanation` |
+| **SWAP-12** | Cached Gemini "Why you match" one-sentence explanation | S2 | ✅ Done | `GET /api/v1/swaps/matches`, `match_explanations` SHA-256 table cache, test `test_matching_engine_and_cached_explanation` |
 | **SWAP-13** | Swap request state machine with counter-proposals & 72h expiry | S3 | 🔲 Planned | Stage 3 Deliverable |
 | **SWAP-14** | Fixed 30-min halves barter with slot overlap prevention | S3 | 🔲 Planned | Stage 3 Deliverable |
 | **SWAP-15** | Auto-generated unguessable Jitsi Meet video room tokens | S3 | 🔲 Planned | Stage 3 Deliverable |

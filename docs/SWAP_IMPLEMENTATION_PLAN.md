@@ -225,7 +225,7 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 
 ## 6. Stage-by-Stage Implementation Plan (S0–S5)
 
-### Stage 0: Audit & Planning (CURRENT STAGE)
+### Stage 0: Audit & Planning (COMPLETED)
 - [x] Comprehensive codebase audit (Base stages 0–12 verified, user commits `d388399` & `5ed625f` verified).
 - [x] Health checks: pytest (50/50 passing), TypeScript clean, ESLint clean.
 - [x] Write living plan `docs/SWAP_IMPLEMENTATION_PLAN.md`.
@@ -273,60 +273,60 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 
 ---
 
-### Stage 2: Listings & Discovery Vertical Slice
+### Stage 2: Listings & Discovery Vertical Slice (COMPLETED)
 *Goal: Allow users to create AI-assisted swap listings, browse listings via an interactive Leaflet map and list view with distance buckets, and view personalized "Matches for You" with Gemini explanations.*
 
 #### Sub-Milestone S2a: Listings Backend & Feed Integration
-- [ ] Extend migration with `swap_listings` table.
-- [ ] Implement listing CRUD in `swap_service.py` enforcing active limit (`SWAP_MAX_ACTIVE_LISTINGS = 5`).
-- [ ] Integrate background AI moderation on listing titles and descriptions (flagging payment solicitation).
-- [ ] Add ability to share a listing into the main Nexus Social feed as a special "Swap Offer" post card.
-- [ ] Endpoints:
+- [x] Extend migration with `swap_listings` table.
+- [x] Implement listing CRUD in `swap_service.py` enforcing active limit (`SWAP_MAX_ACTIVE_LISTINGS = 5`).
+- [x] Integrate background AI moderation on listing titles and descriptions (flagging payment solicitation).
+- [x] Add ability to share a listing into the main Nexus Social feed as a special "Swap Offer" post card.
+- [x] Endpoints:
   - `POST /api/v1/swaps/listings`: Create new listing with AI moderation.
   - `GET /api/v1/swaps/listings/me`: View and manage own listings.
   - `GET /api/v1/swaps/listings/{id}`: View listing details.
   - `PUT /api/v1/swaps/listings/{id}`: Update/pause/close own listing.
   - `POST /api/v1/swaps/listings/{id}/share`: Share to main social feed.
-- [ ] Tests for listing lifecycle, limits, and moderation flags.
-- [ ] **Commit:** `feat(swap): S2a - listing CRUD, limits, moderation, and feed sharing`
+- [x] Tests for listing lifecycle, limits, and moderation flags (`backend/tests/test_swap_listings.py`).
+- [x] **Commit:** `feat(swap): S2a-c - listing CRUD, limits, moderation, feed sharing, discovery and matching engine` (`a06a81a`)
 
 #### Sub-Milestone S2b: Discovery Query Engine & Distance Buckets
-- [ ] Implement discovery search query in `swap_service.py`:
+- [x] Implement discovery search query in `swap_service.py`:
   - Bounding box prefilter + Haversine distance formula.
   - Filters: skill category, mode (in-person/video), availability day, distance bucket, level, and language.
   - Sorting: nearest, newest, highest trust, best match.
   - Cursor-based pagination.
-- [ ] Bi-directional blocking exclusion (never return listings from blocked users or to users who blocked the viewer).
-- [ ] Unit tests verifying that API output contains **zero exact coordinates** and only valid distance buckets.
-- [ ] **Commit:** `feat(swap): S2b - discovery query engine, spatial filters, and distance bucketing`
+- [x] Bi-directional blocking exclusion (never return listings from blocked users or to users who blocked the viewer).
+- [x] Unit tests verifying that API output contains **zero exact coordinates** and only valid distance buckets.
+- [x] **Commit:** `feat(swap): S2a-c - listing CRUD, limits, moderation, feed sharing, discovery and matching engine` (`a06a81a`)
 
 #### Sub-Milestone S2c: Matching Engine & Gemini Match Explanations
-- [ ] Implement `swap_matching.py`:
+- [x] Implement `swap_matching.py`:
   - Weighted composite matching score:
-    1. Mutual skill match ($W_1 = 0.35$): Exact match = 1.0; category/related match = 0.5.
+    1. Mutual skill match ($W_1 = 0.35$): Exact match = 1.0; category/related match = 0.6.
     2. Proximity ($W_2 = 0.25$): In-range or remote-compatible.
     3. Availability overlap in next 14 days ($W_3 = 0.20$): Shared 30-min slots.
     4. Trust score ($W_4 = 0.15$): Higher trust boosts rank.
-    5. Freshness / activity ($W_5 = 0.05$): Active in last 7 days; penalty for backlog $> 5$.
-- [ ] Implement Gemini match explanation prompt in `backend/app/services/ai/prompts.py`.
-- [ ] Implement explanation caching in `match_explanations` table based on SHA-256 hash of match inputs.
-- [ ] Endpoint `GET /api/v1/swaps/matches`: Returns top recommendations with cached "Why you match" one-liner.
-- [ ] **Commit:** `feat(swap): S2c - weighted matching engine and cached Gemini match explanations`
+    5. Freshness / activity ($W_5 = 0.05$): Active in last 7 days; recency decay.
+- [x] Implement Gemini match explanation prompt in `backend/app/services/ai/prompts.py`.
+- [x] Implement explanation caching in `match_explanations` table based on SHA-256 hash of match inputs.
+- [x] Endpoint `GET /api/v1/swaps/matches`: Returns top recommendations with cached "Why you match" one-liner.
+- [x] **Commit:** `feat(swap): S2a-c - listing CRUD, limits, moderation, feed sharing, discovery and matching engine` (`a06a81a`)
 
 #### Sub-Milestone S2d: Frontend Discovery & Map UI
-- [ ] Install `leaflet`, `react-leaflet`, `@types/leaflet` with OpenStreetMap tile layer.
-- [ ] Build `/swaps` Discovery page:
-  - Header with search bar and filter popovers (Mode, Category, Distance, Day).
-  - Split / togglable view: List view on left, interactive Leaflet Map on right.
-  - Map renders **coarse area circles/clusters** (500m–1km radius bubbles), never individual exact pins.
-- [ ] Build `/swaps/new` listing creation form with Gemini "AI Draft Helper".
-- [ ] Build `/swaps/matches` page showcasing recommended swap partners with "Why you match" badge.
-- [ ] Build "Swap Offer" card component embedded in the main social feed with a "Propose Swap" CTA.
-- [ ] **Commit:** `feat(swap): S2d - Leaflet map discovery, listing wizard, and matches UI`
+- [x] Install `leaflet`, `react-leaflet@^4.2.1`, `@types/leaflet` with OpenStreetMap tile layer.
+- [x] Build `/swaps` Discovery page:
+  - Header with search bar and filter popovers (Mode, Category, Distance, Sort).
+  - Togglable view: List view and interactive Leaflet Map view.
+  - Map renders **coarse area circles/clusters** (700m–1.4km radius bubbles), never individual exact pins.
+- [x] Build `/swaps/new` listing creation form with Gemini "AI Draft Helper".
+- [x] Build `/swaps/matches` page showcasing recommended swap partners with "Why you match" badge.
+- [x] Build "Swap Offer" card component embedded in the main social feed with a "Propose Swap" CTA.
+- [x] **Commit:** `feat(swap): S2d - Leaflet map discovery, listing wizard, and matches UI` (`2480518`)
 
 ---
 
-### Stage 3: Swaps & Sessions Vertical Slice
+### Stage 3: Swaps & Sessions Vertical Slice (CURRENT STAGE)
 *Goal: Full end-to-end exchange lifecycle: request state machine, slot scheduling, Jitsi video room generation, real-time logistics chat, double-blind reviews, trust score calculations, and background reminder jobs.*
 
 #### Sub-Milestone S3a: Request State Machine
