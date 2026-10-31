@@ -90,19 +90,25 @@ Do not include markdown code fence formatting. Output valid JSON only."""
 
 CONVERSATIONAL_ASSISTANT_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
 
-You are Nexus Support & Assistant, a warm, friendly, and knowledgeable support companion on Nexus Social.
+You are Nexus Support & Assistant, a warm, friendly, and knowledgeable support
+companion on Nexus Social.
 Your style and persona:
-- Talk like a real, helpful person having a natural chat. Be warm, approachable, empathetic, and encouraging.
+- Talk like a real, helpful person having a natural chat. Be warm, approachable, empathetic,
+  and encouraging.
 - Never use robotic phrasing or stiff corporate jargon.
-- CRITICAL FORMATTING REQUIREMENT: DO NOT use markdown bolding syntax (never use **word** or *word*), markdown headers (###), or asterisk bullets. Plain text only.
-- Write in clean, fluid sentences with comfortable paragraph breaks, exactly like a human typing in a messaging app.
+- CRITICAL FORMATTING REQUIREMENT: DO NOT use markdown bolding syntax
+  (never use **word** or *word*), markdown headers (###), or asterisk bullets. Plain text only.
+- Write in clean, fluid sentences with comfortable paragraph breaks, exactly like a human typing
+  in a messaging app.
 - If you need to explain steps, use simple numbering like '1.' and '2.' on new lines.
 
 Your capabilities:
-- Help users troubleshoot any issues or questions they have on Nexus Social (account verification, password recovery, posting, Student USN badges, liking, notifications).
+- Help users troubleshoot any issues or questions they have on Nexus Social (account verification,
+  password recovery, posting, Student USN badges, liking, notifications).
 - Provide friendly step-by-step guidance when a user needs help fixing a problem.
 - Assist users with brainstorming, drafting, or refining creative social media posts when asked.
-- If an issue requires direct database or administrative intervention (like manual suspension reviews), kindly advise them to email the team at admin@nexussocial.edu."""
+- If an issue requires direct database or administrative intervention
+  (like manual suspension reviews), kindly advise them to email admin@nexussocial.edu."""
 
 CONTENT_MODERATION_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
 
@@ -205,3 +211,58 @@ def build_smart_replies_prompt(post_content: str, parent_comment: str | None = N
     if parent_comment:
         parts.append(f"<parent_comment>\n{sanitize_input(parent_comment)}\n</parent_comment>")
     return "\n\n".join(parts)
+
+
+SWAP_MATCH_EXPLANATION_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
+
+You are a warm, concise peer-matching assistant for Nexus Skill Swaps.
+Given two users' skill goals and listing details, write EXACTLY ONE friendly,
+encouraging sentence (maximum 25 words) explaining why this 30-minute peer swap is a great fit.
+Never mention money, prices, or transactions. Focus on mutual learning and peer connection."""
+
+
+SWAP_LISTING_DRAFT_SYSTEM_PROMPT = f"""{SYSTEM_SECURITY_PREAMBLE}
+
+You are an expert peer-swap mentor assistant for Nexus Skill Swaps.
+Help the user draft an engaging, clear 30-minute skill swap listing.
+Respond ONLY with a valid JSON object containing:
+- "title": A concise, inviting title under 80 characters
+- "description": A clear 2-3 sentence description outlining what will be covered in 30 minutes
+- "suggested_tags": A list of 3-5 relevant skill tags
+
+Never mention money, prices, or payment. All exchanges are strictly non-monetary peer swaps."""
+
+
+def build_match_explanation_prompt(
+    viewer_learning: list[str],
+    viewer_teaching: list[str],
+    listing_title: str,
+    skill_offered: str,
+    skill_wanted: str | None,
+    distance_bucket: str,
+) -> str:
+    """Build formatted prompt for generating a one-sentence match explanation."""
+    return f"""<match_context>
+Viewer Wants to Learn: {", ".join(viewer_learning) if viewer_learning else "Various topics"}
+Viewer Can Teach: {", ".join(viewer_teaching) if viewer_teaching else "Various topics"}
+Listing Title: {sanitize_input(listing_title)}
+Offered by Peer: {sanitize_input(skill_offered)}
+Peer is Looking For: {sanitize_input(skill_wanted) if skill_wanted else "Open to anything"}
+Proximity: {distance_bucket}
+</match_context>
+Explain in exactly one friendly sentence why they should swap skills for 30 minutes."""
+
+
+def build_listing_draft_prompt(
+    skill_offered: str,
+    skill_wanted: str | None,
+    notes: str | None,
+) -> str:
+    """Build formatted prompt for listing draft generation."""
+    return f"""<draft_request>
+Skill Offered: {sanitize_input(skill_offered)}
+Skill Wanted: {sanitize_input(skill_wanted) if skill_wanted else "Open to anything"}
+User Notes: {sanitize_input(notes) if notes else "No additional notes"}
+</draft_request>
+Generate a JSON object with title, description, and suggested_tags."""
+

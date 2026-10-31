@@ -167,7 +167,9 @@ class AuthService:
         session.add(new_token)
         await session.commit()
 
-        await email_service.send_verification_email(user.email, user.username, raw_token, usn=user.usn)
+        await email_service.send_verification_email(
+            user.email, user.username, raw_token, usn=user.usn
+        )
         return {"message": generic_msg}
 
     async def login(
@@ -360,7 +362,10 @@ class AuthService:
         user = res.scalar_one_or_none()
 
         generic_response = {
-            "message": "If an account matching that identifier exists, a password reset link has been sent."
+            "message": (
+                "If an account matching that identifier exists, "
+                "a password reset link has been sent."
+            )
         }
 
         if not user or user.is_suspended:

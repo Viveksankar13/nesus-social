@@ -12,7 +12,10 @@ SQLAlchemy 2.0 models representing the Hyper-Local Skill Swap Economy:
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 from sqlalchemy import (
     Boolean,
@@ -183,6 +186,7 @@ class SwapListing(Base, UUIDMixin, TimestampMixin):
 
     skill_offered: Mapped["Skill"] = relationship("Skill", foreign_keys=[skill_offered_id])
     skill_wanted: Mapped["Skill | None"] = relationship("Skill", foreign_keys=[skill_wanted_id])
+    user: Mapped["User"] = relationship("User")
 
 
 class SwapRequest(Base, UUIDMixin, TimestampMixin):

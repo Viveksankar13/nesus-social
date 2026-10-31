@@ -210,3 +210,84 @@ class UserSwapProfilePublicResponse(BaseModel):
     badges: list[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ── Swap Listing Schemas ─────────────────────────────────────────────
+class SwapListingCreate(BaseModel):
+    title: str = Field(..., min_length=3, max_length=150)
+    skill_offered_id: uuid.UUID
+    skill_wanted_id: uuid.UUID | None = None
+    description: str = Field(..., min_length=10, max_length=2000)
+    modes: list[str] = Field(default_factory=lambda: ["video"])
+    area_label: str | None = Field(default=None, max_length=150)
+    tags: list[str] = Field(default_factory=list)
+    expires_at: datetime | None = None
+
+
+class SwapListingUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=3, max_length=150)
+    skill_offered_id: uuid.UUID | None = None
+    skill_wanted_id: uuid.UUID | None = None
+    description: str | None = Field(default=None, min_length=10, max_length=2000)
+    modes: list[str] | None = None
+    area_label: str | None = Field(default=None, max_length=150)
+    tags: list[str] | None = None
+    status: Literal["draft", "active", "paused", "closed"] | None = None
+    expires_at: datetime | None = None
+
+
+class SwapListingResponse(BaseModel):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    user: PublicUserMinimal
+    title: str
+    skill_offered: SkillResponse
+    skill_wanted: SkillResponse | None = None
+    description: str
+    modes: list[str]
+    area_label: str | None
+    status: str
+    tags: list[str]
+    distance_bucket: str | None = Field(
+        default=None,
+        description="Distance bucket relative to current viewer ('1–3 km', 'remote', etc.)",
+    )
+    expires_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SwapListingListResponse(BaseModel):
+    items: list[SwapListingResponse]
+    total: int
+    next_cursor: str | None = None
+
+
+class SwapListingShareResponse(BaseModel):
+    listing_id: uuid.UUID
+    post_id: uuid.UUID
+    message: str
+
+
+# ── AI Listing Helper Schemas ────────────────────────────────────────
+class ListingAIDraftRequest(BaseModel):
+    skill_offered_name: str = Field(..., min_length=2, max_length=100)
+    skill_wanted_name: str | None = Field(default=None, max_length=100)
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class ListingAIDraftResponse(BaseModel):
+    title: str
+    description: str
+    suggested_tags: list[str]
+
+
+# ── Match Recommendation Schemas ─────────────────────────────────────
+class SwapMatchResponse(BaseModel):
+    listing: SwapListingResponse
+    match_score: float = Field(..., ge=0.0, le=1.0)
+    explanation: str
+    score_breakdown: dict[str, float]
+

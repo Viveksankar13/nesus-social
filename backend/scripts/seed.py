@@ -424,7 +424,7 @@ async def seed_swaps(session: AsyncSession) -> None:
             prof = UserSwapProfile(
                 id=uuid.uuid4(),
                 user_id=u.id,
-                bio=f"Passionate about peer learning and skill sharing! Open to 30-minute swaps.",
+                bio="Passionate about peer learning and skill sharing! Open to 30-minute swaps.",
                 coarse_lat=loc["lat"],
                 coarse_lng=loc["lng"],
                 area_label=loc["area"],

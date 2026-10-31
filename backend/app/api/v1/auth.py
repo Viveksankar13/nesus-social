@@ -34,7 +34,8 @@ USER_ROLE_COOKIE_NAME = "user_role"
 
 
 def set_refresh_cookie(response: Response, raw_token: str, role: str = "user") -> None:
-    """Helper to attach rotating httpOnly refresh token cookie and companion role cookie to HTTP response."""
+    """Helper to attach rotating httpOnly refresh token cookie
+    and companion role cookie to HTTP response."""
     max_age = settings.REFRESH_TOKEN_DAYS * 24 * 3600
     is_secure = settings.ENVIRONMENT == "production"
     response.set_cookie(

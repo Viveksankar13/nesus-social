@@ -51,7 +51,9 @@ class RegisterRequest(BaseModel):
             if len(clean) < 3:
                 raise ValueError("Student USN must be at least 3 characters.")
             if not re.match(r"^[A-Z0-9_-]+$", clean):
-                raise ValueError("Student USN may only contain letters, numbers, hyphens, and underscores.")
+                raise ValueError(
+                    "Student USN may only contain letters, numbers, hyphens, and underscores."
+                )
             return clean
         return None
 

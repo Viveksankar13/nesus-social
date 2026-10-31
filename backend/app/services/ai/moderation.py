@@ -19,6 +19,7 @@ from app.models.ai import AIUsageLog
 from app.models.comment import Comment
 from app.models.moderation import ModerationFlag
 from app.models.post import Post
+from app.models.swap import SwapListing
 from app.services.ai import get_ai_service
 
 logger = logging.getLogger("nexus.ai.moderation")
@@ -72,6 +73,12 @@ async def moderate_content_task(
                     elif content_type == "comment":
                         await db.execute(
                             update(Comment).where(Comment.id == content_id).values(is_hidden=True)
+                        )
+                    elif content_type == "swap_listing":
+                        await db.execute(
+                            update(SwapListing)
+                            .where(SwapListing.id == content_id)
+                            .values(status="removed")
                         )
                     logger.info(
                         "Auto-hid %s %s due to critical violation: %s (%s)",

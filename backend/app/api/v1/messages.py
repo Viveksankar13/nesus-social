@@ -65,7 +65,7 @@ async def list_conversations(
         unread_stmt = select(func.count(DirectMessage.id)).where(
             DirectMessage.conversation_id == conv.id,
             DirectMessage.sender_id != current_user.id,
-            DirectMessage.is_read == False,
+            DirectMessage.is_read.is_(False),
         )
         unread_res = await db.execute(unread_stmt)
         unread_count = unread_res.scalar_one() or 0
@@ -104,7 +104,7 @@ async def get_total_unread_messages(
     stmt = select(func.count(DirectMessage.id)).where(
         DirectMessage.conversation_id.in_(conv_ids),
         DirectMessage.sender_id != current_user.id,
-        DirectMessage.is_read == False,
+        DirectMessage.is_read.is_(False),
     )
     res = await db.execute(stmt)
     total = res.scalar_one() or 0
@@ -131,7 +131,7 @@ async def get_conversation_messages(
         .where(
             DirectMessage.conversation_id == conversation_id,
             DirectMessage.sender_id != current_user.id,
-            DirectMessage.is_read == False,
+            DirectMessage.is_read.is_(False),
         )
         .values(is_read=True)
     )
@@ -173,8 +173,10 @@ async def send_direct_message(
     friend_stmt = select(Friendship).where(
         (Friendship.status == "accepted")
         & (
-            (Friendship.sender_id == current_user.id) & (Friendship.receiver_id == req.receiver_id)
-            | (Friendship.sender_id == req.receiver_id) & (Friendship.receiver_id == current_user.id)
+            (Friendship.sender_id == current_user.id)
+            & (Friendship.receiver_id == req.receiver_id)
+            | (Friendship.sender_id == req.receiver_id)
+            & (Friendship.receiver_id == current_user.id)
         )
     )
     friend_res = await db.execute(friend_stmt)
