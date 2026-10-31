@@ -227,3 +227,20 @@ class BaseAIService(ABC):
 ```
 
 This interface enables trivial swapping to Anthropic Claude, OpenAI, or local models (Ollama/vLLM) simply by implementing `BaseAIService` and updating `get_ai_service()`.
+
+---
+
+## 7. Hyper-Local Skill Swap Economy AI Capabilities
+
+The Skill Swap module extends the AI layer with 7 specialized prompts in `backend/app/services/ai/prompts.py`:
+
+| # | Capability | Endpoint / Trigger | Model / Output | Description |
+|---|---|---|---|---|
+| 1 | **Skill Normalization** | `POST /api/v1/swaps/taxonomy/suggest` | Structured JSON | Normalizes freeform input into canonical skills and categories. |
+| 2 | **Match Explanations** | `GET /api/v1/swaps/matches` | Text + SHA-256 Table Cache | 1–2 sentence friendly explanation strictly grounded in match inputs. |
+| 3 | **Listing Writer** | `POST /api/v1/swaps/listings/ai-draft` | 3 Tone Variants | Drafts compelling listing titles and descriptions from bullet points. |
+| 4 | **Session Planner** | `POST /api/v1/swaps/sessions/{id}/ai-plan` | Structured 4-phase Agenda | Generates 30-min structured lesson plan with warm-up, core, and practice. |
+| 5 | **Post-Session Recap** | `POST /api/v1/swaps/sessions/{id}/ai-recap` | Private Action Items | Transforms rough session notes into structured takeaways and action items. |
+| 6 | **Fairness Advisor** | `GET /api/v1/swaps/fairness-advice` | Advisory JSON | Evaluates reciprocity ledger and recommends high-demand skills to offer. |
+| 7 | **Non-Monetary Moderation** | Listing / Proposal / Chat Creation | Classification JSON | Detects payment solicitation, off-platform harvesting, and residential venues. |
+

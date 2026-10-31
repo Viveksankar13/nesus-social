@@ -181,3 +181,71 @@ Admin endpoints use offset pagination:
 ```
 GET /api/v1/admin/users?page=1&limit=20&search=john
 ```
+
+---
+
+## Skill Swap Economy Endpoints (`/api/v1/swaps`)
+
+### Taxonomy & Profile
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/swaps/taxonomy` | None | List canonical skills & categories |
+| POST | `/api/v1/swaps/taxonomy/suggest` | User | Suggest new canonical skill |
+| GET | `/api/v1/swaps/profile/me` | User | View own swap profile, availability, location |
+| PUT | `/api/v1/swaps/profile/me` | User | Update skills, availability windows, coarse area |
+| GET | `/api/v1/swaps/profile/{username}` | User | View public profile with distance bucket only |
+
+### Listings & Discovery
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/swaps/listings` | User | Create listing (anti-money check) |
+| GET | `/api/v1/swaps/listings` | User | Spatial discovery search with distance buckets |
+| GET | `/api/v1/swaps/listings/me` | User | View own published listings |
+| GET | `/api/v1/swaps/listings/{id}` | User | View listing details |
+| PUT | `/api/v1/swaps/listings/{id}` | User | Update/pause/close own listing |
+| POST | `/api/v1/swaps/listings/{id}/share` | User | Share listing into social feed |
+| GET | `/api/v1/swaps/matches` | User | 5-criteria weighted matches with AI reasons |
+
+### Requests & Sessions
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/swaps/requests` | User | Propose swap with up to 3 slots |
+| GET | `/api/v1/swaps/requests` | User | View incoming/outgoing proposals |
+| POST | `/api/v1/swaps/requests/{id}/accept` | User | Accept proposal & schedule 2-half session |
+| POST | `/api/v1/swaps/requests/{id}/counter`| User | Counter-propose alternate slots/mode |
+| POST | `/api/v1/swaps/requests/{id}/decline`| User | Decline swap proposal |
+| POST | `/api/v1/swaps/requests/{id}/cancel` | User | Cancel outgoing proposal |
+| GET | `/api/v1/swaps/sessions/{id}` | Participant | Session details, halves, Jitsi room URL |
+| GET | `/api/v1/swaps/sessions/{id}/ics` | Participant | Download `.ics` calendar invite |
+| POST | `/api/v1/swaps/sessions/{id}/complete`| Participant | Confirm half completion |
+| POST | `/api/v1/swaps/sessions/{id}/dispute` | Participant | Report dispute / no-show |
+| GET | `/api/v1/swaps/sessions/{id}/messages`| Participant | Read session chat |
+| POST | `/api/v1/swaps/sessions/{id}/messages`| Participant | Send message to session chat |
+
+### Reviews, Trust & Safety
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/swaps/reviews` | Participant | Submit blind mutual review |
+| GET | `/api/v1/swaps/trust/{user_id}` | User | View trust score & badges |
+| POST | `/api/v1/swaps/reports` | User | Report user, listing, or session |
+| POST | `/api/v1/swaps/blocks` | User | Block user |
+| DELETE | `/api/v1/swaps/blocks/{user_id}` | User | Unblock user |
+
+### AI Productivity Assistants
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/v1/swaps/sessions/{id}/ai-plan` | Participant | Generate 30-min structured lesson agenda |
+| POST | `/api/v1/swaps/sessions/{id}/ai-recap`| Participant | Convert rough notes into action takeaways |
+| GET | `/api/v1/swaps/fairness-advice` | User | Reciprocity ledger balance guidance |
+
+### Admin & Cron Endpoints
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/admin/swaps/stats` | Admin | Skill Swap KPIs & analytics |
+| GET | `/api/v1/admin/swaps/listings` | Admin | Moderation directory of swap listings |
+| GET | `/api/v1/admin/swaps/disputes` | Admin | Disputes and no-show triage queue |
+| POST | `/api/v1/admin/swaps/disputes/{id}/resolve` | Admin | Resolve dispute & adjust trust score |
+| POST | `/api/v1/admin/swaps/taxonomy/approve` | Admin | Approve pending user skills |
+| POST | `/api/v1/admin/swaps/taxonomy/merge` | Admin | Merge skill synonyms into canonical slug |
+| POST | `/api/v1/internal/jobs/{job_name}` | `X-Cron-Secret` | Execute scheduled cron maintenance |
+

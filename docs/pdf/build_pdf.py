@@ -67,6 +67,21 @@ CHAPTER_ORDER = [
     ("AI_INTEGRATION.md", "AI Integration Details"),
     ("API.md", "API Reference"),
     ("DEPLOYMENT.md", "Deployment Guide"),
+    # Hyper-Local Skill Swap Economy (Chapters 17–24)
+    ("chapters/CHAPTER_17_SKILL_SWAP_OVERVIEW.md", "Chapter 17: Skill Swap Product Overview"),
+    ("chapters/CHAPTER_18_HYPER_LOCAL_DESIGN.md", "Chapter 18: Hyper-Local Design & Location Privacy"),
+    ("chapters/CHAPTER_19_MATCHING_ENGINE.md", "Chapter 19: Matching Engine & Recommendation Architecture"),
+    ("chapters/CHAPTER_20_SWAP_LIFECYCLE.md", "Chapter 20: Swap Lifecycle & Scheduling Engine"),
+    ("chapters/CHAPTER_21_TRUST_REPUTATION_SAFETY.md", "Chapter 21: Trust, Reputation & Safety Systems"),
+    ("chapters/CHAPTER_22_AI_FEATURES_PROMPTS.md", "Chapter 22: Skill Swap AI Features & Prompt Engineering"),
+    ("chapters/CHAPTER_23_ADMIN_TOOLS_ANALYTICS.md", "Chapter 23: Skill Swap Admin Console & Analytics"),
+    ("chapters/CHAPTER_24_API_REFERENCE_DEPLOYMENT.md", "Chapter 24: Skill Swap API Reference & Data Architecture"),
+    # Skill Swap Stage Verification Documents
+    ("stages/SWAP_STAGE_1.md", "Skill Swap Stage S1: Taxonomy & Profiles"),
+    ("stages/SWAP_STAGE_2.md", "Skill Swap Stage S2: Listings & Discovery"),
+    ("stages/SWAP_STAGE_3.md", "Skill Swap Stage S3: Swaps & Sessions"),
+    ("stages/SWAP_STAGE_4.md", "Skill Swap Stage S4: Safety, Admin & AI Helpers"),
+    ("stages/SWAP_STAGE_5.md", "Skill Swap Stage S5: Hardening, Deploy & Documentation"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -275,6 +290,8 @@ def _render_pdf(html_body: str, output_path: Path, title: str) -> None:
             browser_exe = Path(browser_exe_str)
 
     if browser_exe and browser_exe.exists():
+        if output_path.exists():
+            output_path.unlink()
         tmp_html = output_path.with_suffix(".tmp.html")
         tmp_html.write_text(full_html, encoding="utf-8")
         print(f"   📄 Rendering PDF with Headless Browser ({browser_exe.name}) → {output_path.name}")
@@ -282,6 +299,8 @@ def _render_pdf(html_body: str, output_path: Path, title: str) -> None:
             str(browser_exe),
             "--headless=new",
             "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
             "--no-pdf-header-footer",
             f"--print-to-pdf={output_path}",
             str(tmp_html),

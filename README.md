@@ -11,6 +11,16 @@
 - **Brevo SMTP Support** — Automated port 587 STARTTLS / port 465 SSL email delivery for email verification, password reset, and welcome notifications.
 - **Social Feed** — Cursor-paginated infinite scroll, posts (≤1000 chars) with image attachments, unique likes with optimistic UI, and threaded one-level comment replies.
 - **Real-time Notifications** — Server-Sent Events (SSE) with 60-second single-use stream tokens, live notification bell, and real-time admin login alerts.
+- **🔄 Hyper-Local Skill Swap Economy (NEW Flagship Module)**:
+  - **Strictly Non-Monetary Peer Barter:** 30-minute peer help for 30-minute peer help (e.g. dynamic programming for resume review, guitar for Spanish). Zero money, tips, or fees.
+  - **Location Privacy by Design:** Aggressive coarse coordinates (~1 km grid cell) with distance buckets ("under 1 km", "1–3 km", "3–5 km", "5–10 km", "10–25 km", "remote"). Zero raw coordinates, geohashes, or exact addresses ever exposed.
+  - **Spatial Discovery & Leaflet Map:** Two-tier spatial engine (indexed bounding box + Haversine SQL) with sub-2ms query speeds on 10,000 listings. Interactive Leaflet map rendering coarse area bubbles.
+  - **5-Criteria Weighted Matching Engine:** Transparent scoring across skill overlap, proximity, availability overlap in next 14 days, trust score, and recency, paired with cached Gemini "Why you match" explanations.
+  - **Full Swap Lifecycle:** Finite state machines for proposals (`pending → accepted | declined | countered | cancelled | expired`) and sessions (`scheduled → active → completed | disputed`). Two labeled 30-minute halves per session.
+  - **Unguessable Video Rooms & Calendar:** Auto-generated Jitsi Meet rooms with 128-bit entropy tokens and downloadable `.ics` calendar invites.
+  - **Double-Blind Mutual Reviews & Bayesian Trust:** Mutual ratings and tags revealed only after both parties submit or after 7 days elapse. Bayesian-smoothed trust score (0–100) with accomplishment badges.
+  - **AI Assistants & Moderation:** Gemini AI Session Planner (30-min agenda), Post-Session Recap Generator, Fairness Advisor, and automated non-monetary policy enforcement.
+  - **Admin Swaps Management:** Dedicated `/admin/swaps` console for KPI analytics, listings moderation, dispute triage, taxonomy curation, and manual cron triggers.
 - **AI Features** (Google Gemini 2.5 Flash):
   - Post generation & refinement (3 tone variants: Casual, Professional, Funny, Inspirational)
   - Thread summarization with sentiment analysis (triggers on ≥3 comments)

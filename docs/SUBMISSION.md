@@ -136,7 +136,13 @@ npm run dev
 | **9** | `stage-09-complete` | `09b408b` | Admin console UI, charts, user/content tables, live alert feed |
 | **10** | `stage-10-complete` | `06d7d32` | Hardening, Brevo SMTP, Student USN auth, security headers, E2E |
 | **11** | `stage-11-complete` | `3829c2b` | Multi-stage Dockerfile, non-root user, Render blueprint, runbook |
-| **12** | `stage-12-complete` | *Current* | Secret scan, System Documentation PDF, final submission package |
+| **12** | `stage-12-complete` | `5ed625f` | Secret scan, System Documentation PDF, final submission package |
+| **S0** | `swap-stage-00-complete`| `docs(swap)` | Skill Swap audit, integration plan, risk register, sub-milestones |
+| **S1** | `swap-stage-01-complete`| `a364bd5` | 17 swap tables, canonical taxonomy, coarse geo privacy, onboarding wizard |
+| **S2** | `swap-stage-02-complete`| `b63435b` | Listings CRUD, Leaflet map discovery, 5-criteria matching engine |
+| **S3** | `swap-stage-03-complete`| `92ad0c0` | State machine, two 30-min halves, Jitsi video rooms, blind reviews, cron |
+| **S4** | `swap-stage-04-complete`| `f4d2ce9` | Trust & safety suite, 3-strike quarantine, admin console, AI helpers |
+| **S5** | `swap-stage-05-complete`| *Current* | Hardening, 10k spatial benchmark (1.82ms), E2E test, PDF rebuild (Ch 17–24) |
 
 ---
 

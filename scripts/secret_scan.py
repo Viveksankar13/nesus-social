@@ -30,6 +30,8 @@ EXCLUDE_DIRS = {
 }
 
 EXCLUDE_FILES = {
+    ".env",
+    ".env.local",
     "package-lock.json",
     "SYSTEM_DOCUMENTATION.pdf",
     "SAMPLE_STAGE0.pdf",

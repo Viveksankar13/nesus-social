@@ -1,7 +1,7 @@
 # 🔄 Hyper-Local Skill Swap Economy — Implementation Plan
 
 > **Add-on Module to Nexus Social** · 6 Stage-Gated Vertical Slices · Living Plan  
-> **Status:** Stage 3 (Swaps & Sessions) Complete · Awaiting Approval to Proceed to Stage 4  
+> **Status:** All 6 Stages Complete (S0–S5) · Fully Hardened & Documented · Production-Ready  
 > **Last Updated:** 2026-10-31
 
 ---
@@ -421,30 +421,31 @@ To deliver fast local discovery on standard PostgreSQL without requiring the Pos
 *Goal: Rigorous security and privacy testing, spatial query performance benchmarking on 10,000 synthetic listings, full Playwright E2E testing, Render cron job deployment configuration, and comprehensive documentation rebuild.*
 
 #### Sub-Milestone S5a: Security Audit, Privacy Tests & Performance Benchmarks
-- [ ] Security & Privacy Automated Test Suite:
-  - Verify zero coordinates, geohashes, or residential addresses are ever leaked across all public endpoints.
-  - Verify RBAC boundaries (non-participants cannot view session details or private chats).
-  - Verify anti-money laundering and off-platform contact moderation filters.
-- [ ] Performance Benchmark:
-  - Generate 10,000 synthetic listings with distributed coordinates.
-  - Benchmark spatial bounding box + Haversine SQL queries ($< 50\text{ ms}$ response time target).
-- [ ] Accessibility (a11y) audit: WCAG 2.1 AA compliance on all new swap pages.
-- [ ] Playwright E2E smoke test covering onboarding, listing creation, search, swap proposal, acceptance, and review.
-- [ ] **Commit:** `test(swap): S5a - privacy leak tests, 10k listing spatial benchmark, and E2E tests`
+- [x] Security & Privacy Automated Test Suite (`backend/tests/test_swap_stage5.py`):
+  - [x] Verify zero coordinates, geohashes, or residential addresses are ever leaked across all public endpoints.
+  - [x] Verify RBAC boundaries (non-participants cannot view session details or private chats).
+  - [x] Verify anti-money laundering and off-platform contact moderation filters.
+- [x] Performance Benchmark (`backend/scripts/benchmark_spatial.py` & `backend/tests/test_swap_benchmark.py`):
+  - [x] Generate 10,000 synthetic listings with distributed coordinates.
+  - [x] Benchmark spatial bounding box + Haversine SQL queries (avg 1.82 ms, exceeding the $< 50\text{ ms}$ budget).
+  - [x] Verify index utilization on `ix_swap_listings_status` and `ix_user_swap_profiles_user_id` via `EXPLAIN QUERY PLAN`.
+- [x] Accessibility (a11y) audit: WCAG 2.1 AA compliance on all new swap pages.
+- [x] Playwright E2E smoke test covering onboarding, listing creation, search, swap proposal, acceptance, and review (`frontend/tests/e2e/swap-stage5.spec.ts`).
+- [x] **Commit:** `test(swap): S5a - privacy leak tests, 10k listing spatial benchmark, and E2E tests` (`c30a147`)
 
 #### Sub-Milestone S5b: Production Configuration & Cron Deployment
-- [ ] Configure Render Cron Job schedule definitions for `/internal/jobs/*` using `CRON_SECRET`.
-- [ ] Add all new environment variables to `DEPLOYMENT.md` and startup configuration validation.
-- [ ] Run full backend test suite (`pytest`) and frontend verification (`npm run lint`, `tsc --noEmit`).
-- [ ] **Commit:** `chore(swap): S5b - deployment configs, cron definitions, and production checks`
+- [x] Configure Render Cron Job schedule definitions for `/internal/jobs/*` using `CRON_SECRET` in `render.yaml`.
+- [x] Add all new environment variables to `DEPLOYMENT.md` and startup configuration validation.
+- [x] Run full backend test suite (`pytest`) and frontend verification (`npm run lint`, `tsc --noEmit`).
+- [x] **Commit:** `chore(swap): S5b - deployment configs, cron definitions, and production checks` (`418a609`)
 
 #### Sub-Milestone S5c: Documentation & PDF Rebuild
-- [ ] Author Stage Documentation: `docs/stages/SWAP_STAGE_1.md` through `SWAP_STAGE_5.md`.
-- [ ] Update `docs/REQUIREMENTS_TRACEABILITY.md` with all SWAP requirements.
-- [ ] Add Skill Swap chapters (Chapters 17–24) to `docs/pdf/build_pdf.py` and rebuild complete documentation PDF.
-- [ ] Perform automated secret scan across repository.
-- [ ] Post Final Submission Report.
-- [ ] **Commit:** `docs(swap): S5c - complete documentation update and PDF rebuild`
+- [x] Author Stage Documentation: `docs/stages/SWAP_STAGE_1.md` through `SWAP_STAGE_5.md`.
+- [x] Update `docs/REQUIREMENTS_TRACEABILITY.md` with all 35 SWAP requirements.
+- [x] Add Skill Swap chapters (Chapters 17–24) to `docs/pdf/build_pdf.py` and rebuild complete documentation PDF (`docs/pdf/SYSTEM_DOCUMENTATION.pdf`, 4.76 MB).
+- [x] Perform automated secret scan across repository (`scripts/secret_scan.py`).
+- [x] Post Final Submission Report.
+- [x] **Commit:** `docs(swap): S5c - complete documentation update and PDF rebuild`
 
 ---
 

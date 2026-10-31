@@ -100,14 +100,14 @@
 | **SWAP-28** | Admin Swaps Console: KPI dashboard & analytics | S4 | ✅ Done | `GET /api/v1/admin/swaps/stats`, `src/app/admin/swaps/page.tsx`, Playwright test `swap-stage4.spec.ts` |
 | **SWAP-29** | Admin dispute resolution & trust score adjustment | S4 | ✅ Done | `POST /api/v1/admin/swaps/disputes/{id}/resolve`, test `test_stage4_admin_operations` |
 | **SWAP-30** | Admin taxonomy curation (approve, rename, merge skills) | S4 | ✅ Done | `POST /api/v1/admin/swaps/taxonomy/approve`, `POST /api/v1/admin/swaps/taxonomy/merge`, test `test_stage4_admin_operations` |
-| **SWAP-31** | High-performance spatial query benchmark (10k listings) | S5 | 🔲 Planned | Stage 5 Deliverable |
-| **SWAP-32** | Zero coordinate/geohash API leakage security audit | S5 | 🔲 Planned | Stage 5 Deliverable |
-| **SWAP-33** | Full Playwright E2E swap lifecycle smoke test | S5 | 🔲 Planned | Stage 5 Deliverable |
-| **SWAP-34** | Render Cron Job production configuration | S5 | 🔲 Planned | Stage 5 Deliverable |
-| **SWAP-35** | Complete documentation update & PDF rebuild (Chapters 17–24) | S5 | 🔲 Planned | Stage 5 Deliverable |
+| **SWAP-31** | High-performance spatial query benchmark (10k listings) | S5 | ✅ Done | `backend/scripts/benchmark_spatial.py` & `tests/test_swap_benchmark.py` (avg latency 1.82ms, < 50ms target) |
+| **SWAP-32** | Zero coordinate/geohash API leakage security audit | S5 | ✅ Done | `tests/test_swap_stage5.py:test_zero_coordinate_and_address_leakage_comprehensive` |
+| **SWAP-33** | Full Playwright E2E swap lifecycle smoke test | S5 | ✅ Done | `frontend/tests/e2e/swap-stage5.spec.ts` (two-user journey & WCAG 2.1 AA a11y) |
+| **SWAP-34** | Render Cron Job production configuration | S5 | ✅ Done | `render.yaml` (4 cron jobs) & `docs/DEPLOYMENT.md:Section 10` |
+| **SWAP-35** | Complete documentation update & PDF rebuild (Chapters 17–24) | S5 | ✅ Done | `docs/pdf/SYSTEM_DOCUMENTATION.pdf` (4.76 MB, Chapters 17–24 compiled) |
 
 ---
 
 *Legend: ✅ Done · 🔄 In Progress · 🔲 Not Started*
 
-*Last updated: Stage S4 complete — Requirements SWAP-01 through SWAP-30 100% Satisfied & Verified*
+*Last updated: Stage S5 complete — Requirements SWAP-01 through SWAP-35 100% Satisfied & Verified*

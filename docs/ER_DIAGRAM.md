@@ -230,3 +230,48 @@ Immutable audit trail for all administrative actions.
 | `posts` | `likes` | `post_id` | **CASCADE** | Post deletion removes all its likes |
 | `comments` | `comments` | `parent_id` | **CASCADE** | Deleting parent comment deletes child replies |
 | `ai_chat_sessions` | `ai_chat_messages` | `session_id` | **CASCADE** | Deleting session deletes messages |
+
+---
+
+## 4. Hyper-Local Skill Swap Economy Data Architecture (Alembic 0004)
+
+```mermaid
+erDiagram
+    users ||--o{ user_skills : "teaches / learns"
+    users ||--o| user_swap_profiles : "maintains"
+    users ||--o{ availability_windows : "schedules"
+    users ||--o{ availability_blackouts : "defines"
+    users ||--o{ swap_listings : "creates"
+    users ||--o{ swap_requests : "proposes / receives"
+    users ||--o{ swap_reviews : "reviews"
+    users ||--o{ swap_reports : "submits"
+    users ||--o| trust_scores : "holds"
+    users ||--o| reciprocity_ledger : "tracks"
+
+    skills ||--o{ user_skills : "categorizes"
+    skills ||--o{ swap_listings : "offered / wanted"
+
+    swap_listings ||--o{ swap_requests : "initiates"
+    swap_requests ||--o| swap_sessions : "schedules"
+    swap_sessions ||--o{ swap_session_halves : "divides into 2x30m"
+    swap_sessions ||--o{ swap_messages : "contains chat"
+    swap_sessions ||--o{ swap_reviews : "double-blind"
+```
+
+### 4.1 Skill Swap Foreign Key Cascades & Deletion Rules
+
+| Parent Table | Child Table | FK Column | ON DELETE Rule | Purpose |
+|---|---|---|---|---|
+| `users` | `user_skills` | `user_id` | **CASCADE** | Deleting user deletes declared skills |
+| `skills` | `user_skills` | `skill_id` | **RESTRICT** | Prevents deletion of active canonical skills in use |
+| `users` | `user_swap_profiles` | `user_id` | **CASCADE** | Deleting user removes their swap profile |
+| `users` | `availability_windows`| `user_id` | **CASCADE** | Deleting user removes availability |
+| `users` | `swap_listings` | `user_id` | **CASCADE** | Deleting user removes their listings |
+| `skills` | `swap_listings` | `skill_offered_id`| **RESTRICT**| Active skills cannot be dropped |
+| `swap_requests` | `swap_sessions` | `request_id` | **CASCADE** | Request removal cascades to session |
+| `swap_sessions` | `swap_session_halves`| `session_id`| **CASCADE** | Deleting session deletes its two 30-min halves |
+| `swap_sessions` | `swap_messages` | `session_id` | **CASCADE** | Deleting session cleans up chat thread |
+| `swap_sessions` | `swap_reviews` | `session_id` | **CASCADE** | Deleting session removes blind reviews |
+| `users` | `trust_scores` | `user_id` | **CASCADE** | User removal cleans up trust records |
+| `users` | `reciprocity_ledger`| `user_id` | **CASCADE** | User removal cleans up barter minutes |
+
