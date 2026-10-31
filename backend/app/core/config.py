@@ -92,9 +92,12 @@ class Settings(BaseSettings):
     # ── Optional Observability ───────────────────────────────────────
     SENTRY_DSN: str = ""
 
-    # ── Media Uploads ────────────────────────────────────────────────
+    # ── Media Uploads & Supabase Storage ─────────────────────────────
     UPLOAD_DIR: str = "uploads"
     MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""  # Service role key or anon key with storage permissions
+    SUPABASE_BUCKET: str = "nexus-media"
 
     # ── Skill Swap Economy ───────────────────────────────────────────
     CRON_SECRET: str = "nexus-cron-secret-local-dev-key-minimum-32-chars"

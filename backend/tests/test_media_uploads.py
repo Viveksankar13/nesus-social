@@ -162,3 +162,34 @@ async def test_ai_moderation_auto_hides_explicit_content(
     assert flag is not None
     assert flag.action == "block"
     assert flag.severity in ("critical", "high")
+
+
+@pytest.mark.asyncio
+async def test_supabase_storage_upload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify media_service uploads to Supabase Storage when credentials are provided."""
+    from unittest.mock import AsyncMock, patch
+
+    from fastapi import UploadFile
+    from httpx import Response
+
+    monkeypatch.setattr(settings, "SUPABASE_URL", "https://demo-project.supabase.co")
+    monkeypatch.setattr(settings, "SUPABASE_KEY", "test-service-key")
+    monkeypatch.setattr(settings, "SUPABASE_BUCKET", "nexus-media")
+
+    mock_resp = Response(200, json={"Key": "nexus-media/posts/test.jpg"})
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.return_value = mock_resp
+
+        img_bytes = create_test_image_bytes()
+        upload_file = UploadFile(
+            file=io.BytesIO(img_bytes),
+            filename="sample_avatar.jpg",
+            headers={"content-type": "image/jpeg"},
+        )
+
+        res = await media_service.save_image(upload_file, folder="posts")
+        assert res["url"].startswith("https://demo-project.supabase.co/storage/v1/object/public/nexus-media/posts/")
+        assert res["content_type"] == "image/jpeg"
+        assert mock_post.called
