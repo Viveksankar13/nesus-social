@@ -102,10 +102,11 @@ export function Sidebar() {
 }
 
 /**
- * MobileSectionFooter — stays below at the bottom of the page (in natural document flow),
- * does NOT hover or follow the user while scrolling up or down.
+ * MobileNavBar — comes along when scrolling at the bottom of the screen,
+ * styled with a sleek backdrop blur and touch targets. Generous bottom clearance
+ * on <main> ensures it NEVER overlaps or covers post content.
  */
-export function MobileSectionFooter() {
+export function MobileNavBar() {
   const pathname = usePathname();
   const { user, isAdmin } = useAuth();
 
@@ -167,24 +168,14 @@ export function MobileSectionFooter() {
   }
 
   return (
-    <footer className="md:hidden mt-auto w-full border-t border-border/80 bg-card/90 backdrop-blur-md px-3 py-3 text-card-foreground">
-      <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/50 text-xs text-muted-foreground">
-        <span className="font-semibold text-foreground text-[11px] uppercase tracking-wider">
-          Sections
-        </span>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-ai-chat"))}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 active:scale-95 transition-all touch-manipulation"
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          <span>Ask Nexus AI</span>
-        </button>
-      </div>
-
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/90 backdrop-blur-xl px-2 pt-1.5 shadow-lg touch-manipulation"
+      style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom, 12px))" }}
+      aria-label="Mobile Navigation"
+    >
       <div
         className={cn(
-          "grid gap-1 text-center",
+          "grid gap-1 text-center max-w-lg mx-auto",
           navItems.length === 7 ? "grid-cols-7" : "grid-cols-6"
         )}
       >
@@ -195,7 +186,7 @@ export function MobileSectionFooter() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-1 rounded-lg text-[10px] font-medium transition-colors relative active:scale-95 touch-manipulation",
+                "flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[10px] font-medium transition-all active:scale-95 touch-manipulation",
                 item.active
                   ? "bg-primary/15 text-primary font-bold shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
@@ -214,6 +205,8 @@ export function MobileSectionFooter() {
           );
         })}
       </div>
-    </footer>
+    </nav>
   );
 }
+
+export const MobileSectionFooter = MobileNavBar;
