@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+import CursorRingField from "@/components/originkit/ui/cursor-ring-field";
+import LanyardBadge from "@/components/podie/kedhareswer--lanyard-badge/components/ui/lanyard-badge";
 
 export default function LandingPage() {
   const { user, isAdmin, logout } = useAuth();
@@ -100,107 +102,151 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-16 sm:py-24 text-center">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase mb-6">
-          <Zap className="h-3.5 w-3.5" />
-          <span>Next-Generation AI Social Network</span>
+      {/* Hero Section — cursor ring is the background layer */}
+      <main className="flex-1 relative overflow-hidden">
+        {/* WebGL cursor ring field — covers only this hero section */}
+        <div className="absolute inset-0 z-0">
+          <CursorRingField
+            style={{ width: "100%", height: "100%" }}
+            background="transparent"
+            colors={{ items: ["#7189ff", "#4f46e5", "#0b0b18"] }}
+            ring={{ radius: 12, width: 9, push: 50, turbulence: 100 }}
+            density={260}
+            dotSize={110}
+            speed={6}
+          />
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground max-w-4xl mx-auto leading-tight sm:leading-none">
-          Connect, Create, and Discover with{" "}
-          <span className="bg-gradient-to-r from-primary via-indigo-500 to-purple-600 bg-clip-text text-transparent">
-            Precision Intelligence
-          </span>
-        </h1>
+        {/* Content sits above the ring */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 pt-0 pb-16 sm:pb-24">
 
-        <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Nexus Social combines lightning-fast social feeds with Google Gemini 2.5 AI.
-          Draft captivating posts in seconds, summarize vibrant discussions, and engage with smart replies.
-        </p>
+          {/* Two-column: on small screens, badge comes first (flex-col-reverse), on lg screens text on left, badge on right */}
+          <div className="flex flex-col-reverse lg:flex-row items-center gap-6 lg:gap-12">
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          {user ? (
-            isAdmin ? (
-              <>
-                <Link href="/admin" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto px-8 shadow-md bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
-                    <LayoutDashboard className="h-5 w-5" />
-                    Enter Admin Console
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/feed" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8 gap-2">
-                    <Rss className="h-5 w-5" />
-                    View Community Feed
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/feed" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto px-8 shadow-md gap-2">
-                    <Rss className="h-5 w-5" />
-                    Go to Your Feed
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href={`/profile/${user.username}`} className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
-                    View Your Profile
-                  </Button>
-                </Link>
-              </>
-            )
-          ) : (
-            <>
-              <Link href="/register" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto px-8 shadow-md">
-                  Create Free Account
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/login" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto px-8">
-                  Sign In to Your Feed
-                </Button>
-              </Link>
-            </>
-          )}
-        </div>
+            {/* ── LEFT: Hero text ── */}
+            <div className="flex-1 text-left w-full">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase mb-6">
+                <Zap className="h-3.5 w-3.5" />
+                <span>Next-Generation AI Social Network</span>
+              </div>
 
-        {/* Feature Grid */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-              <Bot className="h-6 w-6" />
+              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-foreground max-w-2xl leading-tight">
+                Connect, Create, and Discover with AI and{" "}
+                <span className="bg-gradient-to-r from-primary via-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                  Swap Skills
+                </span>
+              </h1>
+
+              <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-xl">
+                Nexus Social combines lightning-fast social feeds with AI.
+                Draft captivating posts in seconds, summarize vibrant discussions, and smartly learn new skills from peers.
+              </p>
+
+              <div className="mt-10 flex flex-col sm:flex-row items-start gap-4">
+                {user ? (
+                  isAdmin ? (
+                    <>
+                      <Link href="/admin">
+                        <Button size="lg" className="px-8 shadow-md bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                          <LayoutDashboard className="h-5 w-5" />
+                          Enter Admin Console
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href="/feed">
+                        <Button variant="outline" size="lg" className="px-8 gap-2">
+                          <Rss className="h-5 w-5" />
+                          View Community Feed
+                        </Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/feed">
+                        <Button size="lg" className="px-8 shadow-md gap-2">
+                          <Rss className="h-5 w-5" />
+                          Go to Your Feed
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/profile/${user.username}`}>
+                        <Button variant="outline" size="lg" className="px-8">
+                          View Your Profile
+                        </Button>
+                      </Link>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <Link href="/register">
+                      <Button size="lg" className="px-8 shadow-md">
+                        Create Free Account
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href="/login">
+                      <Button variant="outline" size="lg" className="px-8">
+                        Sign In to Your Feed
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-            <h3 className="text-lg font-bold">AI Post Composer</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Generate 3 distinct variants tailored to casual, professional, funny, or inspirational tones with a single click.
-            </p>
+
+            {/* ── RIGHT (or TOP on mobile/tab): Lanyard Badge ── */}
+            <div className="flex-shrink-0 w-full sm:w-[380px] lg:w-[420px] xl:w-[480px] flex justify-center overflow-visible">
+              <LanyardBadge
+                title="Nexus Social"
+                subtitle="AI Social Network · 2026"
+                name="Connect & Discover"
+                role="Powered by Gemini 2.5"
+                strapText="nexus social"
+                strapLabel="AI NETWORK 2026"
+                strapColor="#1e1b4b"
+                inkColor="#818cf8"
+                cardColor="#f0f0ff"
+                cardWidth={220}
+                className="h-[460px] sm:h-[500px] lg:h-[540px]"
+                flipButton={false}
+              />
+            </div>
+
           </div>
 
-          <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-              <MessageSquare className="h-6 w-6" />
+          {/* Feature Grid */}
+          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
+                <Bot className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">AI Post Composer</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Generate 3 distinct variants tailored to casual, professional, funny, or inspirational tones with a single click.
+              </p>
             </div>
-            <h3 className="text-lg font-bold">Smart Thread Summaries</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Instantly extract key takeaways and audience sentiment from active community discussions and nested comment trees.
-            </p>
+
+            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">Smart Thread Summaries</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Instantly extract key takeaways and audience sentiment from active community discussions and nested comment trees.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
+                <ShieldAlert className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold">Proactive Safety</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Multi-tiered automated safety guards evaluate content in the background, keeping discourse respectful and constructive.
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-              <ShieldAlert className="h-6 w-6" />
-            </div>
-            <h3 className="text-lg font-bold">Proactive Safety</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Multi-tiered automated safety guards evaluate content in the background, keeping discourse respectful and constructive.
-            </p>
-          </div>
         </div>
       </main>
 
