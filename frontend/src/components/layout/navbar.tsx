@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { LogOut, Repeat, Shield, User as UserIcon } from "lucide-react";
+import { LogOut, Repeat, Shield, Sparkles, User as UserIcon } from "lucide-react";
 
 import { useAuth } from "@/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,6 +50,22 @@ export function Navbar() {
         <div className="flex items-center space-x-2 sm:space-x-3">
           <ThemeToggle />
           <NotificationBell />
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("open-ai-chat"));
+                }
+              }}
+              className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors touch-manipulation"
+              title="Open Nexus AI"
+              aria-label="Open Nexus AI"
+            >
+              <Sparkles className="h-4 w-4 text-primary" />
+            </Button>
+          )}
 
           {/* User menu */}
           {user && (

@@ -46,6 +46,13 @@ export function AIChatWidget() {
   const { toast } = useToast();
 
   const [isOpen, setIsOpen] = React.useState(false);
+
+  // Listen for global "open-ai-chat" events dispatched from navbar or footer
+  React.useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener("open-ai-chat", handleOpen);
+    return () => window.removeEventListener("open-ai-chat", handleOpen);
+  }, []);
   const [activeSessionId, setActiveSessionId] = React.useState<string | null>(
     null
   );
@@ -205,21 +212,24 @@ export function AIChatWidget() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50">
-      {/* Floating launcher button */}
+    <>
+      {/* Desktop-only floating launcher button (hidden on mobile so it never hovers over the feed while scrolling) */}
       {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="h-12 w-12 sm:h-13 sm:w-13 rounded-full shadow-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-500 text-primary-foreground p-3 transition-transform hover:scale-105 active:scale-95 touch-manipulation"
-          aria-label="Open Nexus AI Assistant"
-        >
-          <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-        </Button>
+        <div className="hidden md:block fixed bottom-6 right-6 z-50">
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="h-12 w-12 sm:h-13 sm:w-13 rounded-full shadow-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-500 text-primary-foreground p-3 transition-transform hover:scale-105 active:scale-95"
+            aria-label="Open Nexus AI Assistant"
+          >
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+          </Button>
+        </div>
       )}
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <Card className="w-[calc(100vw-2rem)] max-w-[400px] sm:w-[420px] h-[min(540px,calc(100vh-7rem))] shadow-2xl border flex flex-col overflow-hidden bg-background">
+        <div className="fixed inset-x-3 bottom-3 sm:inset-auto sm:right-6 sm:bottom-6 z-50 flex justify-end pointer-events-auto">
+          <Card className="w-full max-w-[420px] h-[min(540px,calc(100vh-5rem))] shadow-2xl border flex flex-col overflow-hidden bg-background">
           {/* Header */}
           <CardHeader className="p-3.5 bg-muted/40 border-b flex flex-row items-center justify-between shrink-0">
             <div className="flex items-center space-x-2">
@@ -369,7 +379,8 @@ export function AIChatWidget() {
             </Button>
           </form>
         </Card>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </>
+);
 }
