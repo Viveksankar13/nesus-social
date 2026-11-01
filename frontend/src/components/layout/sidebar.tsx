@@ -109,6 +109,41 @@ export function Sidebar() {
 export function MobileNavBar() {
   const pathname = usePathname();
   const { user, isAdmin } = useAuth();
+  const [isVisible, setIsVisible] = React.useState(true);
+  const lastScrollY = React.useRef(0);
+
+  // Smooth scroll-aware behavior: hides on scroll down to avoid covering posts,
+  // reveals on scroll up so it smoothly comes along when needed.
+  React.useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY || window.pageYOffset;
+          const diff = currentScrollY - lastScrollY.current;
+
+          // Always visible near top of page
+          if (currentScrollY <= 50) {
+            setIsVisible(true);
+          } else if (diff > 8) {
+            // Scrolling down -> hide smoothly so it does NOT stay stuck over posts
+            setIsVisible(false);
+          } else if (diff < -8) {
+            // Scrolling up -> reveal smoothly so it comes along
+            setIsVisible(true);
+          }
+
+          lastScrollY.current = Math.max(0, currentScrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const { data: unreadData } = useQuery<{ unread_count: number }>({
     queryKey: ["messages", "unread-count"],
@@ -169,7 +204,12 @@ export function MobileNavBar() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/90 backdrop-blur-xl px-2 pt-1.5 shadow-lg touch-manipulation"
+      className={cn(
+        "md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/90 backdrop-blur-xl px-2 pt-1.5 shadow-lg touch-manipulation transition-all duration-300 ease-in-out",
+        isVisible
+          ? "translate-y-0 opacity-100 pointer-events-auto"
+          : "translate-y-full opacity-0 pointer-events-none"
+      )}
       style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom, 12px))" }}
       aria-label="Mobile Navigation"
     >
