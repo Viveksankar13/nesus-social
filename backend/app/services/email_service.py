@@ -79,9 +79,9 @@ class EmailService:
             )
             return True
         except Exception as e:
-            # In dev/test, log warning instead of crashing flow if SMTP server is down
+            # Log exact error so administrators can troubleshoot Brevo in Render console
             logger.warning(
-                "Failed to send email via SMTP (logged for development / diagnostics)",
+                f"Failed to send email via SMTP to {to_email}: {e}",
                 extra={"recipient": to_email, "subject": subject, "error": str(e)},
             )
             return False
