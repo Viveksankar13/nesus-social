@@ -97,14 +97,16 @@ export function SpotlightFeatureCard({
   };
 
   const handleTouchEnd = () => {
-    normX.set(0.5);
-    normY.set(0.5);
-    glowOpacity.set(0);
-    // Smooth reset timeout after tap release
+    // Keep the hover animation (3D tilt, radial spotlight glow, and shimmer)
+    // active and visible on mobile touch for 2.4 seconds after tapping
+    if (resetTimeoutRef.current) clearTimeout(resetTimeoutRef.current);
     resetTimeoutRef.current = setTimeout(() => {
+      normX.set(0.5);
+      normY.set(0.5);
+      glowOpacity.set(0);
       setIsActive(false);
       onHoverEnd?.();
-    }, 600);
+    }, 2400);
   };
 
   React.useEffect(() => {
@@ -135,7 +137,7 @@ export function SpotlightFeatureCard({
         touchAction: "pan-y",
       }}
       className={cn(
-        "group relative flex flex-col gap-4 overflow-hidden rounded-2xl border p-6 text-left select-none",
+        "group relative flex flex-col gap-3.5 sm:gap-4 overflow-hidden rounded-2xl border p-5 sm:p-6 text-left select-none max-w-sm sm:max-w-md md:max-w-none w-full mx-auto",
         // Theme backgrounds & borders
         "border-border/60 bg-card/85 backdrop-blur-md shadow-sm transition-[border-color,box-shadow] duration-300",
         "hover:border-primary/40 hover:shadow-lg dark:hover:border-primary/50",

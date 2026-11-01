@@ -218,7 +218,7 @@ export default function LandingPage() {
           </div>
 
           {/* Feature Grid with Spotlight 3D Tilt and Focus-Dimming Effect */}
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          <div className="mt-14 sm:mt-20 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-left max-w-md md:max-w-none mx-auto">
             <SpotlightFeatureCard
               icon={Bot}
               title="AI Post Composer"

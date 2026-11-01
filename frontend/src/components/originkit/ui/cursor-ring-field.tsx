@@ -1001,13 +1001,13 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         // 0 = free wander, 1 = locked to the pointer. Eased, never toggled, so
         // the target and the follow rate both cross over instead of stepping.
         let follow = 0
+        let touchTimer: any = null
 
         const updateCoords = (clientX: number, clientY: number) => {
             const r = canvas.getBoundingClientRect()
-            pointer.x = ((clientX - r.left) / Math.max(r.width, 1)) * 2 - 1
-            pointer.y = -(((clientY - r.top) / Math.max(r.height, 1)) * 2 - 1)
-            pointer.over =
-                pointer.x >= -1 && pointer.x <= 1 && pointer.y >= -1 && pointer.y <= 1
+            pointer.x = Math.max(-1, Math.min(1, ((clientX - r.left) / Math.max(r.width, 1)) * 2 - 1))
+            pointer.y = Math.max(-1, Math.min(1, -(((clientY - r.top) / Math.max(r.height, 1)) * 2 - 1)))
+            pointer.over = true
         }
 
         const onMove = (e: PointerEvent) => {
@@ -1017,28 +1017,38 @@ export default function CursorRingField(props: CursorRingFieldProps) {
             pointer.over = false
         }
 
-        const onTouchMove = (e: TouchEvent) => {
+        const onTouchStart = (e: TouchEvent) => {
             if (e.touches && e.touches.length > 0) {
+                if (touchTimer) clearTimeout(touchTimer)
                 const touch = e.touches[0]
                 updateCoords(touch.clientX, touch.clientY)
             }
         }
-        const onTouchStart = (e: TouchEvent) => {
+        const onTouchMove = (e: TouchEvent) => {
             if (e.touches && e.touches.length > 0) {
+                if (touchTimer) clearTimeout(touchTimer)
                 const touch = e.touches[0]
                 updateCoords(touch.clientX, touch.clientY)
             }
         }
         const onTouchEnd = () => {
-            pointer.over = false
+            // Keep the hover ring active at the touched location on mobile phones/tablets
+            // so the hover displacement, pulsing ring, and particles animate smoothly!
+            if (touchTimer) clearTimeout(touchTimer)
+            touchTimer = setTimeout(() => {
+                pointer.over = false
+            }, 3200)
         }
 
-        window.addEventListener("pointermove", onMove)
-        window.addEventListener("pointerdown", onMove)
+        window.addEventListener("pointermove", onMove, { passive: true })
+        window.addEventListener("pointerdown", onMove, { passive: true })
         window.addEventListener("touchmove", onTouchMove, { passive: true })
         window.addEventListener("touchstart", onTouchStart, { passive: true })
         window.addEventListener("touchend", onTouchEnd, { passive: true })
         window.addEventListener("touchcancel", onTouchEnd, { passive: true })
+        document.addEventListener("touchmove", onTouchMove, { passive: true })
+        document.addEventListener("touchstart", onTouchStart, { passive: true })
+        document.addEventListener("touchend", onTouchEnd, { passive: true })
         canvas.addEventListener("pointerleave", onLeave)
 
         /* ---- loop ---- */
@@ -1100,15 +1110,22 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 ((pointer.over ? 1 : 0) - follow) *
                 (1 - Math.pow(1 - HANDOVER_LERP, dt * 60))
 
-            const wanderX = wx * 0.2
-            const wanderY = wy * 0.1
+            const isMobile = cssW < 768
+            // Medium-sized ring tuning for mobile phones so it fits comfortably on portrait screen
+            const effectiveRadius = L.ringRadius * (isMobile ? 0.68 : 1.0)
+            const effectiveWidth = L.ringWidth * (isMobile ? 0.72 : 1.0)
+            const effectiveEdge = L.ringEdge * (isMobile ? 0.75 : 1.0)
+
+            const wanderX = wx * (isMobile ? 0.12 : 0.2)
+            const wanderY = wy * (isMobile ? 0.08 : 0.1)
             let tx = wanderX
             let ty = wanderY
             if (follow > 0.0001) {
+                const reach = isMobile ? CURSOR_REACH * 1.25 : CURSOR_REACH
                 const worldX = (pointer.x * aspect * L.camDist) / projF
                 const worldY = (pointer.y * L.camDist) / projF
-                const cx = worldX * CURSOR_REACH + wx * CURSOR_JITTER
-                const cy = worldY * CURSOR_REACH + wy * CURSOR_JITTER
+                const cx = worldX * reach + wx * CURSOR_JITTER
+                const cy = worldY * reach + wy * CURSOR_JITTER
                 tx = wanderX + (cx - wanderX) * follow
                 ty = wanderY + (cy - wanderY) * follow
             }
@@ -1122,9 +1139,9 @@ export default function CursorRingField(props: CursorRingFieldProps) {
 
             // The source breathed the radius on two out-of-phase trig terms.
             const radius =
-                L.ringRadius +
-                Math.sin(simTime) * 0.03 +
-                Math.cos(simTime * 3) * 0.02
+                effectiveRadius +
+                Math.sin(simTime) * (isMobile ? 0.018 : 0.03) +
+                Math.cos(simTime * 3) * (isMobile ? 0.012 : 0.02)
 
             /* -- simulation pass -- */
             if (useSim) {
@@ -1145,8 +1162,8 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 gl.uniform1i(simProg.u.uRefs, 1)
                 gl.uniform2f(simProg.u.uRingPos, ringPos.x, ringPos.y)
                 gl.uniform1f(simProg.u.uRingRadius, radius)
-                gl.uniform1f(simProg.u.uRingWidth, L.ringWidth)
-                gl.uniform1f(simProg.u.uRingWidth2, L.ringEdge)
+                gl.uniform1f(simProg.u.uRingWidth, effectiveWidth)
+                gl.uniform1f(simProg.u.uRingWidth2, effectiveEdge)
                 gl.uniform1f(simProg.u.uPush, L.push)
                 gl.uniform1f(simProg.u.uTurb, L.turb)
                 gl.uniform1f(simProg.u.uTime, simTime)
@@ -1180,19 +1197,19 @@ export default function CursorRingField(props: CursorRingFieldProps) {
                 gl.uniform1i(renderProg.u.uState, 0)
             } else {
                 gl.uniform1f(renderProg.u.uRingRadius, radius)
-                gl.uniform1f(renderProg.u.uRingWidth, L.ringWidth)
-                gl.uniform1f(renderProg.u.uRingWidth2, L.ringEdge)
+                gl.uniform1f(renderProg.u.uRingWidth, effectiveWidth)
+                gl.uniform1f(renderProg.u.uRingWidth2, effectiveEdge)
                 gl.uniform1f(renderProg.u.uTurb, L.turb)
             }
 
             gl.uniform1f(renderProg.u.uProjF, projF)
             gl.uniform1f(renderProg.u.uAspect, aspect)
             gl.uniform1f(renderProg.u.uCamDist, L.camDist)
-            // The source's particle scale: buffer width over dpr over 2000. It
-            // keeps the dots the same visual size as the component widens.
+            // Particle dot scale: maintain medium-sized, crisp particles on mobile screens
+            const baseScale = isMobile ? Math.max(cssW, 680) / 2000 : cssW / 2000
             gl.uniform1f(
                 renderProg.u.uPointScale,
-                (cssW / 2000) * L.dotSize * dpr * 0.5
+                baseScale * L.dotSize * dpr * 0.5
             )
             gl.uniform3fv(renderProg.u["uColors[0]"], L.colors)
             gl.uniform1i(renderProg.u.uColorCount, L.colorCount)
@@ -1206,12 +1223,16 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         return () => {
             cancelAnimationFrame(raf)
             ro.disconnect()
+            if (touchTimer) clearTimeout(touchTimer)
             window.removeEventListener("pointermove", onMove)
             window.removeEventListener("pointerdown", onMove)
             window.removeEventListener("touchmove", onTouchMove)
             window.removeEventListener("touchstart", onTouchStart)
             window.removeEventListener("touchend", onTouchEnd)
             window.removeEventListener("touchcancel", onTouchEnd)
+            document.removeEventListener("touchmove", onTouchMove)
+            document.removeEventListener("touchstart", onTouchStart)
+            document.removeEventListener("touchend", onTouchEnd)
             canvas.removeEventListener("pointerleave", onLeave)
             disposeField()
             gl.deleteBuffer(quad)
