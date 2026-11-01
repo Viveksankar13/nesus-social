@@ -62,7 +62,7 @@ class Settings(BaseSettings):
         """Parse comma-separated ALLOWED_ORIGINS into a list."""
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
 
-    # ── SMTP ─────────────────────────────────────────────────────────
+    # ── SMTP & Brevo API ─────────────────────────────────────────────
     SMTP_HOST: str = "localhost"
     SMTP_PORT: int = 1025
     SMTP_USERNAME: str = ""
@@ -70,6 +70,7 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: EmailStr = "noreply@nexussocial.dev"  # type: ignore[assignment]
     SMTP_FROM_NAME: str = "Nexus Social"
     SMTP_USE_TLS: bool = False
+    BREVO_API_KEY: str = ""  # v3 API Key (xkeysib-...) to bypass Render Free port 587 block
 
     # ── Gemini AI ────────────────────────────────────────────────────
     GEMINI_API_KEY: str = Field(..., description="Google Gemini API key")

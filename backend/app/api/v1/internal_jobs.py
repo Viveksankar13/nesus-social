@@ -34,8 +34,8 @@ async def test_email_browser(
     secret: str,
 ) -> dict[str, Any]:
     """
-    Browser-accessible diagnostic endpoint to test Brevo SMTP delivery
-    without requiring a Render paid Shell.
+    Browser-accessible diagnostic endpoint to test Brevo delivery without requiring Render Shell.
+    Supports both Brevo HTTPS REST API (Port 443, recommended for Render Free) and SMTP.
     Usage: GET /api/v1/internal/jobs/test-email?secret=<CRON_SECRET>&to=<your_email>
     """
     if secret != settings.CRON_SECRET:
@@ -44,20 +44,78 @@ async def test_email_browser(
             detail="Invalid secret parameter. Must match CRON_SECRET configured in Render.",
         )
 
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-
-    import aiosmtplib
+    brevo_api_key = settings.BREVO_API_KEY or (
+        settings.SMTP_PASSWORD if settings.SMTP_PASSWORD.startswith("xkeysib-") else ""
+    )
 
     diagnostic = {
+        "delivery_mode": "Brevo REST API (HTTPS port 443)" if brevo_api_key else "SMTP (port 587)",
+        "brevo_api_key_configured": bool(brevo_api_key),
         "smtp_host": settings.SMTP_HOST,
         "smtp_port": settings.SMTP_PORT,
         "smtp_username": settings.SMTP_USERNAME,
         "smtp_from_email": settings.SMTP_FROM_EMAIL,
         "smtp_from_name": settings.SMTP_FROM_NAME,
-        "smtp_use_tls": settings.SMTP_USE_TLS,
         "test_recipient": to,
     }
+
+    # If Brevo API key is available, use HTTPS (Port 443) which Render Free NEVER blocks
+    if brevo_api_key:
+        import httpx
+
+        url = "https://api.brevo.com/v3/smtp/email"
+        payload = {
+            "sender": {"name": settings.SMTP_FROM_NAME, "email": settings.SMTP_FROM_EMAIL},
+            "to": [{"email": to}],
+            "subject": "Nexus Social — Brevo HTTPS Success!",
+            "htmlContent": f"""
+            <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <h2 style="color: #2563eb;">Nexus Social — Email Delivered via Brevo API!</h2>
+                <p>Your FastAPI backend on Render successfully delivered this email via HTTPS REST API (Port 443).</p>
+                <p>This bypasses Render Free Tier's outbound SMTP port 587 blocking!</p>
+                <p><strong>Recipient:</strong> {to}</p>
+                <p><strong>Sender:</strong> {settings.SMTP_FROM_EMAIL}</p>
+            </div>
+            """,
+        }
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json",
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+                if resp.status_code in (200, 201):
+                    return {
+                        "status": "success",
+                        "delivery_method": "Brevo REST API (HTTPS Port 443)",
+                        "message": f"Test email successfully dispatched to {to}! Check your inbox.",
+                        "diagnostic": diagnostic,
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "error_type": "BrevoAPIError",
+                        "error_details": f"HTTP {resp.status_code}: {resp.text}",
+                        "troubleshooting_hint": "Check if your BREVO_API_KEY is active and your SMTP_FROM_EMAIL is a verified sender in Brevo.",
+                        "diagnostic": diagnostic,
+                    }
+        except Exception as e:
+            return {
+                "status": "error",
+                "error_type": type(e).__name__,
+                "error_details": str(e),
+                "troubleshooting_hint": "Network error reaching api.brevo.com",
+                "diagnostic": diagnostic,
+            }
+
+    # Fallback to SMTP
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    import aiosmtplib
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Nexus Social — Diagnostic Test Email"
@@ -66,10 +124,8 @@ async def test_email_browser(
     html = f"""
     <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
         <h2 style="color: #2563eb;">Nexus Social — Brevo SMTP Success!</h2>
-        <p>Your FastAPI backend on Render successfully connected to Brevo and delivered this message.</p>
-        <p><strong>Recipient:</strong> {to}</p>
-        <p><strong>SMTP Host:</strong> {settings.SMTP_HOST}:{settings.SMTP_PORT}</p>
-        <p><strong>From Sender:</strong> {settings.SMTP_FROM_EMAIL}</p>
+        <p>Recipient: {to}</p>
+        <p>Host: {settings.SMTP_HOST}:{settings.SMTP_PORT}</p>
     </div>
     """
     message.attach(MIMEText(html, "html"))
@@ -90,19 +146,13 @@ async def test_email_browser(
         )
         return {
             "status": "success",
-            "message": f"Test email successfully dispatched to {to}! Check your inbox and spam folder.",
+            "delivery_method": "SMTP",
+            "message": f"Test email successfully dispatched to {to}!",
             "diagnostic": diagnostic,
         }
     except Exception as e:
         error_msg = str(e)
-        hint = "Review your Brevo credentials and sender settings"
-        if "535" in error_msg:
-            hint = "Authentication failed: Ensure SMTP_PASSWORD is your Brevo SMTP Master Key (starts with xsmtpsib-), NOT the REST API key."
-        elif "550" in error_msg:
-            hint = f"Sender rejected: {settings.SMTP_FROM_EMAIL} is not verified in Brevo. In Render, set SMTP_FROM_EMAIL to your registered Brevo account email."
-        elif "Unauthorized IP" in error_msg or "blocked" in error_msg.lower():
-            hint = "Brevo blocked Render IP: Go to https://app.brevo.com/security/authorised_ips and turn OFF 'Block unknown IP addresses'."
-
+        hint = "Render Free blocks outbound SMTP ports 25, 465, and 587. To fix: in Brevo go to SMTP & API -> API Keys -> copy your API Key (xkeysib-...) and set BREVO_API_KEY in Render."
         return {
             "status": "error",
             "error_type": type(e).__name__,

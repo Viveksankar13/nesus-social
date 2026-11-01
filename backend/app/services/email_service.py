@@ -59,11 +59,62 @@ class EmailService:
     def from_name(self) -> str:
         return settings.SMTP_FROM_NAME
 
+    async def _send_via_brevo_api(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str,
+        api_key: str,
+    ) -> bool:
+        """
+        Send transactional email via Brevo REST API over HTTPS (Port 443).
+        Bypasses Render Free Tier's firewall blocking outbound SMTP ports 587/465.
+        """
+        import httpx
+
+        url = "https://api.brevo.com/v3/smtp/email"
+        payload = {
+            "sender": {"name": self.from_name, "email": self.from_email},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": html_content,
+        }
+        headers = {
+            "accept": "application/json",
+            "api-key": api_key,
+            "content-type": "application/json",
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(url, json=payload, headers=headers)
+                if resp.status_code in (200, 201):
+                    logger.info(
+                        f"Email sent successfully via Brevo REST API (HTTPS port 443) to {to_email}"
+                    )
+                    return True
+                else:
+                    logger.warning(
+                        f"Failed to send email via Brevo REST API to {to_email}: {resp.status_code} {resp.text}"
+                    )
+                    return False
+        except Exception as e:
+            logger.warning(f"Error calling Brevo REST API for {to_email}: {e}")
+            return False
+
     async def _send_email(self, to_email: str, subject: str, html_content: str) -> bool:
         """
-        Send a single HTML email message via SMTP.
-        Configured to handle Brevo (port 587 STARTTLS or port 465 SSL) seamlessly.
+        Send a single HTML email message.
+        Automatically uses Brevo REST API over HTTPS (Port 443) if BREVO_API_KEY is configured
+        (bypassing Render Free Tier's port 587 block), otherwise falls back to standard SMTP.
         """
+        # If Brevo API Key is configured, use HTTPS REST API (Port 443)
+        brevo_key = settings.BREVO_API_KEY or (
+            self.password if self.password.startswith("xkeysib-") else ""
+        )
+        if brevo_key:
+            return await self._send_via_brevo_api(to_email, subject, html_content, brevo_key)
+
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
         message["From"] = f"{self.from_name} <{self.from_email}>"
