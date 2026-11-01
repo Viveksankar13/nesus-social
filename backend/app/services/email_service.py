@@ -31,14 +31,33 @@ jinja_env = Environment(
 class EmailService:
     """Asynchronous SMTP email dispatch service with Brevo and Mailpit support."""
 
-    def __init__(self) -> None:
-        self.host = settings.SMTP_HOST
-        self.port = settings.SMTP_PORT
-        self.username = settings.SMTP_USERNAME
-        self.password = settings.SMTP_PASSWORD
-        self.use_tls = settings.SMTP_USE_TLS
-        self.from_email = settings.SMTP_FROM_EMAIL
-        self.from_name = settings.SMTP_FROM_NAME
+    @property
+    def host(self) -> str:
+        return settings.SMTP_HOST
+
+    @property
+    def port(self) -> int:
+        return settings.SMTP_PORT
+
+    @property
+    def username(self) -> str:
+        return settings.SMTP_USERNAME
+
+    @property
+    def password(self) -> str:
+        return settings.SMTP_PASSWORD
+
+    @property
+    def use_tls(self) -> bool:
+        return settings.SMTP_USE_TLS
+
+    @property
+    def from_email(self) -> str:
+        return settings.SMTP_FROM_EMAIL
+
+    @property
+    def from_name(self) -> str:
+        return settings.SMTP_FROM_NAME
 
     async def _send_email(self, to_email: str, subject: str, html_content: str) -> bool:
         """
@@ -53,9 +72,10 @@ class EmailService:
         part = MIMEText(html_content, "html")
         message.attach(part)
 
-        # Port-aware TLS negotiation (Brevo recommends port 587 with STARTTLS)
-        is_direct_ssl = self.use_tls and self.port == 465
-        is_starttls = self.use_tls and self.port != 465
+        # Port-aware TLS negotiation:
+        # Port 465 is direct SSL; Port 587 requires STARTTLS; otherwise honor SMTP_USE_TLS
+        is_direct_ssl = self.port == 465
+        is_starttls = self.port == 587 or (self.use_tls and self.port != 465)
 
         try:
             await aiosmtplib.send(
@@ -69,7 +89,7 @@ class EmailService:
                 timeout=15,
             )
             logger.info(
-                "Email sent successfully",
+                f"Email sent successfully to {to_email}",
                 extra={
                     "recipient": to_email,
                     "subject": subject,

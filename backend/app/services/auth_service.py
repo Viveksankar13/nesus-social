@@ -369,7 +369,14 @@ class AuthService:
         }
 
         if not user or user.is_suspended:
+            logger.warning(
+                f"[ForgotPassword] Request received for unknown or suspended user: '{clean_id}' — No email sent."
+            )
             return generic_response
+
+        logger.info(
+            f"[ForgotPassword] Valid user found (@{user.username}, {user.email}). Dispatching reset token via SMTP..."
+        )
 
         # Invalidate prior reset tokens
         now = datetime.now(UTC)
@@ -391,9 +398,14 @@ class AuthService:
         session.add(reset_token)
         await session.commit()
 
-        await email_service.send_password_reset_email(
+        sent = await email_service.send_password_reset_email(
             user.email, user.username, raw_token, usn=user.usn
         )
+        if sent:
+            logger.info(f"[ForgotPassword] Reset email successfully dispatched to {user.email}")
+        else:
+            logger.error(f"[ForgotPassword] Failed to send reset email to {user.email} via SMTP.")
+
         return generic_response
 
     async def reset_password(
