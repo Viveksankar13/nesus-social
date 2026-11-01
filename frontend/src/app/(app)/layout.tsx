@@ -13,6 +13,8 @@ export default function AppLayout({
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      {/* Spacer so fixed top navbar never covers any post or content */}
+      <div className="h-16 shrink-0" aria-hidden="true" />
       <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 flex flex-col md:flex-row">
         <Sidebar />
         <main

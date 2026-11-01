@@ -24,7 +24,7 @@ export function Navbar() {
   const { user, isAdmin, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-40 w-full border-b bg-background/90 backdrop-blur-md shadow-xs">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link

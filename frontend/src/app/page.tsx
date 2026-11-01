@@ -30,8 +30,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-muted/20 to-background">
-      {/* Navigation Bar */}
-      <header className="border-b bg-background/80 backdrop-blur-md sticky top-0 z-50">
+      {/* Navigation Bar — fixed top so it hovers reliably while scrolling */}
+      <header className="border-b bg-background/90 backdrop-blur-md fixed top-0 left-0 right-0 z-50 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href={user ? (isAdmin ? "/admin" : "/feed") : "/"} className="flex items-center space-x-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl overflow-hidden bg-primary/10 shadow-sm p-1">
@@ -104,6 +104,8 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
+      {/* Spacer so fixed header never covers content */}
+      <div className="h-16 shrink-0" aria-hidden="true" />
 
       {/* Hero Section — cursor ring is the background layer */}
       <main className="flex-1 relative overflow-hidden">
