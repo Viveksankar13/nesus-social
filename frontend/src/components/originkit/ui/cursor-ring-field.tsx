@@ -994,7 +994,7 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         const ro = new ResizeObserver(resize)
         ro.observe(canvas)
 
-        /* ---- pointer. The ONLY interaction: the ring follows the cursor. No
+        /* ---- pointer & touch. The ONLY interaction: the ring follows the cursor/touch. No
                drag, no gesture state, no camera motion. ---- */
         const pointer = { x: 0, y: 0, over: false }
         const ringPos = { x: 0, y: 0 }
@@ -1002,20 +1002,43 @@ export default function CursorRingField(props: CursorRingFieldProps) {
         // the target and the follow rate both cross over instead of stepping.
         let follow = 0
 
-        const onMove = (e: PointerEvent) => {
+        const updateCoords = (clientX: number, clientY: number) => {
             const r = canvas.getBoundingClientRect()
-            pointer.x = ((e.clientX - r.left) / Math.max(r.width, 1)) * 2 - 1
-            pointer.y = -(((e.clientY - r.top) / Math.max(r.height, 1)) * 2 - 1)
+            pointer.x = ((clientX - r.left) / Math.max(r.width, 1)) * 2 - 1
+            pointer.y = -(((clientY - r.top) / Math.max(r.height, 1)) * 2 - 1)
             pointer.over =
                 pointer.x >= -1 && pointer.x <= 1 && pointer.y >= -1 && pointer.y <= 1
+        }
+
+        const onMove = (e: PointerEvent) => {
+            updateCoords(e.clientX, e.clientY)
         }
         const onLeave = () => {
             pointer.over = false
         }
-        // Bound on WINDOW, not the host: the source tracked a global cursor and
-        // tested the canvas bounds itself, so the ring keeps easing back to its
-        // wander the moment the pointer leaves instead of freezing at the edge.
+
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.touches && e.touches.length > 0) {
+                const touch = e.touches[0]
+                updateCoords(touch.clientX, touch.clientY)
+            }
+        }
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches && e.touches.length > 0) {
+                const touch = e.touches[0]
+                updateCoords(touch.clientX, touch.clientY)
+            }
+        }
+        const onTouchEnd = () => {
+            pointer.over = false
+        }
+
         window.addEventListener("pointermove", onMove)
+        window.addEventListener("pointerdown", onMove)
+        window.addEventListener("touchmove", onTouchMove, { passive: true })
+        window.addEventListener("touchstart", onTouchStart, { passive: true })
+        window.addEventListener("touchend", onTouchEnd, { passive: true })
+        window.addEventListener("touchcancel", onTouchEnd, { passive: true })
         canvas.addEventListener("pointerleave", onLeave)
 
         /* ---- loop ---- */
@@ -1184,6 +1207,11 @@ export default function CursorRingField(props: CursorRingFieldProps) {
             cancelAnimationFrame(raf)
             ro.disconnect()
             window.removeEventListener("pointermove", onMove)
+            window.removeEventListener("pointerdown", onMove)
+            window.removeEventListener("touchmove", onTouchMove)
+            window.removeEventListener("touchstart", onTouchStart)
+            window.removeEventListener("touchend", onTouchEnd)
+            window.removeEventListener("touchcancel", onTouchEnd)
             canvas.removeEventListener("pointerleave", onLeave)
             disposeField()
             gl.deleteBuffer(quad)

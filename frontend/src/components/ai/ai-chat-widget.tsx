@@ -205,21 +205,21 @@ export function AIChatWidget() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50">
       {/* Floating launcher button */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-13 w-13 rounded-full shadow-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-500 text-primary-foreground p-3 transition-transform hover:scale-105 active:scale-95"
+          className="h-12 w-12 sm:h-13 sm:w-13 rounded-full shadow-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-500 text-primary-foreground p-3 transition-transform hover:scale-105 active:scale-95 touch-manipulation"
           aria-label="Open Nexus AI Assistant"
         >
-          <Sparkles className="h-6 w-6" />
+          <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
       )}
 
       {/* Chat Window Panel */}
       {isOpen && (
-        <Card className="w-[360px] sm:w-[420px] h-[540px] shadow-2xl border flex flex-col overflow-hidden bg-background">
+        <Card className="w-[calc(100vw-2rem)] max-w-[400px] sm:w-[420px] h-[min(540px,calc(100vh-7rem))] shadow-2xl border flex flex-col overflow-hidden bg-background">
           {/* Header */}
           <CardHeader className="p-3.5 bg-muted/40 border-b flex flex-row items-center justify-between shrink-0">
             <div className="flex items-center space-x-2">

@@ -19,11 +19,14 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
+import { useState } from "react";
 import CursorRingField from "@/components/originkit/ui/cursor-ring-field";
 import LanyardBadge from "@/components/podie/kedhareswer--lanyard-badge/components/ui/lanyard-badge";
+import { SpotlightFeatureCard } from "@/components/ui/spotlight-card/spotlight-feature-card";
 
 export default function LandingPage() {
   const { user, isAdmin, logout } = useAuth();
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-muted/20 to-background">
@@ -214,37 +217,37 @@ export default function LandingPage() {
 
           </div>
 
-          {/* Feature Grid */}
+          {/* Feature Grid with Spotlight 3D Tilt and Focus-Dimming Effect */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                <Bot className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-bold">AI Post Composer</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Generate 3 distinct variants tailored to casual, professional, funny, or inspirational tones with a single click.
-              </p>
-            </div>
+            <SpotlightFeatureCard
+              icon={Bot}
+              title="AI Post Composer"
+              description="Generate 3 distinct variants tailored to casual, professional, funny, or inspirational tones with a single click."
+              color="#6366f1"
+              dimmed={hoveredCard !== null && hoveredCard !== "composer"}
+              onHoverStart={() => setHoveredCard("composer")}
+              onHoverEnd={() => setHoveredCard(null)}
+            />
 
-            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                <MessageSquare className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-bold">Smart Thread Summaries</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Instantly extract key takeaways and audience sentiment from active community discussions and nested comment trees.
-              </p>
-            </div>
+            <SpotlightFeatureCard
+              icon={MessageSquare}
+              title="Smart Thread Summaries"
+              description="Instantly extract key takeaways and audience sentiment from active community discussions and nested comment trees."
+              color="#8b5cf6"
+              dimmed={hoveredCard !== null && hoveredCard !== "summaries"}
+              onHoverStart={() => setHoveredCard("summaries")}
+              onHoverEnd={() => setHoveredCard(null)}
+            />
 
-            <div className="rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
-                <ShieldAlert className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-bold">Proactive Safety</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Multi-tiered automated safety guards evaluate content in the background, keeping discourse respectful and constructive.
-              </p>
-            </div>
+            <SpotlightFeatureCard
+              icon={ShieldAlert}
+              title="Proactive Safety"
+              description="Multi-tiered automated safety guards evaluate content in the background, keeping discourse respectful and constructive."
+              color="#ec4899"
+              dimmed={hoveredCard !== null && hoveredCard !== "safety"}
+              onHoverStart={() => setHoveredCard("safety")}
+              onHoverEnd={() => setHoveredCard(null)}
+            />
           </div>
 
         </div>

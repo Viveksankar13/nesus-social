@@ -100,8 +100,8 @@ export function Sidebar() {
         })}
       </aside>
 
-      {/* Mobile bottom navigation bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-md px-2 py-1.5 flex items-center justify-around">
+      {/* Mobile bottom navigation bar with safe-area support */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur-md px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around touch-manipulation">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -109,7 +109,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center p-1.5 rounded-lg text-xs font-medium transition-colors relative",
+                "flex flex-col items-center justify-center min-w-[48px] py-1 px-1.5 rounded-lg text-xs font-medium transition-colors relative active:scale-95",
                 item.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >

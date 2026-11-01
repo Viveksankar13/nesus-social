@@ -291,36 +291,43 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer with Backdrop */}
         {mobileMenuOpen && (
-          <div className="border-b border-zinc-800 bg-zinc-950 p-4 text-zinc-100 md:hidden">
-            <div className="space-y-1">
-              {navItems.map((item) => (
+          <>
+            <div
+              className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="relative z-40 border-b border-zinc-800 bg-zinc-950 p-4 text-zinc-100 shadow-xl md:hidden">
+              <div className="space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium touch-manipulation active:scale-[0.98] transition-transform",
+                      pathname === item.href
+                        ? "bg-indigo-600 text-white"
+                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.title}
+                  </Link>
+                ))}
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  href="/feed"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
-                    pathname === item.href
-                      ? "bg-indigo-600 text-white"
-                      : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
-                  )}
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 touch-manipulation"
                 >
-                  <item.icon className="h-4 w-4" />
-                  {item.title}
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to User Feed
                 </Link>
-              ))}
-              <Link
-                href="/feed"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to User Feed
-              </Link>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Page Content Body */}

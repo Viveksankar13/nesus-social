@@ -15,7 +15,7 @@ export default function AppLayout({
       <Navbar />
       <div className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 flex">
         <Sidebar />
-        <main className="flex-1 min-w-0 py-6 pb-20 md:pb-6">{children}</main>
+        <main className="flex-1 min-w-0 py-6 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-6">{children}</main>
       </div>
       <AIChatWidget />
     </div>
