@@ -67,6 +67,20 @@ export function Navbar() {
             </Button>
           )}
 
+          {/* Standalone logout button — always 1-click accessible */}
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => logout()}
+              className="h-9 w-9 text-muted-foreground hover:text-destructive transition-colors touch-manipulation"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          )}
+
           {/* User menu */}
           {user && (
             <DropdownMenu>
