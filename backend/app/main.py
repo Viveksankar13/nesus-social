@@ -163,13 +163,17 @@ def create_app() -> FastAPI:
     # ── Mount API Routers ───────────────────────────────────────────
     app.include_router(api_router)
 
-    # ── Health Endpoints ────────────────────────────────────────────
-    @app.get("/health", tags=["Health"], include_in_schema=False)
+    # ── Health & Root Endpoints (supports GET and HEAD for Uptime monitors) ──
+    @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+    async def root() -> JSONResponse:
+        return JSONResponse({"status": "ok", "service": "nexus-social-api"})
+
+    @app.api_route("/health", methods=["GET", "HEAD"], tags=["Health"], include_in_schema=False)
     async def health() -> JSONResponse:
         """Liveness probe — returns 200 if the process is running."""
         return JSONResponse({"status": "ok", "service": "nexus-social-api"})
 
-    @app.get("/ready", tags=["Health"], include_in_schema=False)
+    @app.api_route("/ready", methods=["GET", "HEAD"], tags=["Health"], include_in_schema=False)
     async def ready() -> JSONResponse:
         """Readiness probe — verifies database connectivity."""
         try:
