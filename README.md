@@ -1,4 +1,4 @@
-# 🌐 Nexus Social — AI-Powered Social Media Platform
+# 🌐 Nexus Social — AI-Powered Social Media Platform and SwapSkills
 
 > A full-stack, production-ready social media platform powered by Google Gemini AI.
 > Built with Next.js 14, FastAPI, PostgreSQL, and real-time SSE notifications.
